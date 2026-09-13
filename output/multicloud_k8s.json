@@ -1,0 +1,313 @@
+{
+  "metadata": {
+    "project_name": "multicloud_k8s",
+    "terraform_version": null,
+    "cloud_provider": "aws",
+    "region": null,
+    "generated_at": "2026-09-12T23:17:09.380316+00:00"
+  },
+  "resources": [],
+  "data_sources": [
+    {
+      "id": "google_client_config.default",
+      "type": "google_client_config",
+      "name": "default",
+      "provider": "google",
+      "attributes": {},
+      "references": []
+    }
+  ],
+  "variables": [
+    {
+      "name": "gcp",
+      "type": "object({project_id = string, region = string, zone = string, credentials = string, cluster = object({name = string, service_account = string, subnet_cidr = string})})",
+      "default": null,
+      "description": "GCP related variables",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "aws",
+      "type": "object({region = string, azs = list(string), vpc_cidr = string, public_subnets = list(string), private_subnets = list(string), cluster = string})",
+      "default": null,
+      "description": "AWS related variables",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "azure",
+      "type": "object({appId = string, password = string})",
+      "default": null,
+      "description": "Azure related variables",
+      "sensitive": false,
+      "validation": {}
+    }
+  ],
+  "outputs": [
+    {
+      "name": "aws_region",
+      "value": "${var.aws.region}",
+      "description": "AWS region",
+      "sensitive": false
+    },
+    {
+      "name": "aws_cluster_name",
+      "value": "${module.eks_aws.cluster_name}",
+      "description": "Kubernetes AWS Cluster Name",
+      "sensitive": false
+    },
+    {
+      "name": "gcp_region",
+      "value": "${var.gke.zone}",
+      "description": "GCP region",
+      "sensitive": false
+    },
+    {
+      "name": "gcp_cluster_name",
+      "value": "${module.gke_gcp.cluster_name}",
+      "description": "Kubernetes GCP Cluster Name",
+      "sensitive": false
+    },
+    {
+      "name": "azure_resource_group_name",
+      "value": "${module.aks_azure.rg_name}",
+      "description": "Azure resource name",
+      "sensitive": false
+    },
+    {
+      "name": "azure_cluster_name",
+      "value": "${module.aks_azure.cluster_name}",
+      "description": "Azure cluster name",
+      "sensitive": false
+    }
+  ],
+  "modules": [
+    {
+      "name": "k8s_azure",
+      "source": "./k8s_deployment",
+      "version": null,
+      "inputs": {
+        "source": "./k8s_deployment",
+        "providers": {
+          "kubernetes": "${kubernetes.azure}"
+        }
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "deployment.tf",
+        "line": 4,
+        "column": 1
+      }
+    },
+    {
+      "name": "k8s_aws",
+      "source": "./k8s_deployment",
+      "version": null,
+      "inputs": {
+        "source": "./k8s_deployment",
+        "providers": {
+          "kubernetes": "${kubernetes.aws}"
+        }
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "deployment.tf",
+        "line": 11,
+        "column": 1
+      }
+    },
+    {
+      "name": "k8s_gcp",
+      "source": "./k8s_deployment",
+      "version": null,
+      "inputs": {
+        "source": "./k8s_deployment",
+        "providers": {
+          "kubernetes": "${kubernetes.gcp}"
+        }
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "deployment.tf",
+        "line": 18,
+        "column": 1
+      }
+    },
+    {
+      "name": "eks_aws",
+      "source": "./eks_aws",
+      "version": null,
+      "inputs": {
+        "source": "./eks_aws",
+        "region": "${var.aws.region}",
+        "name": "${var.aws.cluster}",
+        "vpc_cidr": "${var.aws.vpc_cidr}",
+        "public_subnets": "${var.aws.public_subnets}",
+        "private_subnets": "${var.aws.private_subnets}",
+        "azs": "${var.aws.azs}"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "k8s_providers.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "name": "gke_gcp",
+      "source": "./gke_gcp",
+      "version": null,
+      "inputs": {
+        "source": "./gke_gcp",
+        "project": "${var.gcp.project_id}",
+        "region": "${var.gcp.region}",
+        "zones": [
+          "${var.gcp.zone}"
+        ],
+        "name": "${var.gcp.cluster.name}",
+        "service_account": "${var.gcp.cluster.service_account}",
+        "subnet_cidr": "${var.gcp.cluster.subnet_cidr}"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "k8s_providers.tf",
+        "line": 11,
+        "column": 1
+      }
+    },
+    {
+      "name": "aks_azure",
+      "source": "./aks_azure",
+      "version": null,
+      "inputs": {
+        "source": "./aks_azure",
+        "client_id": "${var.azure.appId}",
+        "password": "${var.azure.password}"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "k8s_providers.tf",
+        "line": 21,
+        "column": 1
+      }
+    }
+  ],
+  "providers": [
+    {
+      "name": "aws",
+      "alias": null,
+      "version": "~> 4.31.0",
+      "configuration": {
+        "region": "${var.aws.region}"
+      }
+    },
+    {
+      "name": "google",
+      "alias": null,
+      "version": "~> 4.36.0",
+      "configuration": {
+        "project": "${var.gcp.project_id}",
+        "region": "${var.gcp.region}",
+        "zone": "${var.gcp.zone}",
+        "credentials": "${file(var.gcp.credentials)}"
+      }
+    },
+    {
+      "name": "azurerm",
+      "alias": null,
+      "version": "~> 3.23.0",
+      "configuration": {
+        "features": [
+          {}
+        ]
+      }
+    },
+    {
+      "name": "kubernetes",
+      "alias": "azure",
+      "version": "~> 2.13.1",
+      "configuration": {
+        "alias": "azure",
+        "host": "${module.aks_azure.kube_config.host}",
+        "client_certificate": "${base64decode(module.aks_azure.kube_config.client_certificate)}",
+        "client_key": "${base64decode(module.aks_azure.kube_config.client_key)}",
+        "cluster_ca_certificate": "${base64decode(module.aks_azure.kube_config.cluster_ca_certificate)}"
+      }
+    },
+    {
+      "name": "kubernetes",
+      "alias": "gcp",
+      "version": "~> 2.13.1",
+      "configuration": {
+        "alias": "gcp",
+        "host": "https://${module.gke_gcp.cluster_host}",
+        "token": "${data.google_client_config.default.access_token}",
+        "cluster_ca_certificate": "${base64decode(module.gke_gcp.ca_certificate)}"
+      }
+    },
+    {
+      "name": "kubernetes",
+      "alias": "aws",
+      "version": "~> 2.13.1",
+      "configuration": {
+        "alias": "aws",
+        "host": "${module.eks_aws.cluster_endpoint}",
+        "cluster_ca_certificate": "${base64decode(module.eks_aws.cluster_ca)}",
+        "exec": [
+          {
+            "api_version": "client.authentication.k8s.io/v1",
+            "command": "aws",
+            "args": [
+              "eks",
+              "get-token",
+              "--cluster-name",
+              "${module.eks_aws.cluster_name}"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "source": "module.eks_aws",
+      "target": "var.aws",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.aws"
+      },
+      "source_location": {
+        "file": "k8s_providers.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.gke_gcp",
+      "target": "var.gcp",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.gcp"
+      },
+      "source_location": {
+        "file": "k8s_providers.tf",
+        "line": 11,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.aks_azure",
+      "target": "var.azure",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.azure"
+      },
+      "source_location": {
+        "file": "k8s_providers.tf",
+        "line": 21,
+        "column": 1
+      }
+    }
+  ],
+  "security_findings": []
+}

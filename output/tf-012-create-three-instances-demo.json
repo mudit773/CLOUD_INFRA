@@ -1,0 +1,1196 @@
+{
+  "metadata": {
+    "project_name": "tf-012-create-three-instances-demo",
+    "terraform_version": null,
+    "cloud_provider": "oci",
+    "region": null,
+    "generated_at": "2026-09-12T23:32:19.810804+00:00"
+  },
+  "resources": [],
+  "data_sources": [
+    {
+      "id": "oci_core_images.oraclelinux",
+      "type": "oci_core_images",
+      "name": "oraclelinux",
+      "provider": "oci",
+      "attributes": {
+        "compartment_id": "${var.tenancy_ocid}",
+        "operating_system": "${var.operating_system}",
+        "operating_system_version": "${var.operating_system_version}",
+        "filter": [
+          {
+            "name": "display_name",
+            "values": [
+              "^([a-zA-z]+)-([a-zA-z]+)-([\\\\.0-9]+)-([\\\\.0-9-]+)$"
+            ],
+            "regex": true
+          }
+        ]
+      },
+      "references": [
+        "var.tenancy_ocid",
+        "var.operating_system",
+        "var.operating_system_version"
+      ]
+    },
+    {
+      "id": "oci_identity_availability_domains.GetAds",
+      "type": "oci_identity_availability_domains",
+      "name": "GetAds",
+      "provider": "oci",
+      "attributes": {
+        "compartment_id": "${var.tenancy_ocid}"
+      },
+      "references": [
+        "var.tenancy_ocid"
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "name": "tenancy_ocid",
+      "type": null,
+      "default": null,
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "user_ocid",
+      "type": null,
+      "default": null,
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "fingerprint",
+      "type": null,
+      "default": null,
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "private_key_path",
+      "type": null,
+      "default": null,
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "region",
+      "type": null,
+      "default": null,
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "compartment_name",
+      "type": null,
+      "default": "demo-three-instances",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "compartment_description",
+      "type": null,
+      "default": "Compartment for demoing three instances",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "tags",
+      "type": "map",
+      "default": {
+        "\"DemoTagNamespace.Environment\"": "poc",
+        "\"DemoTagNamespace.Owner\"": "Me"
+      },
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "tag_names",
+      "type": null,
+      "default": [
+        "Environment",
+        "Owner"
+      ],
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "tag_namespace_description",
+      "type": null,
+      "default": "Tag namespace for all resources",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "tag_namespace_name",
+      "type": null,
+      "default": "DemoTagNamespace",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "is_retired",
+      "type": null,
+      "default": "false",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "tag_description",
+      "type": null,
+      "default": [
+        "Environment purpose",
+        "Owner for resource"
+      ],
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "internet_gateway_enabled",
+      "type": null,
+      "default": "true",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "internet_gateway_display_name",
+      "type": null,
+      "default": "MyIGW",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "igw_route_table_rules_cidr_block",
+      "type": null,
+      "default": "0.0.0.0/0",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "vcn_cidr_block",
+      "type": null,
+      "default": "172.27.0.0/16",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "vcn_display_name",
+      "type": null,
+      "default": "MyVCN",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "vcn_dns_label",
+      "type": null,
+      "default": "demo",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "route_table_display_name",
+      "type": null,
+      "default": "MyRouteTable",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "ad_number",
+      "type": null,
+      "default": "0",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "compartment_display_name",
+      "type": null,
+      "default": "three-instances-poc",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "vcn_ingress_protocol",
+      "type": null,
+      "default": "all",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "private_security_list_name",
+      "type": null,
+      "default": "MyPrivateSL",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "egress_destination",
+      "type": null,
+      "default": "0.0.0.0/0",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "egress_protocol",
+      "type": null,
+      "default": "all",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "ingress_source",
+      "type": null,
+      "default": "0.0.0.0/0",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "ingress_protocol",
+      "type": null,
+      "default": "6",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "ingress_stateless",
+      "type": null,
+      "default": false,
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "cidr_block_subnet",
+      "type": null,
+      "default": "172.27.0.0/24",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "display_name_subnet",
+      "type": null,
+      "default": "poc-subnet",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "dns_label_subnet",
+      "type": null,
+      "default": "poc",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "ingress_ports",
+      "type": null,
+      "default": [
+        {
+          "minport": 22,
+          "maxport": 22,
+          "source_cidr": "0.0.0.0/0"
+        },
+        {
+          "minport": 0,
+          "maxport": 0,
+          "source_cidr": "172.27.0.0/16"
+        }
+      ],
+      "description": "all the ports for security list",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "operating_system",
+      "type": null,
+      "default": "Oracle Linux",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "operating_system_version",
+      "type": null,
+      "default": "7.6",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "shape_name",
+      "type": null,
+      "default": "VM.Standard2.1",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "source_type",
+      "type": null,
+      "default": "image",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "assign_public_ip",
+      "type": null,
+      "default": "true",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "instance_variables",
+      "type": null,
+      "default": {
+        "\"ForEach1\"": "fe-1",
+        "\"ForEach2\"": "fe-2",
+        "\"ForEach3\"": "fe-3"
+      },
+      "description": "Map instance name to hostname",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "instance_create_vnic_details_hostname_label",
+      "type": null,
+      "default": "ForEach",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "is_monitoring_disabled",
+      "type": null,
+      "default": false,
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "ssh_public_key",
+      "type": null,
+      "default": "EDIT ME TO BE REAL SSH KEY",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "instance_create_vnic_details_skip_source_dest_check",
+      "type": null,
+      "default": false,
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    }
+  ],
+  "outputs": [
+    {
+      "name": "instance_private_and_public_ips",
+      "value": "${{for instance in module.CreateInstances.instances : instance.private_ip => instance.public_ip}}",
+      "description": null,
+      "sensitive": false
+    }
+  ],
+  "modules": [
+    {
+      "name": "CreateCompartment",
+      "source": "./module-compartment",
+      "version": null,
+      "inputs": {
+        "source": "./module-compartment",
+        "tenancy_ocid": "${var.tenancy_ocid}",
+        "compartment_name": "${var.compartment_name}",
+        "compartment_description": "${var.compartment_description}"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "main.tf",
+        "line": 27,
+        "column": 1
+      }
+    },
+    {
+      "name": "CreateVCN",
+      "source": "./module-vcn",
+      "version": null,
+      "inputs": {
+        "source": "./module-vcn",
+        "compartment_ocid": "${module.CreateCompartment.compartment.id}",
+        "vcn_cidr_block": "${var.vcn_cidr_block}",
+        "display_name": "${var.vcn_display_name}",
+        "dns_label": "${var.vcn_dns_label}"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "main.tf",
+        "line": 36,
+        "column": 1
+      }
+    },
+    {
+      "name": "CreateIGW",
+      "source": "./module-igw",
+      "version": null,
+      "inputs": {
+        "source": "./module-igw",
+        "compartment_ocid": "${module.CreateCompartment.compartment.id}",
+        "vcn_id": "${module.CreateVCN.vcn.id}",
+        "internet_gateway_enabled": "${var.internet_gateway_enabled}",
+        "internet_gateway_display_name": "${var.internet_gateway_display_name}"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "main.tf",
+        "line": 45,
+        "column": 1
+      }
+    },
+    {
+      "name": "CreateRouteRule",
+      "source": "./module-routetable",
+      "version": null,
+      "inputs": {
+        "source": "./module-routetable",
+        "tenancy_ocid": "${var.tenancy_ocid}",
+        "compartment_ocid": "${module.CreateCompartment.compartment.id}",
+        "vcn_id": "${module.CreateVCN.vcn.id}",
+        "network_id": [
+          "${module.CreateIGW.internetgateway.id}"
+        ],
+        "route_table_display_name": "${var.route_table_display_name}",
+        "route_table_route_rules_cidr_block": [
+          "${var.igw_route_table_rules_cidr_block}"
+        ]
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "main.tf",
+        "line": 54,
+        "column": 1
+      }
+    },
+    {
+      "name": "CreatePrivateSecurityListPOC",
+      "source": "./module-securitylist",
+      "version": null,
+      "inputs": {
+        "source": "./module-securitylist",
+        "compartment_ocid": "${module.CreateCompartment.compartment.id}",
+        "vcn_id": "${module.CreateVCN.vcn.id}",
+        "tenancy_ocid": "${var.tenancy_ocid}",
+        "sl_display_name": "${var.private_security_list_name}",
+        "egress_destination": "${var.egress_destination}",
+        "egress_protocol": "${var.egress_protocol}",
+        "ingress_protocol": "${var.ingress_protocol}",
+        "ingress_source": "${var.ingress_source}",
+        "ingress_stateless": "${var.ingress_stateless}",
+        "ingress_ports": "${var.ingress_ports}"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "main.tf",
+        "line": 67,
+        "column": 1
+      }
+    },
+    {
+      "name": "CreateSubnetPOC",
+      "source": "./module-subnet",
+      "version": null,
+      "inputs": {
+        "source": "./module-subnet",
+        "availability_domain": "${lookup(data.oci_identity_availability_domains.GetAds.availability_domains[0], \"name\")}",
+        "vcn_id": "${module.CreateVCN.vcn.id}",
+        "compartment_ocid": "${module.CreateCompartment.compartment.id}",
+        "vcn_default_security_list_id": [
+          "${module.CreatePrivateSecurityListPOC.securitylist.id}"
+        ],
+        "vcn_default_route_table_id": "${module.CreateRouteRule.routetable.id}",
+        "vcn_default_dhcp_options_id": "${module.CreateVCN.vcn.default_dhcp_options_id}",
+        "sub_cidr_block": "${var.cidr_block_subnet}",
+        "sub_display_name": "${var.display_name_subnet}",
+        "sub_dns_label": "${var.dns_label_subnet}",
+        "tenancy_ocid": "${var.tenancy_ocid}",
+        "prohibit_public_ip_on_vnic": "false"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "main.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "name": "CreateInstances",
+      "source": "./module-instance",
+      "version": null,
+      "inputs": {
+        "source": "./module-instance",
+        "compartment_id": "${module.CreateCompartment.compartment.id}",
+        "instance_availability_domain": "${lookup(data.oci_identity_availability_domains.GetAds.availability_domains[0], \"name\")}",
+        "subnet_id": "${module.CreateSubnetPOC.subnet.id}",
+        "image_id": "${lookup(data.oci_core_images.oraclelinux.images[0], \"id\")}",
+        "shape_id": "${var.shape_name}",
+        "ssh_public_key": "${var.ssh_public_key}",
+        "assign_public_ip": "${var.assign_public_ip}",
+        "instance_create_vnic_details_hostname_label": "${var.instance_create_vnic_details_hostname_label}",
+        "instance_create_vnic_details_skip_source_dest_check": "${var.instance_create_vnic_details_skip_source_dest_check}",
+        "instance_variables": "${var.instance_variables}"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "main.tf",
+        "line": 99,
+        "column": 1
+      }
+    }
+  ],
+  "providers": [
+    {
+      "name": "oci",
+      "alias": null,
+      "version": null,
+      "configuration": {
+        "tenancy_ocid": "${var.tenancy_ocid}",
+        "user_ocid": "${var.user_ocid}",
+        "fingerprint": "${var.fingerprint}",
+        "private_key_path": "${var.private_key_path}",
+        "region": "${var.region}"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "source": "module.CreateCompartment",
+      "target": "var.tenancy_ocid",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.tenancy_ocid"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 27,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateCompartment",
+      "target": "var.compartment_name",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.compartment_name"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 27,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateCompartment",
+      "target": "var.compartment_description",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.compartment_description"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 27,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateVCN",
+      "target": "module.CreateCompartment",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreateCompartment.compartment"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 36,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateVCN",
+      "target": "var.vcn_cidr_block",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.vcn_cidr_block"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 36,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateVCN",
+      "target": "var.vcn_display_name",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.vcn_display_name"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 36,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateVCN",
+      "target": "var.vcn_dns_label",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.vcn_dns_label"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 36,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateIGW",
+      "target": "module.CreateCompartment",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreateCompartment.compartment"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 45,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateIGW",
+      "target": "module.CreateVCN",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreateVCN.vcn"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 45,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateIGW",
+      "target": "var.internet_gateway_enabled",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.internet_gateway_enabled"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 45,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateIGW",
+      "target": "var.internet_gateway_display_name",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.internet_gateway_display_name"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 45,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateRouteRule",
+      "target": "var.tenancy_ocid",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.tenancy_ocid"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 54,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateRouteRule",
+      "target": "module.CreateCompartment",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreateCompartment.compartment"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 54,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateRouteRule",
+      "target": "module.CreateVCN",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreateVCN.vcn"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 54,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateRouteRule",
+      "target": "module.CreateIGW",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreateIGW.internetgateway"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 54,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateRouteRule",
+      "target": "var.route_table_display_name",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.route_table_display_name"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 54,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateRouteRule",
+      "target": "var.igw_route_table_rules_cidr_block",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.igw_route_table_rules_cidr_block"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 54,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "module.CreateCompartment",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreateCompartment.compartment"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 67,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "module.CreateVCN",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreateVCN.vcn"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 67,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.tenancy_ocid",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.tenancy_ocid"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 67,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.private_security_list_name",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.private_security_list_name"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 67,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.egress_destination",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.egress_destination"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 67,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.egress_protocol",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.egress_protocol"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 67,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.ingress_protocol",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.ingress_protocol"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 67,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.ingress_source",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.ingress_source"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 67,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.ingress_stateless",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.ingress_stateless"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 67,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.ingress_ports",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.ingress_ports"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 67,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "data.oci_identity_availability_domains",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "data.oci_identity_availability_domains.GetAds.availability_domains"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "module.CreateVCN",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreateVCN.vcn"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "module.CreateCompartment",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreateCompartment.compartment"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "module.CreatePrivateSecurityListPOC",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreatePrivateSecurityListPOC.securitylist"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "module.CreateRouteRule",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreateRouteRule.routetable"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "var.cidr_block_subnet",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.cidr_block_subnet"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "var.display_name_subnet",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.display_name_subnet"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "var.dns_label_subnet",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.dns_label_subnet"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "var.tenancy_ocid",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.tenancy_ocid"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "module.CreateCompartment",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreateCompartment.compartment"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 99,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "data.oci_identity_availability_domains",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "data.oci_identity_availability_domains.GetAds.availability_domains"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 99,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "module.CreateSubnetPOC",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.CreateSubnetPOC.subnet"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 99,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "data.oci_core_images",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "data.oci_core_images.oraclelinux.images"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 99,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "var.shape_name",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.shape_name"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 99,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "var.ssh_public_key",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.ssh_public_key"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 99,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "var.assign_public_ip",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.assign_public_ip"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 99,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "var.instance_create_vnic_details_hostname_label",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.instance_create_vnic_details_hostname_label"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 99,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "var.instance_create_vnic_details_skip_source_dest_check",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.instance_create_vnic_details_skip_source_dest_check"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 99,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "var.instance_variables",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.instance_variables"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 99,
+        "column": 1
+      }
+    }
+  ],
+  "security_findings": []
+}

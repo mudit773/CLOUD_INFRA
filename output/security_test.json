@@ -1,0 +1,96 @@
+{
+  "metadata": {
+    "project_name": "security_test.tf",
+    "terraform_version": null,
+    "cloud_provider": null,
+    "region": null,
+    "generated_at": "2026-09-12T23:51:41.186833+00:00"
+  },
+  "resources": [
+    {
+      "id": "test_network_resource.example",
+      "type": "test_network_resource",
+      "name": "example",
+      "provider": "test",
+      "region": null,
+      "attributes": {
+        "name": "security-test",
+        "ingress": [
+          {
+            "protocol": "tcp",
+            "from_port": 1234,
+            "to_port": 5678,
+            "sources": [
+              "10.0.0.0/16"
+            ],
+            "description": "internal ingress"
+          }
+        ],
+        "egress": [
+          {
+            "protocol": "tcp",
+            "from_port": 8000,
+            "to_port": 9000,
+            "destinations": [
+              "10.1.0.0/16"
+            ],
+            "description": "internal egress"
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 1234,
+            "to_port": 5678,
+            "sources": [
+              "10.0.0.0/16"
+            ],
+            "description": "internal ingress"
+          }
+        ],
+        "egress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 8000,
+            "to_port": 9000,
+            "destinations": [
+              "10.1.0.0/16"
+            ],
+            "description": "internal egress"
+          }
+        ],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [],
+      "depends_on": [],
+      "source_location": {
+        "file": "security_test.tf",
+        "line": 1,
+        "column": 1
+      }
+    }
+  ],
+  "data_sources": [],
+  "variables": [],
+  "outputs": [],
+  "modules": [],
+  "providers": [],
+  "relationships": [],
+  "security_findings": []
+}
