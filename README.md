@@ -22,7 +22,8 @@ project_root/
 │   │   ├── analyzer.py
 │   │   ├── rules.py
 │   │   ├── scanner.py
-│   │   └── severity.py
+│   │   ├── severity.py
+│   │   └── llm_service.py
 │   │
 │   ├── models/            # Domain models (Resource, Relationship, Finding)
 │   │   ├── resource.py
