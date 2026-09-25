@@ -1,0 +1,1349 @@
+{
+  "nodes": [
+    {
+      "id": "internet",
+      "type": "external",
+      "name": "Internet",
+      "provider": "external",
+      "attributes": {
+        "description": "External Internet / Public Network"
+      },
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": true
+    },
+    {
+      "id": "azurerm_kubernetes_cluster.default",
+      "type": "azurerm_kubernetes_cluster",
+      "name": "default",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "aks-${random_id.prefix.hex}",
+        "location": "${azurerm_resource_group.main.location}",
+        "resource_group_name": "${azurerm_resource_group.main.name}",
+        "dns_prefix": "k8s-${random_id.prefix.hex}",
+        "automatic_channel_upgrade": "stable",
+        "role_based_access_control_enabled": true,
+        "default_node_pool": [
+          {
+            "name": "default",
+            "node_count": 1,
+            "vm_size": "${var.instance_type}",
+            "os_disk_size_gb": 30
+          }
+        ],
+        "service_principal": [
+          {
+            "client_id": "${var.client_id}",
+            "client_secret": "${var.password}"
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": [
+          {
+            "type": "password",
+            "reference": "var.password",
+            "exposed": false
+          }
+        ]
+      },
+      "findings": [
+        {
+          "rule_id": "SEC-SECRET-001",
+          "severity": "CRITICAL",
+          "title": "Potential Hardcoded Secret Detected",
+          "description": "Potential secret material was detected in resource 'azurerm_kubernetes_cluster.default'.",
+          "resource_id": "azurerm_kubernetes_cluster.default",
+          "resource_type": "azurerm_kubernetes_cluster",
+          "source_location": "aks_azure/aks.tf:2",
+          "evidence": {
+            "secret_count": 1
+          },
+          "recommendation": "Remove secrets from Terraform configuration and use AWS Secrets Manager, SSM Parameter Store, or another secure secret-management solution."
+        }
+      ],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_resource_group.main",
+      "type": "azurerm_resource_group",
+      "name": "main",
+      "provider": "azurerm",
+      "attributes": {
+        "location": "${var.location}",
+        "name": "${coalesce(var.resource_group_name, \"${random_id.prefix.hex}-rg\")}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "random_id.prefix",
+      "type": "random_id",
+      "name": "prefix",
+      "provider": "random",
+      "attributes": {
+        "byte_length": 8
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_security_group.node_group",
+      "type": "aws_security_group",
+      "name": "node_group",
+      "provider": "aws",
+      "attributes": {
+        "name_prefix": "node_group",
+        "vpc_id": "${module.vpc.vpc_id}",
+        "ingress": [
+          {
+            "from_port": 22,
+            "to_port": 22,
+            "protocol": "tcp",
+            "cidr_blocks": [
+              "10.0.0.0/8"
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 22,
+            "to_port": 22,
+            "sources": [
+              "10.0.0.0/8"
+            ],
+            "description": null
+          }
+        ],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_project_service.compute",
+      "type": "google_project_service",
+      "name": "compute",
+      "provider": "google",
+      "attributes": {
+        "service": "compute.googleapis.com",
+        "project": "${var.project}",
+        "disable_dependent_services": true,
+        "disable_on_destroy": false
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_project_service.container",
+      "type": "google_project_service",
+      "name": "container",
+      "provider": "google",
+      "attributes": {
+        "service": "container.googleapis.com",
+        "project": "${var.project}",
+        "disable_dependent_services": true,
+        "disable_on_destroy": false
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_project_service.cloudresourcemanager",
+      "type": "google_project_service",
+      "name": "cloudresourcemanager",
+      "provider": "google",
+      "attributes": {
+        "service": "cloudresourcemanager.googleapis.com",
+        "project": "${var.project}",
+        "disable_dependent_services": true,
+        "disable_on_destroy": false
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_network.vpc",
+      "type": "google_compute_network",
+      "name": "vpc",
+      "provider": "google",
+      "attributes": {
+        "name": "${var.project}-vpc",
+        "routing_mode": "REGIONAL",
+        "auto_create_subnetworks": "false"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_subnetwork.subnet",
+      "type": "google_compute_subnetwork",
+      "name": "subnet",
+      "provider": "google",
+      "attributes": {
+        "name": "${var.project}-subnet",
+        "region": "${var.region}",
+        "network": "${google_compute_network.vpc.id}",
+        "ip_cidr_range": "${var.subnet_cidr}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "kubernetes_deployment.nginx",
+      "type": "kubernetes_deployment",
+      "name": "nginx",
+      "provider": "kubernetes",
+      "attributes": {
+        "metadata": [
+          {
+            "name": "scalable-nginx-example",
+            "labels": {
+              "App": "ScalableNginxExample"
+            }
+          }
+        ],
+        "spec": [
+          {
+            "replicas": 2,
+            "selector": [
+              {
+                "match_labels": {
+                  "App": "ScalableNginxExample"
+                }
+              }
+            ],
+            "template": [
+              {
+                "metadata": [
+                  {
+                    "labels": {
+                      "App": "ScalableNginxExample"
+                    }
+                  }
+                ],
+                "spec": [
+                  {
+                    "container": [
+                      {
+                        "image": "nginx:1.7.8",
+                        "name": "example",
+                        "port": [
+                          {
+                            "container_port": 80
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.instance_type",
+      "type": "unknown",
+      "name": "var.instance_type",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.client_id",
+      "type": "unknown",
+      "name": "var.client_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.password",
+      "type": "unknown",
+      "name": "var.password",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.location",
+      "type": "unknown",
+      "name": "var.location",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.resource_group_name",
+      "type": "unknown",
+      "name": "var.resource_group_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.vpc",
+      "type": "unknown",
+      "name": "module.vpc",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.project",
+      "type": "unknown",
+      "name": "var.project",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.region",
+      "type": "unknown",
+      "name": "var.region",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.subnet_cidr",
+      "type": "unknown",
+      "name": "var.subnet_cidr",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.eks",
+      "type": "unknown",
+      "name": "module.eks",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.name",
+      "type": "unknown",
+      "name": "var.name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.eks_version",
+      "type": "unknown",
+      "name": "var.eks_version",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.vpc_cidr",
+      "type": "unknown",
+      "name": "var.vpc_cidr",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.private_subnets",
+      "type": "unknown",
+      "name": "var.private_subnets",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.public_subnets",
+      "type": "unknown",
+      "name": "var.public_subnets",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.azs",
+      "type": "unknown",
+      "name": "var.azs",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.gke",
+      "type": "unknown",
+      "name": "module.gke",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.zones",
+      "type": "unknown",
+      "name": "var.zones",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.service_account",
+      "type": "unknown",
+      "name": "var.service_account",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.eks_aws",
+      "type": "unknown",
+      "name": "module.eks_aws",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.aws",
+      "type": "unknown",
+      "name": "var.aws",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.gke_gcp",
+      "type": "unknown",
+      "name": "module.gke_gcp",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.gcp",
+      "type": "unknown",
+      "name": "var.gcp",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.aks_azure",
+      "type": "unknown",
+      "name": "module.aks_azure",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.azure",
+      "type": "unknown",
+      "name": "var.azure",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "azurerm_kubernetes_cluster.default",
+      "target": "random_id.prefix",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "random_id.prefix.hex"
+    },
+    {
+      "source": "azurerm_kubernetes_cluster.default",
+      "target": "azurerm_resource_group.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_resource_group.main.location"
+    },
+    {
+      "source": "azurerm_kubernetes_cluster.default",
+      "target": "var.instance_type",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.instance_type"
+    },
+    {
+      "source": "azurerm_kubernetes_cluster.default",
+      "target": "var.client_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.client_id"
+    },
+    {
+      "source": "azurerm_kubernetes_cluster.default",
+      "target": "var.password",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.password"
+    },
+    {
+      "source": "azurerm_resource_group.main",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.location"
+    },
+    {
+      "source": "azurerm_resource_group.main",
+      "target": "var.resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.resource_group_name"
+    },
+    {
+      "source": "azurerm_resource_group.main",
+      "target": "random_id.prefix",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "random_id.prefix.hex"
+    },
+    {
+      "source": "aws_security_group.node_group",
+      "target": "module.vpc",
+      "type": "REFERENCES_MODULE",
+      "reference": "module.vpc.vpc_id"
+    },
+    {
+      "source": "google_project_service.compute",
+      "target": "var.project",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.project"
+    },
+    {
+      "source": "google_project_service.container",
+      "target": "var.project",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.project"
+    },
+    {
+      "source": "google_project_service.cloudresourcemanager",
+      "target": "var.project",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.project"
+    },
+    {
+      "source": "google_compute_network.vpc",
+      "target": "google_project_service.compute",
+      "type": "DEPENDS_ON"
+    },
+    {
+      "source": "google_compute_network.vpc",
+      "target": "google_project_service.container",
+      "type": "DEPENDS_ON"
+    },
+    {
+      "source": "google_compute_network.vpc",
+      "target": "google_project_service.cloudresourcemanager",
+      "type": "DEPENDS_ON"
+    },
+    {
+      "source": "google_compute_network.vpc",
+      "target": "var.project",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.project"
+    },
+    {
+      "source": "google_compute_subnetwork.subnet",
+      "target": "var.project",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.project"
+    },
+    {
+      "source": "google_compute_subnetwork.subnet",
+      "target": "var.region",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.region"
+    },
+    {
+      "source": "google_compute_subnetwork.subnet",
+      "target": "google_compute_network.vpc",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_network.vpc.id"
+    },
+    {
+      "source": "google_compute_subnetwork.subnet",
+      "target": "var.subnet_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.subnet_cidr"
+    },
+    {
+      "source": "module.vpc",
+      "target": "var.vpc_cidr",
+      "type": "MODULE_INPUT",
+      "reference": "var.vpc_cidr"
+    },
+    {
+      "source": "module.vpc",
+      "target": "var.private_subnets",
+      "type": "MODULE_INPUT",
+      "reference": "var.private_subnets"
+    },
+    {
+      "source": "module.vpc",
+      "target": "var.public_subnets",
+      "type": "MODULE_INPUT",
+      "reference": "var.public_subnets"
+    },
+    {
+      "source": "module.vpc",
+      "target": "var.azs",
+      "type": "MODULE_INPUT",
+      "reference": "var.azs"
+    },
+    {
+      "source": "module.eks",
+      "target": "var.name",
+      "type": "MODULE_INPUT",
+      "reference": "var.name"
+    },
+    {
+      "source": "module.eks",
+      "target": "var.eks_version",
+      "type": "MODULE_INPUT",
+      "reference": "var.eks_version"
+    },
+    {
+      "source": "module.eks",
+      "target": "module.vpc",
+      "type": "MODULE_INPUT",
+      "reference": "module.vpc.vpc_id"
+    },
+    {
+      "source": "module.eks",
+      "target": "var.instance_type",
+      "type": "MODULE_INPUT",
+      "reference": "var.instance_type"
+    },
+    {
+      "source": "module.eks",
+      "target": "aws_security_group.node_group",
+      "type": "MODULE_INPUT",
+      "reference": "aws_security_group.node_group.id"
+    },
+    {
+      "source": "module.gke",
+      "target": "var.project",
+      "type": "MODULE_INPUT",
+      "reference": "var.project"
+    },
+    {
+      "source": "module.gke",
+      "target": "var.name",
+      "type": "MODULE_INPUT",
+      "reference": "var.name"
+    },
+    {
+      "source": "module.gke",
+      "target": "var.region",
+      "type": "MODULE_INPUT",
+      "reference": "var.region"
+    },
+    {
+      "source": "module.gke",
+      "target": "var.zones",
+      "type": "MODULE_INPUT",
+      "reference": "var.zones"
+    },
+    {
+      "source": "module.gke",
+      "target": "google_compute_network.vpc",
+      "type": "MODULE_INPUT",
+      "reference": "google_compute_network.vpc.name"
+    },
+    {
+      "source": "module.gke",
+      "target": "google_compute_subnetwork.subnet",
+      "type": "MODULE_INPUT",
+      "reference": "google_compute_subnetwork.subnet.name"
+    },
+    {
+      "source": "module.gke",
+      "target": "var.instance_type",
+      "type": "MODULE_INPUT",
+      "reference": "var.instance_type"
+    },
+    {
+      "source": "module.gke",
+      "target": "var.service_account",
+      "type": "MODULE_INPUT",
+      "reference": "var.service_account"
+    },
+    {
+      "source": "module.eks_aws",
+      "target": "var.aws",
+      "type": "MODULE_INPUT",
+      "reference": "var.aws"
+    },
+    {
+      "source": "module.gke_gcp",
+      "target": "var.gcp",
+      "type": "MODULE_INPUT",
+      "reference": "var.gcp"
+    },
+    {
+      "source": "module.aks_azure",
+      "target": "var.azure",
+      "type": "MODULE_INPUT",
+      "reference": "var.azure"
+    }
+  ],
+  "entry_points": [],
+  "crown_jewels": [
+    "azurerm_kubernetes_cluster.default"
+  ],
+  "attack_paths": [],
+  "choke_points": [],
+  "risk": {
+    "score": 34.0,
+    "risk_level": "CRITICAL"
+  },
+  "risk_scores": {
+    "azurerm_kubernetes_cluster.default": {
+      "resource_id": "azurerm_kubernetes_cluster.default",
+      "score": 34.0,
+      "risk_level": "CRITICAL",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 7,
+      "blast_radius": [
+        "azurerm_resource_group.main",
+        "random_id.prefix",
+        "var.client_id",
+        "var.instance_type",
+        "var.location",
+        "var.password",
+        "var.resource_group_name"
+      ]
+    },
+    "azurerm_resource_group.main": {
+      "resource_id": "azurerm_resource_group.main",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "random_id.prefix",
+        "var.location",
+        "var.resource_group_name"
+      ]
+    },
+    "random_id.prefix": {
+      "resource_id": "random_id.prefix",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "aws_security_group.node_group": {
+      "resource_id": "aws_security_group.node_group",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "module.vpc",
+        "var.azs",
+        "var.private_subnets",
+        "var.public_subnets",
+        "var.vpc_cidr"
+      ]
+    },
+    "google_project_service.compute": {
+      "resource_id": "google_project_service.compute",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.project"
+      ]
+    },
+    "google_project_service.container": {
+      "resource_id": "google_project_service.container",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.project"
+      ]
+    },
+    "google_project_service.cloudresourcemanager": {
+      "resource_id": "google_project_service.cloudresourcemanager",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.project"
+      ]
+    },
+    "google_compute_network.vpc": {
+      "resource_id": "google_compute_network.vpc",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "google_project_service.cloudresourcemanager",
+        "google_project_service.compute",
+        "google_project_service.container",
+        "var.project"
+      ]
+    },
+    "google_compute_subnetwork.subnet": {
+      "resource_id": "google_compute_subnetwork.subnet",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 7,
+      "blast_radius": [
+        "google_compute_network.vpc",
+        "google_project_service.cloudresourcemanager",
+        "google_project_service.compute",
+        "google_project_service.container",
+        "var.project",
+        "var.region",
+        "var.subnet_cidr"
+      ]
+    },
+    "kubernetes_deployment.nginx": {
+      "resource_id": "kubernetes_deployment.nginx",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.instance_type": {
+      "resource_id": "var.instance_type",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.client_id": {
+      "resource_id": "var.client_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.password": {
+      "resource_id": "var.password",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.location": {
+      "resource_id": "var.location",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.resource_group_name": {
+      "resource_id": "var.resource_group_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.vpc": {
+      "resource_id": "module.vpc",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "var.azs",
+        "var.private_subnets",
+        "var.public_subnets",
+        "var.vpc_cidr"
+      ]
+    },
+    "var.project": {
+      "resource_id": "var.project",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.region": {
+      "resource_id": "var.region",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.subnet_cidr": {
+      "resource_id": "var.subnet_cidr",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.eks": {
+      "resource_id": "module.eks",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 9,
+      "blast_radius": [
+        "aws_security_group.node_group",
+        "module.vpc",
+        "var.azs",
+        "var.eks_version",
+        "var.instance_type",
+        "var.name",
+        "var.private_subnets",
+        "var.public_subnets",
+        "var.vpc_cidr"
+      ]
+    },
+    "var.name": {
+      "resource_id": "var.name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.eks_version": {
+      "resource_id": "var.eks_version",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.vpc_cidr": {
+      "resource_id": "var.vpc_cidr",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.private_subnets": {
+      "resource_id": "var.private_subnets",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.public_subnets": {
+      "resource_id": "var.public_subnets",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.azs": {
+      "resource_id": "var.azs",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.gke": {
+      "resource_id": "module.gke",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 12,
+      "blast_radius": [
+        "google_compute_network.vpc",
+        "google_compute_subnetwork.subnet",
+        "google_project_service.cloudresourcemanager",
+        "google_project_service.compute",
+        "google_project_service.container",
+        "var.instance_type",
+        "var.name",
+        "var.project",
+        "var.region",
+        "var.service_account",
+        "var.subnet_cidr",
+        "var.zones"
+      ]
+    },
+    "var.zones": {
+      "resource_id": "var.zones",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.service_account": {
+      "resource_id": "var.service_account",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.eks_aws": {
+      "resource_id": "module.eks_aws",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.aws"
+      ]
+    },
+    "var.aws": {
+      "resource_id": "var.aws",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.gke_gcp": {
+      "resource_id": "module.gke_gcp",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.gcp"
+      ]
+    },
+    "var.gcp": {
+      "resource_id": "var.gcp",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.aks_azure": {
+      "resource_id": "module.aks_azure",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.azure"
+      ]
+    },
+    "var.azure": {
+      "resource_id": "var.azure",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    }
+  }
+}

@@ -1,0 +1,5310 @@
+{
+  "nodes": [
+    {
+      "id": "internet",
+      "type": "external",
+      "name": "Internet",
+      "provider": "external",
+      "attributes": {
+        "description": "External Internet / Public Network"
+      },
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": true
+    },
+    {
+      "id": "aws_subnet.dns",
+      "type": "aws_subnet",
+      "name": "dns",
+      "provider": "aws",
+      "attributes": {
+        "count": "${length(local.dns_subnet_availability_zones)}",
+        "vpc_id": "${var.vpc_id}",
+        "cidr_block": "${cidrsubnet(var.dns_subnet_cidr_prefix, 4, count.index)}",
+        "availability_zone": "${local.dns_subnet_availability_zones[count.index]}",
+        "tags": {
+          "Name": "directory-service-${local.dns_subnet_availability_zones[count.index]}"
+        }
+      },
+      "tags": {
+        "Name": "directory-service-${local.dns_subnet_availability_zones[count.index]}"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_route_table_association.dns",
+      "type": "aws_route_table_association",
+      "name": "dns",
+      "provider": "aws",
+      "attributes": {
+        "count": "${length(aws_subnet.dns)}",
+        "route_table_id": "${var.private_route_table_id}",
+        "subnet_id": "${aws_subnet.dns[count.index].id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_network_acl.dns",
+      "type": "aws_network_acl",
+      "name": "dns",
+      "provider": "aws",
+      "attributes": {
+        "vpc_id": "${var.vpc_id}",
+        "subnet_ids": "${aws_subnet.dns[*].id}",
+        "tags": {
+          "Name": "directory-service-acl"
+        }
+      },
+      "tags": {
+        "Name": "directory-service-acl"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_network_acl_rule.ingress",
+      "type": "aws_network_acl_rule",
+      "name": "ingress",
+      "provider": "aws",
+      "attributes": {
+        "network_acl_id": "${aws_network_acl.dns.id}",
+        "egress": false,
+        "protocol": -1,
+        "rule_number": 100,
+        "rule_action": "allow",
+        "cidr_block": "${data.aws_vpc.main.cidr_block}",
+        "from_port": 0,
+        "to_port": 0
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_network_acl_rule.egress",
+      "type": "aws_network_acl_rule",
+      "name": "egress",
+      "provider": "aws",
+      "attributes": {
+        "network_acl_id": "${aws_network_acl.dns.id}",
+        "egress": true,
+        "protocol": -1,
+        "rule_number": 100,
+        "rule_action": "allow",
+        "cidr_block": "0.0.0.0/0",
+        "from_port": 0,
+        "to_port": 0
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_directory_service_directory.dns",
+      "type": "aws_directory_service_directory",
+      "name": "dns",
+      "provider": "aws",
+      "attributes": {
+        "name": "${var.directory_name}",
+        "description": "internal directory for dns forwarding over vpns",
+        "type": "SimpleAD",
+        "size": "Small",
+        "password": "${var.directory_password}",
+        "vpc_settings": [
+          {
+            "vpc_id": "${var.vpc_id}",
+            "subnet_ids": "${aws_subnet.dns[*].id}"
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": [
+          {
+            "type": "password",
+            "reference": "var.directory_password",
+            "exposed": false
+          }
+        ]
+      },
+      "findings": [
+        {
+          "rule_id": "SEC-SECRET-001",
+          "severity": "CRITICAL",
+          "title": "Potential Hardcoded Secret Detected",
+          "description": "Potential secret material was detected in resource 'aws_directory_service_directory.dns'.",
+          "resource_id": "aws_directory_service_directory.dns",
+          "resource_type": "aws_directory_service_directory",
+          "source_location": "aws/dns/main.tf:65",
+          "evidence": {
+            "secret_count": 1
+          },
+          "recommendation": "Remove secrets from Terraform configuration and use AWS Secrets Manager, SSM Parameter Store, or another secure secret-management solution."
+        }
+      ],
+      "is_special": false
+    },
+    {
+      "id": "aws_vpc.main",
+      "type": "aws_vpc",
+      "name": "main",
+      "provider": "aws",
+      "attributes": {
+        "cidr_block": "${var.cidr_block}",
+        "tags": {
+          "Name": "${var.vpc_name}"
+        }
+      },
+      "tags": {
+        "Name": "${var.vpc_name}"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_subnet.private",
+      "type": "aws_subnet",
+      "name": "private",
+      "provider": "aws",
+      "attributes": {
+        "count": "${var.subnet_count}",
+        "vpc_id": "${aws_vpc.main.id}",
+        "cidr_block": "${cidrsubnet(var.cidr_block, 4, count.index * 2 + 1)}",
+        "tags": {
+          "Name": "private-subnet-${count.index}"
+        }
+      },
+      "tags": {
+        "Name": "private-subnet-${count.index}"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_subnet.public",
+      "type": "aws_subnet",
+      "name": "public",
+      "provider": "aws",
+      "attributes": {
+        "count": "${var.subnet_count}",
+        "vpc_id": "${aws_vpc.main.id}",
+        "cidr_block": "${cidrsubnet(var.cidr_block, 4, count.index * 2 + 2)}",
+        "tags": {
+          "Name": "public-subnet-${count.index}"
+        }
+      },
+      "tags": {
+        "Name": "public-subnet-${count.index}"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_network_acl.public",
+      "type": "aws_network_acl",
+      "name": "public",
+      "provider": "aws",
+      "attributes": {
+        "vpc_id": "${aws_vpc.main.id}",
+        "subnet_ids": "${aws_subnet.public[*].id}",
+        "ingress": [
+          {
+            "protocol": "tcp",
+            "rule_no": 100,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 80,
+            "to_port": 80
+          },
+          {
+            "protocol": "tcp",
+            "rule_no": 200,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 443,
+            "to_port": 443
+          },
+          {
+            "protocol": "tcp",
+            "rule_no": 400,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 1024,
+            "to_port": 65535
+          },
+          {
+            "protocol": "udp",
+            "rule_no": 500,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 1024,
+            "to_port": 65535
+          },
+          {
+            "protocol": -1,
+            "rule_no": 1000,
+            "action": "allow",
+            "cidr_block": "${aws_vpc.main.cidr_block}",
+            "from_port": 0,
+            "to_port": 0
+          }
+        ],
+        "egress": [
+          {
+            "protocol": -1,
+            "rule_no": 100,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 0,
+            "to_port": 0
+          }
+        ],
+        "tags": {
+          "Name": "public-acl"
+        }
+      },
+      "tags": {
+        "Name": "public-acl"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 80,
+            "to_port": 80,
+            "sources": [],
+            "description": null
+          },
+          {
+            "protocol": "tcp",
+            "from_port": 443,
+            "to_port": 443,
+            "sources": [],
+            "description": null
+          },
+          {
+            "protocol": "tcp",
+            "from_port": 1024,
+            "to_port": 65535,
+            "sources": [],
+            "description": null
+          },
+          {
+            "protocol": "udp",
+            "from_port": 1024,
+            "to_port": 65535,
+            "sources": [],
+            "description": null
+          },
+          {
+            "protocol": -1,
+            "from_port": 0,
+            "to_port": 0,
+            "sources": [],
+            "description": null
+          }
+        ],
+        "egress_rules": [
+          {
+            "protocol": -1,
+            "from_port": 0,
+            "to_port": 0,
+            "destinations": [],
+            "description": null
+          }
+        ],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_network_acl.private",
+      "type": "aws_network_acl",
+      "name": "private",
+      "provider": "aws",
+      "attributes": {
+        "vpc_id": "${aws_vpc.main.id}",
+        "subnet_ids": "${aws_subnet.private[*].id}",
+        "ingress": [
+          {
+            "protocol": "tcp",
+            "rule_no": 400,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 1024,
+            "to_port": 65535
+          },
+          {
+            "protocol": "udp",
+            "rule_no": 500,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 1024,
+            "to_port": 65535
+          },
+          {
+            "protocol": -1,
+            "rule_no": 1000,
+            "action": "allow",
+            "cidr_block": "${aws_vpc.main.cidr_block}",
+            "from_port": 0,
+            "to_port": 0
+          }
+        ],
+        "egress": [
+          {
+            "protocol": -1,
+            "rule_no": 100,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 0,
+            "to_port": 0
+          }
+        ],
+        "tags": {
+          "Name": "private-acl"
+        }
+      },
+      "tags": {
+        "Name": "private-acl"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 1024,
+            "to_port": 65535,
+            "sources": [],
+            "description": null
+          },
+          {
+            "protocol": "udp",
+            "from_port": 1024,
+            "to_port": 65535,
+            "sources": [],
+            "description": null
+          },
+          {
+            "protocol": -1,
+            "from_port": 0,
+            "to_port": 0,
+            "sources": [],
+            "description": null
+          }
+        ],
+        "egress_rules": [
+          {
+            "protocol": -1,
+            "from_port": 0,
+            "to_port": 0,
+            "destinations": [],
+            "description": null
+          }
+        ],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_internet_gateway.gw",
+      "type": "aws_internet_gateway",
+      "name": "gw",
+      "provider": "aws",
+      "attributes": {
+        "vpc_id": "${aws_vpc.main.id}",
+        "tags": {
+          "Name": "${var.vpc_name}-internet-gateway"
+        }
+      },
+      "tags": {
+        "Name": "${var.vpc_name}-internet-gateway"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_eip.nat",
+      "type": "aws_eip",
+      "name": "nat",
+      "provider": "aws",
+      "attributes": {
+        "vpc": true,
+        "tags": {
+          "Name": "nat-elastic-ip"
+        }
+      },
+      "tags": {
+        "Name": "nat-elastic-ip"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_nat_gateway.gw",
+      "type": "aws_nat_gateway",
+      "name": "gw",
+      "provider": "aws",
+      "attributes": {
+        "allocation_id": "${aws_eip.nat.id}",
+        "subnet_id": "${aws_subnet.public[0].id}",
+        "tags": {
+          "Name": "${var.vpc_name}-nat-gateway"
+        }
+      },
+      "tags": {
+        "Name": "${var.vpc_name}-nat-gateway"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_route_table.public",
+      "type": "aws_route_table",
+      "name": "public",
+      "provider": "aws",
+      "attributes": {
+        "vpc_id": "${aws_vpc.main.id}",
+        "tags": {
+          "Name": "public-route-table"
+        }
+      },
+      "tags": {
+        "Name": "public-route-table"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_route.public_igw",
+      "type": "aws_route",
+      "name": "public_igw",
+      "provider": "aws",
+      "attributes": {
+        "route_table_id": "${aws_route_table.public.id}",
+        "destination_cidr_block": "0.0.0.0/0",
+        "gateway_id": "${aws_internet_gateway.gw.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_route_table.private",
+      "type": "aws_route_table",
+      "name": "private",
+      "provider": "aws",
+      "attributes": {
+        "vpc_id": "${aws_vpc.main.id}",
+        "tags": {
+          "Name": "private-route-table"
+        }
+      },
+      "tags": {
+        "Name": "private-route-table"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_route.private_nat",
+      "type": "aws_route",
+      "name": "private_nat",
+      "provider": "aws",
+      "attributes": {
+        "route_table_id": "${aws_route_table.private.id}",
+        "destination_cidr_block": "0.0.0.0/0",
+        "nat_gateway_id": "${aws_nat_gateway.gw.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_route_table_association.public",
+      "type": "aws_route_table_association",
+      "name": "public",
+      "provider": "aws",
+      "attributes": {
+        "count": "${var.subnet_count}",
+        "subnet_id": "${aws_subnet.public[count.index].id}",
+        "route_table_id": "${aws_route_table.public.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_route_table_association.private",
+      "type": "aws_route_table_association",
+      "name": "private",
+      "provider": "aws",
+      "attributes": {
+        "count": "${var.subnet_count}",
+        "subnet_id": "${aws_subnet.private[count.index].id}",
+        "route_table_id": "${aws_route_table.private.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_virtual_network.network",
+      "type": "azurerm_virtual_network",
+      "name": "network",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "${var.network_name}",
+        "location": "${var.location}",
+        "resource_group_name": "${var.resource_group_name}",
+        "address_space": [
+          "${var.cidr_block}"
+        ],
+        "dns_servers": "${var.dns_servers}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_subnet.private",
+      "type": "azurerm_subnet",
+      "name": "private",
+      "provider": "azurerm",
+      "attributes": {
+        "count": "${var.subnet_count}",
+        "name": "private-${count.index}",
+        "resource_group_name": "${var.resource_group_name}",
+        "virtual_network_name": "${azurerm_virtual_network.network.name}",
+        "address_prefix": "${cidrsubnet(var.cidr_block, 4, count.index * 2 + 2)}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_subnet.public",
+      "type": "azurerm_subnet",
+      "name": "public",
+      "provider": "azurerm",
+      "attributes": {
+        "count": "${var.subnet_count}",
+        "name": "public-${count.index}",
+        "resource_group_name": "${var.resource_group_name}",
+        "virtual_network_name": "${azurerm_virtual_network.network.name}",
+        "address_prefix": "${cidrsubnet(var.cidr_block, 4, count.index * 2 + 1)}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_project_service.compute",
+      "type": "google_project_service",
+      "name": "compute",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.project_id}",
+        "service": "compute.googleapis.com"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_network.main",
+      "type": "google_compute_network",
+      "name": "main",
+      "provider": "google",
+      "attributes": {
+        "project": "${google_project_service.compute.project}",
+        "name": "${var.network_name}",
+        "routing_mode": "GLOBAL",
+        "auto_create_subnetworks": false
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_subnetwork.private",
+      "type": "google_compute_subnetwork",
+      "name": "private",
+      "provider": "google",
+      "attributes": {
+        "count": "${length(var.regions)}",
+        "project": "${google_project_service.compute.project}",
+        "name": "private-${var.regions[count.index]}",
+        "ip_cidr_range": "${cidrsubnet(var.cidr_block, 4, count.index)}",
+        "region": "${var.regions[count.index]}",
+        "network": "${google_compute_network.main.self_link}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_router.nat",
+      "type": "google_compute_router",
+      "name": "nat",
+      "provider": "google",
+      "attributes": {
+        "count": "${length(var.regions)}",
+        "project": "${google_project_service.compute.project}",
+        "name": "${var.regions[count.index]}-nat-router",
+        "region": "${var.regions[count.index]}",
+        "network": "${google_compute_network.main.self_link}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_router_nat.nat",
+      "type": "google_compute_router_nat",
+      "name": "nat",
+      "provider": "google",
+      "attributes": {
+        "count": "${length(var.regions)}",
+        "project": "${google_project_service.compute.project}",
+        "name": "${var.regions[count.index]}-nat",
+        "router": "${google_compute_router.nat[count.index].name}",
+        "region": "${var.regions[count.index]}",
+        "nat_ip_allocate_option": "AUTO_ONLY",
+        "source_subnetwork_ip_ranges_to_nat": "LIST_OF_SUBNETWORKS",
+        "subnetwork": [
+          {
+            "name": "${google_compute_subnetwork.private[count.index].self_link}",
+            "source_ip_ranges_to_nat": [
+              "ALL_IP_RANGES"
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_dns_managed_zone.aws",
+      "type": "google_dns_managed_zone",
+      "name": "aws",
+      "provider": "google",
+      "attributes": {
+        "provider": "google-beta",
+        "project": "${google_project_service.compute.project}",
+        "name": "aws",
+        "description": "private dns zone to enable resolving ec2 private domains",
+        "dns_name": "${var.aws_dns_suffix}.",
+        "visibility": "private",
+        "private_visibility_config": [
+          {
+            "networks": [
+              {
+                "network_url": "${google_compute_network.main.self_link}"
+              }
+            ]
+          }
+        ],
+        "forwarding_config": [
+          {
+            "target_name_servers": [
+              {
+                "ipv4_address": "${var.aws_dns_ip_addresses[0]}"
+              },
+              {
+                "ipv4_address": "${var.aws_dns_ip_addresses[1]}"
+              }
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_vpn_gateway.main",
+      "type": "aws_vpn_gateway",
+      "name": "main",
+      "provider": "aws",
+      "attributes": {
+        "vpc_id": "${data.aws_vpc.main.id}",
+        "tags": {
+          "Name": "vpn-gateway"
+        }
+      },
+      "tags": {
+        "Name": "vpn-gateway"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_vpn_gateway_route_propagation.main",
+      "type": "aws_vpn_gateway_route_propagation",
+      "name": "main",
+      "provider": "aws",
+      "attributes": {
+        "count": "${length(var.aws_route_table_ids)}",
+        "route_table_id": "${var.aws_route_table_ids[count.index]}",
+        "vpn_gateway_id": "${aws_vpn_gateway.main.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_customer_gateway.google",
+      "type": "aws_customer_gateway",
+      "name": "google",
+      "provider": "aws",
+      "attributes": {
+        "bgp_asn": 65000,
+        "ip_address": "${google_compute_address.vpn.address}",
+        "type": "ipsec.1",
+        "tags": {
+          "Name": "google-vpn-customer-gateway"
+        }
+      },
+      "tags": {
+        "Name": "google-vpn-customer-gateway"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_vpn_connection.google",
+      "type": "aws_vpn_connection",
+      "name": "google",
+      "provider": "aws",
+      "attributes": {
+        "vpn_gateway_id": "${aws_vpn_gateway.main.id}",
+        "customer_gateway_id": "${aws_customer_gateway.google.id}",
+        "type": "ipsec.1",
+        "static_routes_only": false,
+        "tags": {
+          "Name": "google-vpn-connection"
+        }
+      },
+      "tags": {
+        "Name": "google-vpn-connection"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_customer_gateway.azure",
+      "type": "aws_customer_gateway",
+      "name": "azure",
+      "provider": "aws",
+      "attributes": {
+        "bgp_asn": 65000,
+        "ip_address": "${azurerm_public_ip.gateway.ip_address}",
+        "type": "ipsec.1",
+        "tags": {
+          "Name": "azure-vpn-customer-gateway"
+        }
+      },
+      "tags": {
+        "Name": "azure-vpn-customer-gateway"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_vpn_connection.azure",
+      "type": "aws_vpn_connection",
+      "name": "azure",
+      "provider": "aws",
+      "attributes": {
+        "vpn_gateway_id": "${aws_vpn_gateway.main.id}",
+        "customer_gateway_id": "${aws_customer_gateway.azure.id}",
+        "type": "ipsec.1",
+        "static_routes_only": true,
+        "tags": {
+          "Name": "azure-vpn-connection"
+        }
+      },
+      "tags": {
+        "Name": "azure-vpn-connection"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_vpn_connection_route.azure",
+      "type": "aws_vpn_connection_route",
+      "name": "azure",
+      "provider": "aws",
+      "attributes": {
+        "count": "${length(var.azure_network_address_space)}",
+        "vpn_connection_id": "${aws_vpn_connection.azure.id}",
+        "destination_cidr_block": "${var.azure_network_address_space[count.index]}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_subnet.gateway",
+      "type": "azurerm_subnet",
+      "name": "gateway",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "GatewaySubnet",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "virtual_network_name": "${var.azure_network_name}",
+        "address_prefix": "${var.azure_gateway_cidr}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_public_ip.gateway",
+      "type": "azurerm_public_ip",
+      "name": "gateway",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "aws-vpn-gateway-ip",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "location": "${var.azure_location}",
+        "allocation_method": "Dynamic"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_virtual_network_gateway.aws",
+      "type": "azurerm_virtual_network_gateway",
+      "name": "aws",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "aws-vpn-gateway",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "location": "${var.azure_location}",
+        "type": "Vpn",
+        "vpn_type": "RouteBased",
+        "sku": "${var.azure_gateway_sku}",
+        "active_active": false,
+        "enable_bgp": false,
+        "ip_configuration": [
+          {
+            "subnet_id": "${azurerm_subnet.gateway.id}",
+            "public_ip_address_id": "${azurerm_public_ip.gateway.id}"
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_local_network_gateway.aws1",
+      "type": "azurerm_local_network_gateway",
+      "name": "aws1",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "aws-gateway-1",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "location": "${var.azure_location}",
+        "gateway_address": "${aws_vpn_connection.azure.tunnel1_address}",
+        "address_space": [
+          "${data.aws_vpc.main.cidr_block}"
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_virtual_network_gateway_connection.aws1",
+      "type": "azurerm_virtual_network_gateway_connection",
+      "name": "aws1",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "aws-connection-1",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "location": "${var.azure_location}",
+        "type": "IPsec",
+        "virtual_network_gateway_id": "${azurerm_virtual_network_gateway.aws.id}",
+        "local_network_gateway_id": "${azurerm_local_network_gateway.aws1.id}",
+        "shared_key": "${aws_vpn_connection.azure.tunnel1_preshared_key}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_local_network_gateway.aws2",
+      "type": "azurerm_local_network_gateway",
+      "name": "aws2",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "aws-gateway-2",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "location": "${var.azure_location}",
+        "gateway_address": "${aws_vpn_connection.azure.tunnel2_address}",
+        "address_space": [
+          "${data.aws_vpc.main.cidr_block}"
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_virtual_network_gateway_connection.aws2",
+      "type": "azurerm_virtual_network_gateway_connection",
+      "name": "aws2",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "aws-connection-2",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "location": "${var.azure_location}",
+        "type": "IPsec",
+        "virtual_network_gateway_id": "${azurerm_virtual_network_gateway.aws.id}",
+        "local_network_gateway_id": "${azurerm_local_network_gateway.aws2.id}",
+        "shared_key": "${aws_vpn_connection.azure.tunnel2_preshared_key}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_network_acl_rule.azure_dns_tcp_ingress",
+      "type": "aws_network_acl_rule",
+      "name": "azure_dns_tcp_ingress",
+      "provider": "aws",
+      "attributes": {
+        "count": "${length(var.azure_network_address_space)}",
+        "network_acl_id": "${var.dns_network_acl_id}",
+        "egress": false,
+        "protocol": "tcp",
+        "rule_number": "${400 + count.index}",
+        "rule_action": "allow",
+        "cidr_block": "${var.azure_network_address_space[count.index]}",
+        "from_port": "${local.dns_port}",
+        "to_port": "${local.dns_port}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_network_acl_rule.azure_dns_udp_ingress",
+      "type": "aws_network_acl_rule",
+      "name": "azure_dns_udp_ingress",
+      "provider": "aws",
+      "attributes": {
+        "count": "${length(var.azure_network_address_space)}",
+        "network_acl_id": "${var.dns_network_acl_id}",
+        "egress": false,
+        "protocol": "udp",
+        "rule_number": "${450 + count.index}",
+        "rule_action": "allow",
+        "cidr_block": "${var.azure_network_address_space[count.index]}",
+        "from_port": "${local.dns_port}",
+        "to_port": "${local.dns_port}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_address.vpn",
+      "type": "google_compute_address",
+      "name": "vpn",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-ip",
+        "region": "${var.google_region}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_vpn_gateway.aws",
+      "type": "google_compute_vpn_gateway",
+      "name": "aws",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-gw-${var.google_region}",
+        "network": "${data.google_compute_network.main.self_link}",
+        "region": "${var.google_region}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_forwarding_rule.esp",
+      "type": "google_compute_forwarding_rule",
+      "name": "esp",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "fr-esp",
+        "ip_protocol": "ESP",
+        "ip_address": "${google_compute_address.vpn.address}",
+        "target": "${google_compute_vpn_gateway.aws.self_link}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_forwarding_rule.udp500",
+      "type": "google_compute_forwarding_rule",
+      "name": "udp500",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "fr-udp500",
+        "ip_protocol": "UDP",
+        "port_range": "500-500",
+        "ip_address": "${google_compute_address.vpn.address}",
+        "target": "${google_compute_vpn_gateway.aws.self_link}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_forwarding_rule.udp4500",
+      "type": "google_compute_forwarding_rule",
+      "name": "udp4500",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "fr-udp4500",
+        "ip_protocol": "UDP",
+        "port_range": "4500-4500",
+        "ip_address": "${google_compute_address.vpn.address}",
+        "target": "${google_compute_vpn_gateway.aws.self_link}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_vpn_tunnel.aws1",
+      "type": "google_compute_vpn_tunnel",
+      "name": "aws1",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-tunnel1",
+        "peer_ip": "${aws_vpn_connection.google.tunnel1_address}",
+        "shared_secret": "${aws_vpn_connection.google.tunnel1_preshared_key}",
+        "ike_version": 1,
+        "target_vpn_gateway": "${google_compute_vpn_gateway.aws.self_link}",
+        "router": "${google_compute_router.aws1.self_link}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": [
+          {
+            "type": "shared_secret",
+            "reference": "aws_vpn_connection.google.tunnel1_preshared_key",
+            "exposed": false
+          }
+        ]
+      },
+      "findings": [
+        {
+          "rule_id": "SEC-SECRET-001",
+          "severity": "CRITICAL",
+          "title": "Potential Hardcoded Secret Detected",
+          "description": "Potential secret material was detected in resource 'google_compute_vpn_tunnel.aws1'.",
+          "resource_id": "google_compute_vpn_tunnel.aws1",
+          "resource_type": "google_compute_vpn_tunnel",
+          "source_location": "vpn/google.tf:63",
+          "evidence": {
+            "secret_count": 1
+          },
+          "recommendation": "Remove secrets from Terraform configuration and use AWS Secrets Manager, SSM Parameter Store, or another secure secret-management solution."
+        }
+      ],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_router.aws1",
+      "type": "google_compute_router",
+      "name": "aws1",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-router1",
+        "region": "${var.google_region}",
+        "network": "${data.google_compute_network.main.name}",
+        "bgp": [
+          {
+            "asn": "${aws_customer_gateway.google.bgp_asn}",
+            "advertise_mode": "CUSTOM",
+            "advertised_groups": [
+              "ALL_SUBNETS"
+            ],
+            "advertised_ip_ranges": [
+              {
+                "range": "${var.google_external_dns_cidr}"
+              }
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_router_peer.aws1",
+      "type": "google_compute_router_peer",
+      "name": "aws1",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-bgp1",
+        "router": "${google_compute_router.aws1.name}",
+        "region": "${google_compute_router.aws1.region}",
+        "peer_ip_address": "${aws_vpn_connection.google.tunnel1_vgw_inside_address}",
+        "peer_asn": "${aws_vpn_connection.google.tunnel1_bgp_asn}",
+        "interface": "${google_compute_router_interface.aws1.name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_router_interface.aws1",
+      "type": "google_compute_router_interface",
+      "name": "aws1",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-interface1",
+        "router": "${google_compute_router.aws1.name}",
+        "region": "${google_compute_router.aws1.region}",
+        "ip_range": "${aws_vpn_connection.google.tunnel1_cgw_inside_address}/30",
+        "vpn_tunnel": "${google_compute_vpn_tunnel.aws1.name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_vpn_tunnel.aws2",
+      "type": "google_compute_vpn_tunnel",
+      "name": "aws2",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-tunnel2",
+        "peer_ip": "${aws_vpn_connection.google.tunnel2_address}",
+        "shared_secret": "${aws_vpn_connection.google.tunnel2_preshared_key}",
+        "ike_version": 1,
+        "target_vpn_gateway": "${google_compute_vpn_gateway.aws.self_link}",
+        "router": "${google_compute_router.aws2.name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": [
+          {
+            "type": "shared_secret",
+            "reference": "aws_vpn_connection.google.tunnel2_preshared_key",
+            "exposed": false
+          }
+        ]
+      },
+      "findings": [
+        {
+          "rule_id": "SEC-SECRET-001",
+          "severity": "CRITICAL",
+          "title": "Potential Hardcoded Secret Detected",
+          "description": "Potential secret material was detected in resource 'google_compute_vpn_tunnel.aws2'.",
+          "resource_id": "google_compute_vpn_tunnel.aws2",
+          "resource_type": "google_compute_vpn_tunnel",
+          "source_location": "vpn/google.tf:126",
+          "evidence": {
+            "secret_count": 1
+          },
+          "recommendation": "Remove secrets from Terraform configuration and use AWS Secrets Manager, SSM Parameter Store, or another secure secret-management solution."
+        }
+      ],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_router.aws2",
+      "type": "google_compute_router",
+      "name": "aws2",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-router2",
+        "region": "${var.google_region}",
+        "network": "${data.google_compute_network.main.name}",
+        "bgp": [
+          {
+            "asn": "${aws_customer_gateway.google.bgp_asn}",
+            "advertise_mode": "CUSTOM",
+            "advertised_groups": [
+              "ALL_SUBNETS"
+            ],
+            "advertised_ip_ranges": [
+              {
+                "range": "${var.google_external_dns_cidr}"
+              }
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_router_peer.aws2",
+      "type": "google_compute_router_peer",
+      "name": "aws2",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-bgp2",
+        "router": "${google_compute_router.aws2.name}",
+        "region": "${google_compute_router.aws2.region}",
+        "peer_ip_address": "${aws_vpn_connection.google.tunnel2_vgw_inside_address}",
+        "peer_asn": "${aws_vpn_connection.google.tunnel2_bgp_asn}",
+        "interface": "${google_compute_router_interface.aws2.name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_compute_router_interface.aws2",
+      "type": "google_compute_router_interface",
+      "name": "aws2",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-interface2",
+        "router": "${google_compute_router.aws2.name}",
+        "region": "${google_compute_router.aws2.region}",
+        "ip_range": "${aws_vpn_connection.google.tunnel2_cgw_inside_address}/30",
+        "vpn_tunnel": "${google_compute_vpn_tunnel.aws2.name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_network_acl_rule.google_internal_dns_tcp_ingress",
+      "type": "aws_network_acl_rule",
+      "name": "google_internal_dns_tcp_ingress",
+      "provider": "aws",
+      "attributes": {
+        "count": "${length(data.google_compute_subnetwork.subnet)}",
+        "network_acl_id": "${var.dns_network_acl_id}",
+        "egress": false,
+        "protocol": "tcp",
+        "rule_number": "${200 + count.index}",
+        "rule_action": "allow",
+        "cidr_block": "${data.google_compute_subnetwork.subnet[count.index].ip_cidr_range}",
+        "from_port": "${local.dns_port}",
+        "to_port": "${local.dns_port}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_network_acl_rule.google_internal_dns_udp_ingress",
+      "type": "aws_network_acl_rule",
+      "name": "google_internal_dns_udp_ingress",
+      "provider": "aws",
+      "attributes": {
+        "count": "${length(data.google_compute_subnetwork.subnet)}",
+        "network_acl_id": "${var.dns_network_acl_id}",
+        "egress": false,
+        "protocol": "udp",
+        "rule_number": "${250 + count.index}",
+        "rule_action": "allow",
+        "cidr_block": "${data.google_compute_subnetwork.subnet[count.index].ip_cidr_range}",
+        "from_port": "${local.dns_port}",
+        "to_port": "${local.dns_port}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_network_acl_rule.google_external_dns_tcp_ingress",
+      "type": "aws_network_acl_rule",
+      "name": "google_external_dns_tcp_ingress",
+      "provider": "aws",
+      "attributes": {
+        "network_acl_id": "${var.dns_network_acl_id}",
+        "egress": false,
+        "protocol": "tcp",
+        "rule_number": 300,
+        "rule_action": "allow",
+        "cidr_block": "${var.google_external_dns_cidr}",
+        "from_port": "${local.dns_port}",
+        "to_port": "${local.dns_port}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_network_acl_rule.google_external_dns_udp_ingress",
+      "type": "aws_network_acl_rule",
+      "name": "google_external_dns_udp_ingress",
+      "provider": "aws",
+      "attributes": {
+        "network_acl_id": "${var.dns_network_acl_id}",
+        "egress": false,
+        "protocol": "udp",
+        "rule_number": 301,
+        "rule_action": "allow",
+        "cidr_block": "${var.google_external_dns_cidr}",
+        "from_port": "${local.dns_port}",
+        "to_port": "${local.dns_port}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.vpc_id",
+      "type": "unknown",
+      "name": "var.vpc_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.dns_subnet_cidr_prefix",
+      "type": "unknown",
+      "name": "var.dns_subnet_cidr_prefix",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.private_route_table_id",
+      "type": "unknown",
+      "name": "var.private_route_table_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "data.aws_vpc.main",
+      "type": "unknown",
+      "name": "data.aws_vpc.main",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.directory_name",
+      "type": "unknown",
+      "name": "var.directory_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.directory_password",
+      "type": "unknown",
+      "name": "var.directory_password",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.cidr_block",
+      "type": "unknown",
+      "name": "var.cidr_block",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.vpc_name",
+      "type": "unknown",
+      "name": "var.vpc_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.subnet_count",
+      "type": "unknown",
+      "name": "var.subnet_count",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.network_name",
+      "type": "unknown",
+      "name": "var.network_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.location",
+      "type": "unknown",
+      "name": "var.location",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.resource_group_name",
+      "type": "unknown",
+      "name": "var.resource_group_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.dns_servers",
+      "type": "unknown",
+      "name": "var.dns_servers",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.project_id",
+      "type": "unknown",
+      "name": "var.project_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.regions",
+      "type": "unknown",
+      "name": "var.regions",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.aws_dns_suffix",
+      "type": "unknown",
+      "name": "var.aws_dns_suffix",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.aws_dns_ip_addresses",
+      "type": "unknown",
+      "name": "var.aws_dns_ip_addresses",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.aws_route_table_ids",
+      "type": "unknown",
+      "name": "var.aws_route_table_ids",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.azure_network_address_space",
+      "type": "unknown",
+      "name": "var.azure_network_address_space",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.azure_resource_group_name",
+      "type": "unknown",
+      "name": "var.azure_resource_group_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.azure_network_name",
+      "type": "unknown",
+      "name": "var.azure_network_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.azure_gateway_cidr",
+      "type": "unknown",
+      "name": "var.azure_gateway_cidr",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.azure_location",
+      "type": "unknown",
+      "name": "var.azure_location",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.azure_gateway_sku",
+      "type": "unknown",
+      "name": "var.azure_gateway_sku",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.dns_network_acl_id",
+      "type": "unknown",
+      "name": "var.dns_network_acl_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.google_project_id",
+      "type": "unknown",
+      "name": "var.google_project_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.google_region",
+      "type": "unknown",
+      "name": "var.google_region",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "data.google_compute_network.main",
+      "type": "unknown",
+      "name": "data.google_compute_network.main",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.google_external_dns_cidr",
+      "type": "unknown",
+      "name": "var.google_external_dns_cidr",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "data.google_compute_subnetwork.subnet",
+      "type": "unknown",
+      "name": "data.google_compute_subnetwork.subnet",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.dns",
+      "type": "unknown",
+      "name": "module.dns",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.aws_vpc",
+      "type": "unknown",
+      "name": "module.aws_vpc",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.aws_directory_service_password",
+      "type": "unknown",
+      "name": "var.aws_directory_service_password",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.google_network",
+      "type": "unknown",
+      "name": "module.google_network",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.azure_vnet",
+      "type": "unknown",
+      "name": "module.azure_vnet",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.vpn",
+      "type": "unknown",
+      "name": "module.vpn",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "aws_subnet.dns",
+      "target": "var.vpc_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vpc_id"
+    },
+    {
+      "source": "aws_subnet.dns",
+      "target": "var.dns_subnet_cidr_prefix",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.dns_subnet_cidr_prefix"
+    },
+    {
+      "source": "aws_route_table_association.dns",
+      "target": "var.private_route_table_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.private_route_table_id"
+    },
+    {
+      "source": "aws_network_acl.dns",
+      "target": "var.vpc_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vpc_id"
+    },
+    {
+      "source": "aws_network_acl_rule.ingress",
+      "target": "aws_network_acl.dns",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_network_acl.dns.id"
+    },
+    {
+      "source": "aws_network_acl_rule.ingress",
+      "target": "data.aws_vpc.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "reference": "data.aws_vpc.main.cidr_block"
+    },
+    {
+      "source": "aws_network_acl_rule.egress",
+      "target": "aws_network_acl.dns",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_network_acl.dns.id"
+    },
+    {
+      "source": "aws_directory_service_directory.dns",
+      "target": "var.directory_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.directory_name"
+    },
+    {
+      "source": "aws_directory_service_directory.dns",
+      "target": "var.directory_password",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.directory_password"
+    },
+    {
+      "source": "aws_directory_service_directory.dns",
+      "target": "var.vpc_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vpc_id"
+    },
+    {
+      "source": "aws_vpc.main",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.cidr_block"
+    },
+    {
+      "source": "aws_vpc.main",
+      "target": "var.vpc_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vpc_name"
+    },
+    {
+      "source": "aws_subnet.private",
+      "target": "var.subnet_count",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.subnet_count"
+    },
+    {
+      "source": "aws_subnet.private",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpc.main.id"
+    },
+    {
+      "source": "aws_subnet.private",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.cidr_block"
+    },
+    {
+      "source": "aws_subnet.public",
+      "target": "var.subnet_count",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.subnet_count"
+    },
+    {
+      "source": "aws_subnet.public",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpc.main.id"
+    },
+    {
+      "source": "aws_subnet.public",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.cidr_block"
+    },
+    {
+      "source": "aws_network_acl.public",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpc.main.id"
+    },
+    {
+      "source": "aws_network_acl.private",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpc.main.id"
+    },
+    {
+      "source": "aws_internet_gateway.gw",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpc.main.id"
+    },
+    {
+      "source": "aws_internet_gateway.gw",
+      "target": "var.vpc_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vpc_name"
+    },
+    {
+      "source": "aws_eip.nat",
+      "target": "aws_internet_gateway.gw",
+      "type": "DEPENDS_ON"
+    },
+    {
+      "source": "aws_nat_gateway.gw",
+      "target": "aws_internet_gateway.gw",
+      "type": "DEPENDS_ON"
+    },
+    {
+      "source": "aws_nat_gateway.gw",
+      "target": "aws_eip.nat",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_eip.nat.id"
+    },
+    {
+      "source": "aws_nat_gateway.gw",
+      "target": "var.vpc_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vpc_name"
+    },
+    {
+      "source": "aws_route_table.public",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpc.main.id"
+    },
+    {
+      "source": "aws_route.public_igw",
+      "target": "aws_route_table.public",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_route_table.public.id"
+    },
+    {
+      "source": "aws_route.public_igw",
+      "target": "aws_internet_gateway.gw",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_internet_gateway.gw.id"
+    },
+    {
+      "source": "aws_route_table.private",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpc.main.id"
+    },
+    {
+      "source": "aws_route.private_nat",
+      "target": "aws_route_table.private",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_route_table.private.id"
+    },
+    {
+      "source": "aws_route.private_nat",
+      "target": "aws_nat_gateway.gw",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_nat_gateway.gw.id"
+    },
+    {
+      "source": "aws_route_table_association.public",
+      "target": "var.subnet_count",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.subnet_count"
+    },
+    {
+      "source": "aws_route_table_association.public",
+      "target": "aws_route_table.public",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_route_table.public.id"
+    },
+    {
+      "source": "aws_route_table_association.private",
+      "target": "var.subnet_count",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.subnet_count"
+    },
+    {
+      "source": "aws_route_table_association.private",
+      "target": "aws_route_table.private",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_route_table.private.id"
+    },
+    {
+      "source": "azurerm_virtual_network.network",
+      "target": "var.network_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.network_name"
+    },
+    {
+      "source": "azurerm_virtual_network.network",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.location"
+    },
+    {
+      "source": "azurerm_virtual_network.network",
+      "target": "var.resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.resource_group_name"
+    },
+    {
+      "source": "azurerm_virtual_network.network",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.cidr_block"
+    },
+    {
+      "source": "azurerm_virtual_network.network",
+      "target": "var.dns_servers",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.dns_servers"
+    },
+    {
+      "source": "azurerm_subnet.private",
+      "target": "var.subnet_count",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.subnet_count"
+    },
+    {
+      "source": "azurerm_subnet.private",
+      "target": "var.resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.resource_group_name"
+    },
+    {
+      "source": "azurerm_subnet.private",
+      "target": "azurerm_virtual_network.network",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_virtual_network.network.name"
+    },
+    {
+      "source": "azurerm_subnet.private",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.cidr_block"
+    },
+    {
+      "source": "azurerm_subnet.public",
+      "target": "var.subnet_count",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.subnet_count"
+    },
+    {
+      "source": "azurerm_subnet.public",
+      "target": "var.resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.resource_group_name"
+    },
+    {
+      "source": "azurerm_subnet.public",
+      "target": "azurerm_virtual_network.network",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_virtual_network.network.name"
+    },
+    {
+      "source": "azurerm_subnet.public",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.cidr_block"
+    },
+    {
+      "source": "google_project_service.compute",
+      "target": "var.project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.project_id"
+    },
+    {
+      "source": "google_compute_network.main",
+      "target": "google_project_service.compute",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_project_service.compute.project"
+    },
+    {
+      "source": "google_compute_network.main",
+      "target": "var.network_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.network_name"
+    },
+    {
+      "source": "google_compute_subnetwork.private",
+      "target": "var.regions",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.regions"
+    },
+    {
+      "source": "google_compute_subnetwork.private",
+      "target": "google_project_service.compute",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_project_service.compute.project"
+    },
+    {
+      "source": "google_compute_subnetwork.private",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.cidr_block"
+    },
+    {
+      "source": "google_compute_subnetwork.private",
+      "target": "google_compute_network.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_network.main.self_link"
+    },
+    {
+      "source": "google_compute_router.nat",
+      "target": "var.regions",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.regions"
+    },
+    {
+      "source": "google_compute_router.nat",
+      "target": "google_project_service.compute",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_project_service.compute.project"
+    },
+    {
+      "source": "google_compute_router.nat",
+      "target": "google_compute_network.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_network.main.self_link"
+    },
+    {
+      "source": "google_compute_router_nat.nat",
+      "target": "var.regions",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.regions"
+    },
+    {
+      "source": "google_compute_router_nat.nat",
+      "target": "google_project_service.compute",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_project_service.compute.project"
+    },
+    {
+      "source": "google_dns_managed_zone.aws",
+      "target": "google_project_service.compute",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_project_service.compute.project"
+    },
+    {
+      "source": "google_dns_managed_zone.aws",
+      "target": "var.aws_dns_suffix",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.aws_dns_suffix"
+    },
+    {
+      "source": "google_dns_managed_zone.aws",
+      "target": "google_compute_network.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_network.main.self_link"
+    },
+    {
+      "source": "google_dns_managed_zone.aws",
+      "target": "var.aws_dns_ip_addresses",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.aws_dns_ip_addresses"
+    },
+    {
+      "source": "aws_vpn_gateway.main",
+      "target": "data.aws_vpc.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "reference": "data.aws_vpc.main.id"
+    },
+    {
+      "source": "aws_vpn_gateway_route_propagation.main",
+      "target": "var.aws_route_table_ids",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.aws_route_table_ids"
+    },
+    {
+      "source": "aws_vpn_gateway_route_propagation.main",
+      "target": "aws_vpn_gateway.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_gateway.main.id"
+    },
+    {
+      "source": "aws_customer_gateway.google",
+      "target": "google_compute_address.vpn",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_address.vpn.address"
+    },
+    {
+      "source": "aws_vpn_connection.google",
+      "target": "aws_vpn_gateway.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_gateway.main.id"
+    },
+    {
+      "source": "aws_vpn_connection.google",
+      "target": "aws_customer_gateway.google",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_customer_gateway.google.id"
+    },
+    {
+      "source": "aws_customer_gateway.azure",
+      "target": "azurerm_public_ip.gateway",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_public_ip.gateway.ip_address"
+    },
+    {
+      "source": "aws_vpn_connection.azure",
+      "target": "aws_vpn_gateway.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_gateway.main.id"
+    },
+    {
+      "source": "aws_vpn_connection.azure",
+      "target": "aws_customer_gateway.azure",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_customer_gateway.azure.id"
+    },
+    {
+      "source": "aws_vpn_connection_route.azure",
+      "target": "var.azure_network_address_space",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_network_address_space"
+    },
+    {
+      "source": "aws_vpn_connection_route.azure",
+      "target": "aws_vpn_connection.azure",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_connection.azure.id"
+    },
+    {
+      "source": "azurerm_subnet.gateway",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_resource_group_name"
+    },
+    {
+      "source": "azurerm_subnet.gateway",
+      "target": "var.azure_network_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_network_name"
+    },
+    {
+      "source": "azurerm_subnet.gateway",
+      "target": "var.azure_gateway_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_gateway_cidr"
+    },
+    {
+      "source": "azurerm_public_ip.gateway",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_resource_group_name"
+    },
+    {
+      "source": "azurerm_public_ip.gateway",
+      "target": "var.azure_location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_location"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway.aws",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_resource_group_name"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway.aws",
+      "target": "var.azure_location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_location"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway.aws",
+      "target": "var.azure_gateway_sku",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_gateway_sku"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway.aws",
+      "target": "azurerm_subnet.gateway",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_subnet.gateway.id"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway.aws",
+      "target": "azurerm_public_ip.gateway",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_public_ip.gateway.id"
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws1",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_resource_group_name"
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws1",
+      "target": "var.azure_location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_location"
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws1",
+      "target": "aws_vpn_connection.azure",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_connection.azure.tunnel1_address"
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws1",
+      "target": "data.aws_vpc.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "reference": "data.aws_vpc.main.cidr_block"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws1",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_resource_group_name"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws1",
+      "target": "var.azure_location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_location"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws1",
+      "target": "azurerm_virtual_network_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_virtual_network_gateway.aws.id"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws1",
+      "target": "azurerm_local_network_gateway.aws1",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_local_network_gateway.aws1.id"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws1",
+      "target": "aws_vpn_connection.azure",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_connection.azure.tunnel1_preshared_key"
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws2",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_resource_group_name"
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws2",
+      "target": "var.azure_location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_location"
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws2",
+      "target": "aws_vpn_connection.azure",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_connection.azure.tunnel2_address"
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws2",
+      "target": "data.aws_vpc.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "reference": "data.aws_vpc.main.cidr_block"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws2",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_resource_group_name"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws2",
+      "target": "var.azure_location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_location"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws2",
+      "target": "azurerm_virtual_network_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_virtual_network_gateway.aws.id"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws2",
+      "target": "azurerm_local_network_gateway.aws2",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_local_network_gateway.aws2.id"
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws2",
+      "target": "aws_vpn_connection.azure",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_connection.azure.tunnel2_preshared_key"
+    },
+    {
+      "source": "aws_network_acl_rule.azure_dns_tcp_ingress",
+      "target": "var.azure_network_address_space",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_network_address_space"
+    },
+    {
+      "source": "aws_network_acl_rule.azure_dns_tcp_ingress",
+      "target": "var.dns_network_acl_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.dns_network_acl_id"
+    },
+    {
+      "source": "aws_network_acl_rule.azure_dns_udp_ingress",
+      "target": "var.azure_network_address_space",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.azure_network_address_space"
+    },
+    {
+      "source": "aws_network_acl_rule.azure_dns_udp_ingress",
+      "target": "var.dns_network_acl_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.dns_network_acl_id"
+    },
+    {
+      "source": "google_compute_address.vpn",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "google_compute_address.vpn",
+      "target": "var.google_region",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_region"
+    },
+    {
+      "source": "google_compute_vpn_gateway.aws",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "google_compute_vpn_gateway.aws",
+      "target": "var.google_region",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_region"
+    },
+    {
+      "source": "google_compute_vpn_gateway.aws",
+      "target": "data.google_compute_network.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "reference": "data.google_compute_network.main.self_link"
+    },
+    {
+      "source": "google_compute_forwarding_rule.esp",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "google_compute_forwarding_rule.esp",
+      "target": "google_compute_address.vpn",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_address.vpn.address"
+    },
+    {
+      "source": "google_compute_forwarding_rule.esp",
+      "target": "google_compute_vpn_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_vpn_gateway.aws.self_link"
+    },
+    {
+      "source": "google_compute_forwarding_rule.udp500",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "google_compute_forwarding_rule.udp500",
+      "target": "google_compute_address.vpn",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_address.vpn.address"
+    },
+    {
+      "source": "google_compute_forwarding_rule.udp500",
+      "target": "google_compute_vpn_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_vpn_gateway.aws.self_link"
+    },
+    {
+      "source": "google_compute_forwarding_rule.udp4500",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "google_compute_forwarding_rule.udp4500",
+      "target": "google_compute_address.vpn",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_address.vpn.address"
+    },
+    {
+      "source": "google_compute_forwarding_rule.udp4500",
+      "target": "google_compute_vpn_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_vpn_gateway.aws.self_link"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "google_compute_forwarding_rule.esp",
+      "type": "DEPENDS_ON"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "google_compute_forwarding_rule.udp500",
+      "type": "DEPENDS_ON"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "google_compute_forwarding_rule.udp4500",
+      "type": "DEPENDS_ON"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "aws_vpn_connection.google",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_connection.google.tunnel1_address"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "google_compute_vpn_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_vpn_gateway.aws.self_link"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "google_compute_router.aws1",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_router.aws1.self_link"
+    },
+    {
+      "source": "google_compute_router.aws1",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "google_compute_router.aws1",
+      "target": "var.google_region",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_region"
+    },
+    {
+      "source": "google_compute_router.aws1",
+      "target": "data.google_compute_network.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "reference": "data.google_compute_network.main.name"
+    },
+    {
+      "source": "google_compute_router.aws1",
+      "target": "aws_customer_gateway.google",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_customer_gateway.google.bgp_asn"
+    },
+    {
+      "source": "google_compute_router.aws1",
+      "target": "var.google_external_dns_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_external_dns_cidr"
+    },
+    {
+      "source": "google_compute_router_peer.aws1",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "google_compute_router_peer.aws1",
+      "target": "google_compute_router.aws1",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_router.aws1.name"
+    },
+    {
+      "source": "google_compute_router_peer.aws1",
+      "target": "aws_vpn_connection.google",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_connection.google.tunnel1_vgw_inside_address"
+    },
+    {
+      "source": "google_compute_router_peer.aws1",
+      "target": "google_compute_router_interface.aws1",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_router_interface.aws1.name"
+    },
+    {
+      "source": "google_compute_router_interface.aws1",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "google_compute_router_interface.aws1",
+      "target": "google_compute_router.aws1",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_router.aws1.name"
+    },
+    {
+      "source": "google_compute_router_interface.aws1",
+      "target": "aws_vpn_connection.google",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_connection.google.tunnel1_cgw_inside_address"
+    },
+    {
+      "source": "google_compute_router_interface.aws1",
+      "target": "google_compute_vpn_tunnel.aws1",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_vpn_tunnel.aws1.name"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "google_compute_forwarding_rule.esp",
+      "type": "DEPENDS_ON"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "google_compute_forwarding_rule.udp500",
+      "type": "DEPENDS_ON"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "google_compute_forwarding_rule.udp4500",
+      "type": "DEPENDS_ON"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "aws_vpn_connection.google",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_connection.google.tunnel2_address"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "google_compute_vpn_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_vpn_gateway.aws.self_link"
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "google_compute_router.aws2",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_router.aws2.name"
+    },
+    {
+      "source": "google_compute_router.aws2",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "google_compute_router.aws2",
+      "target": "var.google_region",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_region"
+    },
+    {
+      "source": "google_compute_router.aws2",
+      "target": "data.google_compute_network.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "reference": "data.google_compute_network.main.name"
+    },
+    {
+      "source": "google_compute_router.aws2",
+      "target": "aws_customer_gateway.google",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_customer_gateway.google.bgp_asn"
+    },
+    {
+      "source": "google_compute_router.aws2",
+      "target": "var.google_external_dns_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_external_dns_cidr"
+    },
+    {
+      "source": "google_compute_router_peer.aws2",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "google_compute_router_peer.aws2",
+      "target": "google_compute_router.aws2",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_router.aws2.name"
+    },
+    {
+      "source": "google_compute_router_peer.aws2",
+      "target": "aws_vpn_connection.google",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_connection.google.tunnel2_vgw_inside_address"
+    },
+    {
+      "source": "google_compute_router_peer.aws2",
+      "target": "google_compute_router_interface.aws2",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_router_interface.aws2.name"
+    },
+    {
+      "source": "google_compute_router_interface.aws2",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "google_compute_router_interface.aws2",
+      "target": "google_compute_router.aws2",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_router.aws2.name"
+    },
+    {
+      "source": "google_compute_router_interface.aws2",
+      "target": "aws_vpn_connection.google",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpn_connection.google.tunnel2_cgw_inside_address"
+    },
+    {
+      "source": "google_compute_router_interface.aws2",
+      "target": "google_compute_vpn_tunnel.aws2",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_compute_vpn_tunnel.aws2.name"
+    },
+    {
+      "source": "aws_network_acl_rule.google_internal_dns_tcp_ingress",
+      "target": "data.google_compute_subnetwork.subnet",
+      "type": "REFERENCES_DATA_SOURCE",
+      "reference": "data.google_compute_subnetwork.subnet"
+    },
+    {
+      "source": "aws_network_acl_rule.google_internal_dns_tcp_ingress",
+      "target": "var.dns_network_acl_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.dns_network_acl_id"
+    },
+    {
+      "source": "aws_network_acl_rule.google_internal_dns_udp_ingress",
+      "target": "data.google_compute_subnetwork.subnet",
+      "type": "REFERENCES_DATA_SOURCE",
+      "reference": "data.google_compute_subnetwork.subnet"
+    },
+    {
+      "source": "aws_network_acl_rule.google_internal_dns_udp_ingress",
+      "target": "var.dns_network_acl_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.dns_network_acl_id"
+    },
+    {
+      "source": "aws_network_acl_rule.google_external_dns_tcp_ingress",
+      "target": "var.dns_network_acl_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.dns_network_acl_id"
+    },
+    {
+      "source": "aws_network_acl_rule.google_external_dns_tcp_ingress",
+      "target": "var.google_external_dns_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_external_dns_cidr"
+    },
+    {
+      "source": "aws_network_acl_rule.google_external_dns_udp_ingress",
+      "target": "var.dns_network_acl_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.dns_network_acl_id"
+    },
+    {
+      "source": "aws_network_acl_rule.google_external_dns_udp_ingress",
+      "target": "var.google_external_dns_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.google_external_dns_cidr"
+    },
+    {
+      "source": "module.dns",
+      "target": "module.aws_vpc",
+      "type": "MODULE_INPUT",
+      "reference": "module.aws_vpc.vpc_id"
+    },
+    {
+      "source": "module.dns",
+      "target": "var.aws_directory_service_password",
+      "type": "MODULE_INPUT",
+      "reference": "var.aws_directory_service_password"
+    },
+    {
+      "source": "module.google_network",
+      "target": "var.google_project_id",
+      "type": "MODULE_INPUT",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "module.google_network",
+      "target": "var.google_region",
+      "type": "MODULE_INPUT",
+      "reference": "var.google_region"
+    },
+    {
+      "source": "module.google_network",
+      "target": "var.aws_dns_suffix",
+      "type": "MODULE_INPUT",
+      "reference": "var.aws_dns_suffix"
+    },
+    {
+      "source": "module.google_network",
+      "target": "module.dns",
+      "type": "MODULE_INPUT",
+      "reference": "module.dns.dns_ip_addresses"
+    },
+    {
+      "source": "module.azure_vnet",
+      "target": "var.azure_resource_group_name",
+      "type": "MODULE_INPUT",
+      "reference": "var.azure_resource_group_name"
+    },
+    {
+      "source": "module.azure_vnet",
+      "target": "var.azure_location",
+      "type": "MODULE_INPUT",
+      "reference": "var.azure_location"
+    },
+    {
+      "source": "module.azure_vnet",
+      "target": "module.dns",
+      "type": "MODULE_INPUT",
+      "reference": "module.dns.dns_ip_addresses"
+    },
+    {
+      "source": "module.vpn",
+      "target": "module.aws_vpc",
+      "type": "MODULE_INPUT",
+      "reference": "module.aws_vpc.vpc_id"
+    },
+    {
+      "source": "module.vpn",
+      "target": "var.google_project_id",
+      "type": "MODULE_INPUT",
+      "reference": "var.google_project_id"
+    },
+    {
+      "source": "module.vpn",
+      "target": "var.google_region",
+      "type": "MODULE_INPUT",
+      "reference": "var.google_region"
+    },
+    {
+      "source": "module.vpn",
+      "target": "module.google_network",
+      "type": "MODULE_INPUT",
+      "reference": "module.google_network.network_name"
+    },
+    {
+      "source": "module.vpn",
+      "target": "var.azure_resource_group_name",
+      "type": "MODULE_INPUT",
+      "reference": "var.azure_resource_group_name"
+    },
+    {
+      "source": "module.vpn",
+      "target": "var.azure_location",
+      "type": "MODULE_INPUT",
+      "reference": "var.azure_location"
+    },
+    {
+      "source": "module.vpn",
+      "target": "module.azure_vnet",
+      "type": "MODULE_INPUT",
+      "reference": "module.azure_vnet.network_name"
+    },
+    {
+      "source": "module.vpn",
+      "target": "module.dns",
+      "type": "MODULE_INPUT",
+      "reference": "module.dns.dns_network_acl_id"
+    }
+  ],
+  "entry_points": [],
+  "crown_jewels": [
+    "aws_directory_service_directory.dns",
+    "google_compute_vpn_tunnel.aws1",
+    "google_compute_vpn_tunnel.aws2"
+  ],
+  "attack_paths": [],
+  "choke_points": [],
+  "risk": {
+    "score": 35.0,
+    "risk_level": "CRITICAL"
+  },
+  "risk_scores": {
+    "aws_subnet.dns": {
+      "resource_id": "aws_subnet.dns",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "var.dns_subnet_cidr_prefix",
+        "var.vpc_id"
+      ]
+    },
+    "aws_route_table_association.dns": {
+      "resource_id": "aws_route_table_association.dns",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.private_route_table_id"
+      ]
+    },
+    "aws_network_acl.dns": {
+      "resource_id": "aws_network_acl.dns",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.vpc_id"
+      ]
+    },
+    "aws_network_acl_rule.ingress": {
+      "resource_id": "aws_network_acl_rule.ingress",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "aws_network_acl.dns",
+        "data.aws_vpc.main",
+        "var.vpc_id"
+      ]
+    },
+    "aws_network_acl_rule.egress": {
+      "resource_id": "aws_network_acl_rule.egress",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "aws_network_acl.dns",
+        "var.vpc_id"
+      ]
+    },
+    "aws_directory_service_directory.dns": {
+      "resource_id": "aws_directory_service_directory.dns",
+      "score": 26.0,
+      "risk_level": "CRITICAL",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "var.directory_name",
+        "var.directory_password",
+        "var.vpc_id"
+      ]
+    },
+    "aws_vpc.main": {
+      "resource_id": "aws_vpc.main",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "var.cidr_block",
+        "var.vpc_name"
+      ]
+    },
+    "aws_subnet.private": {
+      "resource_id": "aws_subnet.private",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "aws_vpc.main",
+        "var.cidr_block",
+        "var.subnet_count",
+        "var.vpc_name"
+      ]
+    },
+    "aws_subnet.public": {
+      "resource_id": "aws_subnet.public",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "aws_vpc.main",
+        "var.cidr_block",
+        "var.subnet_count",
+        "var.vpc_name"
+      ]
+    },
+    "aws_network_acl.public": {
+      "resource_id": "aws_network_acl.public",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "aws_vpc.main",
+        "var.cidr_block",
+        "var.vpc_name"
+      ]
+    },
+    "aws_network_acl.private": {
+      "resource_id": "aws_network_acl.private",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "aws_vpc.main",
+        "var.cidr_block",
+        "var.vpc_name"
+      ]
+    },
+    "aws_internet_gateway.gw": {
+      "resource_id": "aws_internet_gateway.gw",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "aws_vpc.main",
+        "var.cidr_block",
+        "var.vpc_name"
+      ]
+    },
+    "aws_eip.nat": {
+      "resource_id": "aws_eip.nat",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "aws_internet_gateway.gw",
+        "aws_vpc.main",
+        "var.cidr_block",
+        "var.vpc_name"
+      ]
+    },
+    "aws_nat_gateway.gw": {
+      "resource_id": "aws_nat_gateway.gw",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "aws_eip.nat",
+        "aws_internet_gateway.gw",
+        "aws_vpc.main",
+        "var.cidr_block",
+        "var.vpc_name"
+      ]
+    },
+    "aws_route_table.public": {
+      "resource_id": "aws_route_table.public",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "aws_vpc.main",
+        "var.cidr_block",
+        "var.vpc_name"
+      ]
+    },
+    "aws_route.public_igw": {
+      "resource_id": "aws_route.public_igw",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "aws_internet_gateway.gw",
+        "aws_route_table.public",
+        "aws_vpc.main",
+        "var.cidr_block",
+        "var.vpc_name"
+      ]
+    },
+    "aws_route_table.private": {
+      "resource_id": "aws_route_table.private",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "aws_vpc.main",
+        "var.cidr_block",
+        "var.vpc_name"
+      ]
+    },
+    "aws_route.private_nat": {
+      "resource_id": "aws_route.private_nat",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 7,
+      "blast_radius": [
+        "aws_eip.nat",
+        "aws_internet_gateway.gw",
+        "aws_nat_gateway.gw",
+        "aws_route_table.private",
+        "aws_vpc.main",
+        "var.cidr_block",
+        "var.vpc_name"
+      ]
+    },
+    "aws_route_table_association.public": {
+      "resource_id": "aws_route_table_association.public",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "aws_route_table.public",
+        "aws_vpc.main",
+        "var.cidr_block",
+        "var.subnet_count",
+        "var.vpc_name"
+      ]
+    },
+    "aws_route_table_association.private": {
+      "resource_id": "aws_route_table_association.private",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "aws_route_table.private",
+        "aws_vpc.main",
+        "var.cidr_block",
+        "var.subnet_count",
+        "var.vpc_name"
+      ]
+    },
+    "azurerm_virtual_network.network": {
+      "resource_id": "azurerm_virtual_network.network",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "var.cidr_block",
+        "var.dns_servers",
+        "var.location",
+        "var.network_name",
+        "var.resource_group_name"
+      ]
+    },
+    "azurerm_subnet.private": {
+      "resource_id": "azurerm_subnet.private",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 7,
+      "blast_radius": [
+        "azurerm_virtual_network.network",
+        "var.cidr_block",
+        "var.dns_servers",
+        "var.location",
+        "var.network_name",
+        "var.resource_group_name",
+        "var.subnet_count"
+      ]
+    },
+    "azurerm_subnet.public": {
+      "resource_id": "azurerm_subnet.public",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 7,
+      "blast_radius": [
+        "azurerm_virtual_network.network",
+        "var.cidr_block",
+        "var.dns_servers",
+        "var.location",
+        "var.network_name",
+        "var.resource_group_name",
+        "var.subnet_count"
+      ]
+    },
+    "google_project_service.compute": {
+      "resource_id": "google_project_service.compute",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.project_id"
+      ]
+    },
+    "google_compute_network.main": {
+      "resource_id": "google_compute_network.main",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "google_project_service.compute",
+        "var.network_name",
+        "var.project_id"
+      ]
+    },
+    "google_compute_subnetwork.private": {
+      "resource_id": "google_compute_subnetwork.private",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 6,
+      "blast_radius": [
+        "google_compute_network.main",
+        "google_project_service.compute",
+        "var.cidr_block",
+        "var.network_name",
+        "var.project_id",
+        "var.regions"
+      ]
+    },
+    "google_compute_router.nat": {
+      "resource_id": "google_compute_router.nat",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "google_compute_network.main",
+        "google_project_service.compute",
+        "var.network_name",
+        "var.project_id",
+        "var.regions"
+      ]
+    },
+    "google_compute_router_nat.nat": {
+      "resource_id": "google_compute_router_nat.nat",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "google_project_service.compute",
+        "var.project_id",
+        "var.regions"
+      ]
+    },
+    "google_dns_managed_zone.aws": {
+      "resource_id": "google_dns_managed_zone.aws",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 6,
+      "blast_radius": [
+        "google_compute_network.main",
+        "google_project_service.compute",
+        "var.aws_dns_ip_addresses",
+        "var.aws_dns_suffix",
+        "var.network_name",
+        "var.project_id"
+      ]
+    },
+    "aws_vpn_gateway.main": {
+      "resource_id": "aws_vpn_gateway.main",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "data.aws_vpc.main"
+      ]
+    },
+    "aws_vpn_gateway_route_propagation.main": {
+      "resource_id": "aws_vpn_gateway_route_propagation.main",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "aws_vpn_gateway.main",
+        "data.aws_vpc.main",
+        "var.aws_route_table_ids"
+      ]
+    },
+    "aws_customer_gateway.google": {
+      "resource_id": "aws_customer_gateway.google",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "google_compute_address.vpn",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "aws_vpn_connection.google": {
+      "resource_id": "aws_vpn_connection.google",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 6,
+      "blast_radius": [
+        "aws_customer_gateway.google",
+        "aws_vpn_gateway.main",
+        "data.aws_vpc.main",
+        "google_compute_address.vpn",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "aws_customer_gateway.azure": {
+      "resource_id": "aws_customer_gateway.azure",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "azurerm_public_ip.gateway",
+        "var.azure_location",
+        "var.azure_resource_group_name"
+      ]
+    },
+    "aws_vpn_connection.azure": {
+      "resource_id": "aws_vpn_connection.azure",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 6,
+      "blast_radius": [
+        "aws_customer_gateway.azure",
+        "aws_vpn_gateway.main",
+        "azurerm_public_ip.gateway",
+        "data.aws_vpc.main",
+        "var.azure_location",
+        "var.azure_resource_group_name"
+      ]
+    },
+    "aws_vpn_connection_route.azure": {
+      "resource_id": "aws_vpn_connection_route.azure",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 8,
+      "blast_radius": [
+        "aws_customer_gateway.azure",
+        "aws_vpn_connection.azure",
+        "aws_vpn_gateway.main",
+        "azurerm_public_ip.gateway",
+        "data.aws_vpc.main",
+        "var.azure_location",
+        "var.azure_network_address_space",
+        "var.azure_resource_group_name"
+      ]
+    },
+    "azurerm_subnet.gateway": {
+      "resource_id": "azurerm_subnet.gateway",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "var.azure_gateway_cidr",
+        "var.azure_network_name",
+        "var.azure_resource_group_name"
+      ]
+    },
+    "azurerm_public_ip.gateway": {
+      "resource_id": "azurerm_public_ip.gateway",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "var.azure_location",
+        "var.azure_resource_group_name"
+      ]
+    },
+    "azurerm_virtual_network_gateway.aws": {
+      "resource_id": "azurerm_virtual_network_gateway.aws",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 7,
+      "blast_radius": [
+        "azurerm_public_ip.gateway",
+        "azurerm_subnet.gateway",
+        "var.azure_gateway_cidr",
+        "var.azure_gateway_sku",
+        "var.azure_location",
+        "var.azure_network_name",
+        "var.azure_resource_group_name"
+      ]
+    },
+    "azurerm_local_network_gateway.aws1": {
+      "resource_id": "azurerm_local_network_gateway.aws1",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 7,
+      "blast_radius": [
+        "aws_customer_gateway.azure",
+        "aws_vpn_connection.azure",
+        "aws_vpn_gateway.main",
+        "azurerm_public_ip.gateway",
+        "data.aws_vpc.main",
+        "var.azure_location",
+        "var.azure_resource_group_name"
+      ]
+    },
+    "azurerm_virtual_network_gateway_connection.aws1": {
+      "resource_id": "azurerm_virtual_network_gateway_connection.aws1",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 13,
+      "blast_radius": [
+        "aws_customer_gateway.azure",
+        "aws_vpn_connection.azure",
+        "aws_vpn_gateway.main",
+        "azurerm_local_network_gateway.aws1",
+        "azurerm_public_ip.gateway",
+        "azurerm_subnet.gateway",
+        "azurerm_virtual_network_gateway.aws",
+        "data.aws_vpc.main",
+        "var.azure_gateway_cidr",
+        "var.azure_gateway_sku",
+        "var.azure_location",
+        "var.azure_network_name",
+        "var.azure_resource_group_name"
+      ]
+    },
+    "azurerm_local_network_gateway.aws2": {
+      "resource_id": "azurerm_local_network_gateway.aws2",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 7,
+      "blast_radius": [
+        "aws_customer_gateway.azure",
+        "aws_vpn_connection.azure",
+        "aws_vpn_gateway.main",
+        "azurerm_public_ip.gateway",
+        "data.aws_vpc.main",
+        "var.azure_location",
+        "var.azure_resource_group_name"
+      ]
+    },
+    "azurerm_virtual_network_gateway_connection.aws2": {
+      "resource_id": "azurerm_virtual_network_gateway_connection.aws2",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 13,
+      "blast_radius": [
+        "aws_customer_gateway.azure",
+        "aws_vpn_connection.azure",
+        "aws_vpn_gateway.main",
+        "azurerm_local_network_gateway.aws2",
+        "azurerm_public_ip.gateway",
+        "azurerm_subnet.gateway",
+        "azurerm_virtual_network_gateway.aws",
+        "data.aws_vpc.main",
+        "var.azure_gateway_cidr",
+        "var.azure_gateway_sku",
+        "var.azure_location",
+        "var.azure_network_name",
+        "var.azure_resource_group_name"
+      ]
+    },
+    "aws_network_acl_rule.azure_dns_tcp_ingress": {
+      "resource_id": "aws_network_acl_rule.azure_dns_tcp_ingress",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "var.azure_network_address_space",
+        "var.dns_network_acl_id"
+      ]
+    },
+    "aws_network_acl_rule.azure_dns_udp_ingress": {
+      "resource_id": "aws_network_acl_rule.azure_dns_udp_ingress",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "var.azure_network_address_space",
+        "var.dns_network_acl_id"
+      ]
+    },
+    "google_compute_address.vpn": {
+      "resource_id": "google_compute_address.vpn",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "google_compute_vpn_gateway.aws": {
+      "resource_id": "google_compute_vpn_gateway.aws",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "data.google_compute_network.main",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "google_compute_forwarding_rule.esp": {
+      "resource_id": "google_compute_forwarding_rule.esp",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "data.google_compute_network.main",
+        "google_compute_address.vpn",
+        "google_compute_vpn_gateway.aws",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "google_compute_forwarding_rule.udp500": {
+      "resource_id": "google_compute_forwarding_rule.udp500",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "data.google_compute_network.main",
+        "google_compute_address.vpn",
+        "google_compute_vpn_gateway.aws",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "google_compute_forwarding_rule.udp4500": {
+      "resource_id": "google_compute_forwarding_rule.udp4500",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "data.google_compute_network.main",
+        "google_compute_address.vpn",
+        "google_compute_vpn_gateway.aws",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "google_compute_vpn_tunnel.aws1": {
+      "resource_id": "google_compute_vpn_tunnel.aws1",
+      "score": 35.0,
+      "risk_level": "CRITICAL",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 14,
+      "blast_radius": [
+        "aws_customer_gateway.google",
+        "aws_vpn_connection.google",
+        "aws_vpn_gateway.main",
+        "data.aws_vpc.main",
+        "data.google_compute_network.main",
+        "google_compute_address.vpn",
+        "google_compute_forwarding_rule.esp",
+        "google_compute_forwarding_rule.udp4500",
+        "google_compute_forwarding_rule.udp500",
+        "google_compute_router.aws1",
+        "google_compute_vpn_gateway.aws",
+        "var.google_external_dns_cidr",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "google_compute_router.aws1": {
+      "resource_id": "google_compute_router.aws1",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 6,
+      "blast_radius": [
+        "aws_customer_gateway.google",
+        "data.google_compute_network.main",
+        "google_compute_address.vpn",
+        "var.google_external_dns_cidr",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "google_compute_router_peer.aws1": {
+      "resource_id": "google_compute_router_peer.aws1",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 16,
+      "blast_radius": [
+        "aws_customer_gateway.google",
+        "aws_vpn_connection.google",
+        "aws_vpn_gateway.main",
+        "data.aws_vpc.main",
+        "data.google_compute_network.main",
+        "google_compute_address.vpn",
+        "google_compute_forwarding_rule.esp",
+        "google_compute_forwarding_rule.udp4500",
+        "google_compute_forwarding_rule.udp500",
+        "google_compute_router.aws1",
+        "google_compute_router_interface.aws1",
+        "google_compute_vpn_gateway.aws",
+        "google_compute_vpn_tunnel.aws1",
+        "var.google_external_dns_cidr",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "google_compute_router_interface.aws1": {
+      "resource_id": "google_compute_router_interface.aws1",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 15,
+      "blast_radius": [
+        "aws_customer_gateway.google",
+        "aws_vpn_connection.google",
+        "aws_vpn_gateway.main",
+        "data.aws_vpc.main",
+        "data.google_compute_network.main",
+        "google_compute_address.vpn",
+        "google_compute_forwarding_rule.esp",
+        "google_compute_forwarding_rule.udp4500",
+        "google_compute_forwarding_rule.udp500",
+        "google_compute_router.aws1",
+        "google_compute_vpn_gateway.aws",
+        "google_compute_vpn_tunnel.aws1",
+        "var.google_external_dns_cidr",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "google_compute_vpn_tunnel.aws2": {
+      "resource_id": "google_compute_vpn_tunnel.aws2",
+      "score": 35.0,
+      "risk_level": "CRITICAL",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 14,
+      "blast_radius": [
+        "aws_customer_gateway.google",
+        "aws_vpn_connection.google",
+        "aws_vpn_gateway.main",
+        "data.aws_vpc.main",
+        "data.google_compute_network.main",
+        "google_compute_address.vpn",
+        "google_compute_forwarding_rule.esp",
+        "google_compute_forwarding_rule.udp4500",
+        "google_compute_forwarding_rule.udp500",
+        "google_compute_router.aws2",
+        "google_compute_vpn_gateway.aws",
+        "var.google_external_dns_cidr",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "google_compute_router.aws2": {
+      "resource_id": "google_compute_router.aws2",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 6,
+      "blast_radius": [
+        "aws_customer_gateway.google",
+        "data.google_compute_network.main",
+        "google_compute_address.vpn",
+        "var.google_external_dns_cidr",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "google_compute_router_peer.aws2": {
+      "resource_id": "google_compute_router_peer.aws2",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 16,
+      "blast_radius": [
+        "aws_customer_gateway.google",
+        "aws_vpn_connection.google",
+        "aws_vpn_gateway.main",
+        "data.aws_vpc.main",
+        "data.google_compute_network.main",
+        "google_compute_address.vpn",
+        "google_compute_forwarding_rule.esp",
+        "google_compute_forwarding_rule.udp4500",
+        "google_compute_forwarding_rule.udp500",
+        "google_compute_router.aws2",
+        "google_compute_router_interface.aws2",
+        "google_compute_vpn_gateway.aws",
+        "google_compute_vpn_tunnel.aws2",
+        "var.google_external_dns_cidr",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "google_compute_router_interface.aws2": {
+      "resource_id": "google_compute_router_interface.aws2",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 15,
+      "blast_radius": [
+        "aws_customer_gateway.google",
+        "aws_vpn_connection.google",
+        "aws_vpn_gateway.main",
+        "data.aws_vpc.main",
+        "data.google_compute_network.main",
+        "google_compute_address.vpn",
+        "google_compute_forwarding_rule.esp",
+        "google_compute_forwarding_rule.udp4500",
+        "google_compute_forwarding_rule.udp500",
+        "google_compute_router.aws2",
+        "google_compute_vpn_gateway.aws",
+        "google_compute_vpn_tunnel.aws2",
+        "var.google_external_dns_cidr",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "aws_network_acl_rule.google_internal_dns_tcp_ingress": {
+      "resource_id": "aws_network_acl_rule.google_internal_dns_tcp_ingress",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "data.google_compute_subnetwork.subnet",
+        "var.dns_network_acl_id"
+      ]
+    },
+    "aws_network_acl_rule.google_internal_dns_udp_ingress": {
+      "resource_id": "aws_network_acl_rule.google_internal_dns_udp_ingress",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "data.google_compute_subnetwork.subnet",
+        "var.dns_network_acl_id"
+      ]
+    },
+    "aws_network_acl_rule.google_external_dns_tcp_ingress": {
+      "resource_id": "aws_network_acl_rule.google_external_dns_tcp_ingress",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "var.dns_network_acl_id",
+        "var.google_external_dns_cidr"
+      ]
+    },
+    "aws_network_acl_rule.google_external_dns_udp_ingress": {
+      "resource_id": "aws_network_acl_rule.google_external_dns_udp_ingress",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "var.dns_network_acl_id",
+        "var.google_external_dns_cidr"
+      ]
+    },
+    "var.vpc_id": {
+      "resource_id": "var.vpc_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.dns_subnet_cidr_prefix": {
+      "resource_id": "var.dns_subnet_cidr_prefix",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.private_route_table_id": {
+      "resource_id": "var.private_route_table_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "data.aws_vpc.main": {
+      "resource_id": "data.aws_vpc.main",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.directory_name": {
+      "resource_id": "var.directory_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.directory_password": {
+      "resource_id": "var.directory_password",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.cidr_block": {
+      "resource_id": "var.cidr_block",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.vpc_name": {
+      "resource_id": "var.vpc_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.subnet_count": {
+      "resource_id": "var.subnet_count",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.network_name": {
+      "resource_id": "var.network_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.location": {
+      "resource_id": "var.location",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.resource_group_name": {
+      "resource_id": "var.resource_group_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.dns_servers": {
+      "resource_id": "var.dns_servers",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.project_id": {
+      "resource_id": "var.project_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.regions": {
+      "resource_id": "var.regions",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.aws_dns_suffix": {
+      "resource_id": "var.aws_dns_suffix",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.aws_dns_ip_addresses": {
+      "resource_id": "var.aws_dns_ip_addresses",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.aws_route_table_ids": {
+      "resource_id": "var.aws_route_table_ids",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.azure_network_address_space": {
+      "resource_id": "var.azure_network_address_space",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.azure_resource_group_name": {
+      "resource_id": "var.azure_resource_group_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.azure_network_name": {
+      "resource_id": "var.azure_network_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.azure_gateway_cidr": {
+      "resource_id": "var.azure_gateway_cidr",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.azure_location": {
+      "resource_id": "var.azure_location",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.azure_gateway_sku": {
+      "resource_id": "var.azure_gateway_sku",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.dns_network_acl_id": {
+      "resource_id": "var.dns_network_acl_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.google_project_id": {
+      "resource_id": "var.google_project_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.google_region": {
+      "resource_id": "var.google_region",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "data.google_compute_network.main": {
+      "resource_id": "data.google_compute_network.main",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.google_external_dns_cidr": {
+      "resource_id": "var.google_external_dns_cidr",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "data.google_compute_subnetwork.subnet": {
+      "resource_id": "data.google_compute_subnetwork.subnet",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.dns": {
+      "resource_id": "module.dns",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "module.aws_vpc",
+        "var.aws_directory_service_password"
+      ]
+    },
+    "module.aws_vpc": {
+      "resource_id": "module.aws_vpc",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.aws_directory_service_password": {
+      "resource_id": "var.aws_directory_service_password",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.google_network": {
+      "resource_id": "module.google_network",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 6,
+      "blast_radius": [
+        "module.aws_vpc",
+        "module.dns",
+        "var.aws_directory_service_password",
+        "var.aws_dns_suffix",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    },
+    "module.azure_vnet": {
+      "resource_id": "module.azure_vnet",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "module.aws_vpc",
+        "module.dns",
+        "var.aws_directory_service_password",
+        "var.azure_location",
+        "var.azure_resource_group_name"
+      ]
+    },
+    "module.vpn": {
+      "resource_id": "module.vpn",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 10,
+      "blast_radius": [
+        "module.aws_vpc",
+        "module.azure_vnet",
+        "module.dns",
+        "module.google_network",
+        "var.aws_directory_service_password",
+        "var.aws_dns_suffix",
+        "var.azure_location",
+        "var.azure_resource_group_name",
+        "var.google_project_id",
+        "var.google_region"
+      ]
+    }
+  }
+}

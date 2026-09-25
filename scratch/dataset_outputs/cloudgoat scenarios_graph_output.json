@@ -1,0 +1,849 @@
+{
+  "nodes": [
+    {
+      "id": "internet",
+      "type": "external",
+      "name": "Internet",
+      "provider": "external",
+      "attributes": {
+        "description": "External Internet / Public Network"
+      },
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": true
+    },
+    {
+      "id": "azurerm_resource_group.poc",
+      "type": "azurerm_resource_group",
+      "name": "poc",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "${var.resource_group}",
+        "location": "${var.location}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "random_string.suffix",
+      "type": "random_string",
+      "name": "suffix",
+      "provider": "random",
+      "attributes": {
+        "length": 6,
+        "special": false,
+        "upper": false
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_resource_group.test",
+      "type": "azurerm_resource_group",
+      "name": "test",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "${var.resource_group_name}-${random_string.suffix.result}",
+        "location": "${var.location}",
+        "tags": {
+          "environment": "test",
+          "purpose": "security-analysis"
+        }
+      },
+      "tags": {
+        "environment": "test",
+        "purpose": "security-analysis"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_network_security_group.test",
+      "type": "azurerm_network_security_group",
+      "name": "test",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "test-nsg",
+        "location": "${var.location}",
+        "resource_group_name": "${azurerm_resource_group.test.name}",
+        "security_rule": [
+          {
+            "name": "AllowSSH",
+            "priority": 100,
+            "direction": "Inbound",
+            "access": "Allow",
+            "protocol": "Tcp",
+            "source_port_range": "*",
+            "destination_port_range": "22",
+            "source_address_prefix": "${var.allowed_ip}",
+            "destination_address_prefix": "*",
+            "description": "SSH access"
+          },
+          {
+            "name": "AllowHTTP",
+            "priority": 110,
+            "direction": "Inbound",
+            "access": "Allow",
+            "protocol": "Tcp",
+            "source_port_range": "*",
+            "destination_port_range": "80",
+            "source_address_prefix": "0.0.0.0/0",
+            "destination_address_prefix": "*",
+            "description": "HTTP access"
+          },
+          {
+            "name": "AllowHTTPS",
+            "priority": 120,
+            "direction": "Inbound",
+            "access": "Allow",
+            "protocol": "Tcp",
+            "source_port_range": "*",
+            "destination_port_range": "443",
+            "source_address_prefix": "0.0.0.0/0",
+            "destination_address_prefix": "*",
+            "description": "HTTPS access"
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": true,
+        "public_access": true,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [
+          {
+            "protocol": "Tcp",
+            "from_port": "*",
+            "to_port": "22",
+            "sources": [
+              "${var.allowed_ip}"
+            ],
+            "description": "SSH access"
+          },
+          {
+            "protocol": "Tcp",
+            "from_port": "*",
+            "to_port": "80",
+            "sources": [
+              "0.0.0.0/0"
+            ],
+            "description": "HTTP access"
+          },
+          {
+            "protocol": "Tcp",
+            "from_port": "*",
+            "to_port": "443",
+            "sources": [
+              "0.0.0.0/0"
+            ],
+            "description": "HTTPS access"
+          }
+        ],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [
+        {
+          "id": "PUBLIC_INGRESS_azurerm_network_security_group.test_1",
+          "severity": "HIGH",
+          "category": "NETWORK_EXPOSURE",
+          "resource": "azurerm_network_security_group.test",
+          "title": "Inbound traffic is exposed to the internet",
+          "description": "Inbound traffic on port 80 is permitted from open internet sources.",
+          "evidence": {
+            "protocol": "Tcp",
+            "from_port": "*",
+            "to_port": "80",
+            "sources": [
+              "0.0.0.0/0"
+            ]
+          },
+          "attack_vector": "An attacker on the internet can attempt connections to port 80.",
+          "recommendation": "Restrict inbound access to approved CIDR ranges.",
+          "remediation": "Modify security group or firewall ingress rules to remove wildcard sources."
+        }
+      ],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_storage_account.test",
+      "type": "azurerm_storage_account",
+      "name": "test",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "securitytest${random_string.suffix.result}",
+        "resource_group_name": "${azurerm_resource_group.test.name}",
+        "location": "${azurerm_resource_group.test.location}",
+        "account_tier": "Standard",
+        "account_replication_type": "LRS",
+        "public_network_access_enabled": true,
+        "min_tls_version": "TLS1_2",
+        "blob_properties": [
+          {
+            "versioning_enabled": true
+          }
+        ],
+        "tags": {
+          "environment": "test"
+        }
+      },
+      "tags": {
+        "environment": "test"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_key_vault.test",
+      "type": "azurerm_key_vault",
+      "name": "test",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "security-test-kv-${random_string.suffix.result}",
+        "location": "${var.location}",
+        "resource_group_name": "${azurerm_resource_group.test.name}",
+        "tenant_id": "00000000-0000-0000-0000-000000000000",
+        "sku_name": "standard",
+        "public_network_access_enabled": true,
+        "soft_delete_retention_days": 7,
+        "purge_protection_enabled": false,
+        "tags": {
+          "environment": "test"
+        }
+      },
+      "tags": {
+        "environment": "test"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": false,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_key_vault_secret.admin_password",
+      "type": "azurerm_key_vault_secret",
+      "name": "admin_password",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "admin-password",
+        "value": "${var.admin_password}",
+        "key_vault_id": "${azurerm_key_vault.test.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": [
+          {
+            "type": "password",
+            "reference": "var.admin_password",
+            "exposed": false
+          },
+          {
+            "type": "secret_manager",
+            "reference": "admin-password",
+            "exposed": false
+          }
+        ]
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_storage_account.encrypted",
+      "type": "azurerm_storage_account",
+      "name": "encrypted",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "encrypted${random_string.suffix.result}",
+        "resource_group_name": "${azurerm_resource_group.test.name}",
+        "location": "${var.location}",
+        "account_tier": "Standard",
+        "account_replication_type": "GRS",
+        "public_network_access_enabled": false,
+        "min_tls_version": "TLS1_2",
+        "infrastructure_encryption_enabled": true,
+        "tags": {
+          "encrypted": "true",
+          "environment": "test"
+        }
+      },
+      "tags": {
+        "encrypted": "true",
+        "environment": "test"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": true,
+        "encryption_type": "infrastructure",
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "azurerm_resource_group.secondary",
+      "type": "azurerm_resource_group",
+      "name": "secondary",
+      "provider": "azurerm",
+      "attributes": {
+        "provider": "${azurerm.secondary}",
+        "name": "secondary-test-rg",
+        "location": "${var.location}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.resource_group",
+      "type": "unknown",
+      "name": "var.resource_group",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.location",
+      "type": "unknown",
+      "name": "var.location",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.resource_group_name",
+      "type": "unknown",
+      "name": "var.resource_group_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.allowed_ip",
+      "type": "unknown",
+      "name": "var.allowed_ip",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.admin_password",
+      "type": "unknown",
+      "name": "var.admin_password",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.test_module",
+      "type": "unknown",
+      "name": "module.test_module",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "internet",
+      "target": "azurerm_network_security_group.test",
+      "type": "EXPOSED_TO",
+      "rule_id": "INTERNET_EXPOSED_azurerm_network_security_group.test",
+      "protocol": "tcp",
+      "port": "443",
+      "sources": [
+        "0.0.0.0/0"
+      ]
+    },
+    {
+      "source": "azurerm_resource_group.poc",
+      "target": "var.resource_group",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.resource_group"
+    },
+    {
+      "source": "azurerm_resource_group.poc",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.location"
+    },
+    {
+      "source": "azurerm_resource_group.test",
+      "target": "var.resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.resource_group_name"
+    },
+    {
+      "source": "azurerm_resource_group.test",
+      "target": "random_string.suffix",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "random_string.suffix.result"
+    },
+    {
+      "source": "azurerm_resource_group.test",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.location"
+    },
+    {
+      "source": "azurerm_network_security_group.test",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.location"
+    },
+    {
+      "source": "azurerm_network_security_group.test",
+      "target": "azurerm_resource_group.test",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_resource_group.test.name"
+    },
+    {
+      "source": "azurerm_network_security_group.test",
+      "target": "var.allowed_ip",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.allowed_ip"
+    },
+    {
+      "source": "azurerm_storage_account.test",
+      "target": "azurerm_network_security_group.test",
+      "type": "DEPENDS_ON"
+    },
+    {
+      "source": "azurerm_storage_account.test",
+      "target": "random_string.suffix",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "random_string.suffix.result"
+    },
+    {
+      "source": "azurerm_storage_account.test",
+      "target": "azurerm_resource_group.test",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_resource_group.test.name"
+    },
+    {
+      "source": "azurerm_key_vault.test",
+      "target": "random_string.suffix",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "random_string.suffix.result"
+    },
+    {
+      "source": "azurerm_key_vault.test",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.location"
+    },
+    {
+      "source": "azurerm_key_vault.test",
+      "target": "azurerm_resource_group.test",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_resource_group.test.name"
+    },
+    {
+      "source": "azurerm_key_vault_secret.admin_password",
+      "target": "azurerm_key_vault.test",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_key_vault.test.id"
+    },
+    {
+      "source": "azurerm_key_vault_secret.admin_password",
+      "target": "var.admin_password",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.admin_password"
+    },
+    {
+      "source": "azurerm_storage_account.encrypted",
+      "target": "random_string.suffix",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "random_string.suffix.result"
+    },
+    {
+      "source": "azurerm_storage_account.encrypted",
+      "target": "azurerm_resource_group.test",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "azurerm_resource_group.test.name"
+    },
+    {
+      "source": "azurerm_storage_account.encrypted",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.location"
+    },
+    {
+      "source": "azurerm_resource_group.secondary",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.location"
+    },
+    {
+      "source": "module.test_module",
+      "target": "azurerm_resource_group.test",
+      "type": "MODULE_INPUT",
+      "reference": "azurerm_resource_group.test.name"
+    },
+    {
+      "source": "module.test_module",
+      "target": "var.location",
+      "type": "MODULE_INPUT",
+      "reference": "var.location"
+    }
+  ],
+  "entry_points": [
+    "azurerm_network_security_group.test"
+  ],
+  "crown_jewels": [
+    "azurerm_key_vault.test",
+    "azurerm_key_vault_secret.admin_password",
+    "azurerm_storage_account.encrypted",
+    "azurerm_storage_account.test"
+  ],
+  "attack_paths": [],
+  "choke_points": [],
+  "risk": {
+    "score": 17.5,
+    "risk_level": "HIGH"
+  },
+  "risk_scores": {
+    "azurerm_resource_group.poc": {
+      "resource_id": "azurerm_resource_group.poc",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "var.location",
+        "var.resource_group"
+      ]
+    },
+    "random_string.suffix": {
+      "resource_id": "random_string.suffix",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "azurerm_resource_group.test": {
+      "resource_id": "azurerm_resource_group.test",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "random_string.suffix",
+        "var.location",
+        "var.resource_group_name"
+      ]
+    },
+    "azurerm_network_security_group.test": {
+      "resource_id": "azurerm_network_security_group.test",
+      "score": 17.5,
+      "risk_level": "HIGH",
+      "is_entry_point": true,
+      "is_crown_jewel": false,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "azurerm_resource_group.test",
+        "random_string.suffix",
+        "var.allowed_ip",
+        "var.location",
+        "var.resource_group_name"
+      ]
+    },
+    "azurerm_storage_account.test": {
+      "resource_id": "azurerm_storage_account.test",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 6,
+      "blast_radius": [
+        "azurerm_network_security_group.test",
+        "azurerm_resource_group.test",
+        "random_string.suffix",
+        "var.allowed_ip",
+        "var.location",
+        "var.resource_group_name"
+      ]
+    },
+    "azurerm_key_vault.test": {
+      "resource_id": "azurerm_key_vault.test",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "azurerm_resource_group.test",
+        "random_string.suffix",
+        "var.location",
+        "var.resource_group_name"
+      ]
+    },
+    "azurerm_key_vault_secret.admin_password": {
+      "resource_id": "azurerm_key_vault_secret.admin_password",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 6,
+      "blast_radius": [
+        "azurerm_key_vault.test",
+        "azurerm_resource_group.test",
+        "random_string.suffix",
+        "var.admin_password",
+        "var.location",
+        "var.resource_group_name"
+      ]
+    },
+    "azurerm_storage_account.encrypted": {
+      "resource_id": "azurerm_storage_account.encrypted",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "azurerm_resource_group.test",
+        "random_string.suffix",
+        "var.location",
+        "var.resource_group_name"
+      ]
+    },
+    "azurerm_resource_group.secondary": {
+      "resource_id": "azurerm_resource_group.secondary",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.location"
+      ]
+    },
+    "var.resource_group": {
+      "resource_id": "var.resource_group",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.location": {
+      "resource_id": "var.location",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.resource_group_name": {
+      "resource_id": "var.resource_group_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.allowed_ip": {
+      "resource_id": "var.allowed_ip",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.admin_password": {
+      "resource_id": "var.admin_password",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.test_module": {
+      "resource_id": "module.test_module",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "azurerm_resource_group.test",
+        "random_string.suffix",
+        "var.location",
+        "var.resource_group_name"
+      ]
+    }
+  }
+}

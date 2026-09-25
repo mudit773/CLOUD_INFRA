@@ -1,0 +1,79 @@
+{
+  "scanner": {
+    "name": "Cloud Infrastructure Security Scanner",
+    "version": "1.0.0"
+  },
+  "summary": {
+    "critical": 1,
+    "high": 2,
+    "medium": 1,
+    "low": 0,
+    "info": 0,
+    "total": 4
+  },
+  "findings": [
+    {
+      "rule_id": "SEC-SECRET-001",
+      "severity": "CRITICAL",
+      "title": "Potential Hardcoded Secret Detected",
+      "description": "Potential secret material was detected in resource 'aws_db_instance.main'.",
+      "resource_id": "aws_db_instance.main",
+      "resource_type": "aws_db_instance",
+      "source_location": "database.tf:1",
+      "evidence": {
+        "secret_count": 1
+      },
+      "recommendation": "Remove secrets from Terraform configuration and use AWS Secrets Manager, SSM Parameter Store, or another secure secret-management solution."
+    },
+    {
+      "rule_id": "IAM-RES-001",
+      "severity": "HIGH",
+      "title": "IAM Permission Applies to All Resources",
+      "description": "Resource 'aws_iam_role_policy.web_policy' contains an IAM permission targeting all resources.",
+      "resource_id": "aws_iam_role_policy.web_policy",
+      "resource_type": "aws_iam_role_policy",
+      "source_location": "iam.tf:25",
+      "evidence": {
+        "actions": [
+          "s3:GetObject"
+        ],
+        "resources": [
+          "*"
+        ]
+      },
+      "recommendation": "Replace wildcard resource permissions with specific resource ARNs."
+    },
+    {
+      "rule_id": "NET-SSH-001",
+      "severity": "HIGH",
+      "title": "SSH Port Exposed to Internet",
+      "description": "Resource 'aws_security_group.web' allows public ingress on port 22.",
+      "resource_id": "aws_security_group.web",
+      "resource_type": "aws_security_group",
+      "source_location": "main.tf:47",
+      "evidence": {
+        "port": 22,
+        "sources": [
+          "0.0.0.0/0"
+        ]
+      },
+      "recommendation": "Restrict SSH access to specific trusted IP CIDRs or use AWS SSM."
+    },
+    {
+      "rule_id": "NET-EGRESS-001",
+      "severity": "MEDIUM",
+      "title": "Unrestricted Outbound Network Traffic",
+      "description": "Resource 'aws_security_group.web' allows unrestricted outbound traffic to the internet.",
+      "resource_id": "aws_security_group.web",
+      "resource_type": "aws_security_group",
+      "source_location": "main.tf:47",
+      "evidence": {
+        "protocol": "-1",
+        "destinations": [
+          "0.0.0.0/0"
+        ]
+      },
+      "recommendation": "Restrict outbound traffic to only the destinations and protocols required by the workload."
+    }
+  ]
+}

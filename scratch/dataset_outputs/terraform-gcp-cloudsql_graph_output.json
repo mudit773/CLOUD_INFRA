@@ -1,0 +1,374 @@
+{
+  "nodes": [
+    {
+      "id": "internet",
+      "type": "external",
+      "name": "Internet",
+      "provider": "external",
+      "attributes": {
+        "description": "External Internet / Public Network"
+      },
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": true
+    },
+    {
+      "id": "random_pet.database_name",
+      "type": "random_pet",
+      "name": "database_name",
+      "provider": "random",
+      "attributes": {
+        "prefix": "${var.database_name_prefix}",
+        "separator": "-"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_sql_database_instance.cloudsql-postgres-master",
+      "type": "google_sql_database_instance",
+      "name": "cloudsql-postgres-master",
+      "provider": "google",
+      "attributes": {
+        "name": "${random_pet.database_name.id}",
+        "database_version": "${var.database_version}",
+        "region": "${var.region}",
+        "settings": [
+          {
+            "tier": "db-f1-micro",
+            "ip_configuration": [
+              {
+                "ipv4_enabled": true,
+                "require_ssl": false,
+                "authorized_networks": {
+                  "name": "terraform-server-IP-allowed-list",
+                  "value": "${var.authorized_network}"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "google_sql_user.users",
+      "type": "google_sql_user",
+      "name": "users",
+      "provider": "google",
+      "attributes": {
+        "name": "${var.gcp_sql_root_user_name}",
+        "instance": "${google_sql_database_instance.cloudsql-postgres-master.name}",
+        "password": "${var.gcp_sql_root_user_pw}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": [
+          {
+            "type": "password",
+            "reference": "var.gcp_sql_root_user_pw",
+            "exposed": false
+          }
+        ]
+      },
+      "findings": [
+        {
+          "rule_id": "SEC-SECRET-001",
+          "severity": "CRITICAL",
+          "title": "Potential Hardcoded Secret Detected",
+          "description": "Potential secret material was detected in resource 'google_sql_user.users'.",
+          "resource_id": "google_sql_user.users",
+          "resource_type": "google_sql_user",
+          "source_location": "main.tf:33",
+          "evidence": {
+            "secret_count": 1
+          },
+          "recommendation": "Remove secrets from Terraform configuration and use AWS Secrets Manager, SSM Parameter Store, or another secure secret-management solution."
+        }
+      ],
+      "is_special": false
+    },
+    {
+      "id": "var.database_name_prefix",
+      "type": "unknown",
+      "name": "var.database_name_prefix",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.database_version",
+      "type": "unknown",
+      "name": "var.database_version",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.region",
+      "type": "unknown",
+      "name": "var.region",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.authorized_network",
+      "type": "unknown",
+      "name": "var.authorized_network",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.gcp_sql_root_user_name",
+      "type": "unknown",
+      "name": "var.gcp_sql_root_user_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.gcp_sql_root_user_pw",
+      "type": "unknown",
+      "name": "var.gcp_sql_root_user_pw",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "random_pet.database_name",
+      "target": "var.database_name_prefix",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.database_name_prefix"
+    },
+    {
+      "source": "google_sql_database_instance.cloudsql-postgres-master",
+      "target": "random_pet.database_name",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "random_pet.database_name.id"
+    },
+    {
+      "source": "google_sql_database_instance.cloudsql-postgres-master",
+      "target": "var.database_version",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.database_version"
+    },
+    {
+      "source": "google_sql_database_instance.cloudsql-postgres-master",
+      "target": "var.region",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.region"
+    },
+    {
+      "source": "google_sql_database_instance.cloudsql-postgres-master",
+      "target": "var.authorized_network",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.authorized_network"
+    },
+    {
+      "source": "google_sql_user.users",
+      "target": "var.gcp_sql_root_user_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.gcp_sql_root_user_name"
+    },
+    {
+      "source": "google_sql_user.users",
+      "target": "google_sql_database_instance.cloudsql-postgres-master",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "google_sql_database_instance.cloudsql-postgres-master.name"
+    },
+    {
+      "source": "google_sql_user.users",
+      "target": "var.gcp_sql_root_user_pw",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.gcp_sql_root_user_pw"
+    }
+  ],
+  "entry_points": [],
+  "crown_jewels": [
+    "google_sql_database_instance.cloudsql-postgres-master",
+    "google_sql_user.users"
+  ],
+  "attack_paths": [],
+  "choke_points": [],
+  "risk": {
+    "score": 35.0,
+    "risk_level": "CRITICAL"
+  },
+  "risk_scores": {
+    "random_pet.database_name": {
+      "resource_id": "random_pet.database_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.database_name_prefix"
+      ]
+    },
+    "google_sql_database_instance.cloudsql-postgres-master": {
+      "resource_id": "google_sql_database_instance.cloudsql-postgres-master",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "random_pet.database_name",
+        "var.authorized_network",
+        "var.database_name_prefix",
+        "var.database_version",
+        "var.region"
+      ]
+    },
+    "google_sql_user.users": {
+      "resource_id": "google_sql_user.users",
+      "score": 35.0,
+      "risk_level": "CRITICAL",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 8,
+      "blast_radius": [
+        "google_sql_database_instance.cloudsql-postgres-master",
+        "random_pet.database_name",
+        "var.authorized_network",
+        "var.database_name_prefix",
+        "var.database_version",
+        "var.gcp_sql_root_user_name",
+        "var.gcp_sql_root_user_pw",
+        "var.region"
+      ]
+    },
+    "var.database_name_prefix": {
+      "resource_id": "var.database_name_prefix",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.database_version": {
+      "resource_id": "var.database_version",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.region": {
+      "resource_id": "var.region",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.authorized_network": {
+      "resource_id": "var.authorized_network",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.gcp_sql_root_user_name": {
+      "resource_id": "var.gcp_sql_root_user_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.gcp_sql_root_user_pw": {
+      "resource_id": "var.gcp_sql_root_user_pw",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    }
+  }
+}

@@ -4,9 +4,9 @@ import shutil
 import tempfile
 import json
 
-from ast_extractor import parse_terraform_directory
-from converter import convert_to_schema
-from schema_validator import validate_schema, SchemaValidationError
+from app.parser.ast_extractor import parse_terraform_directory
+from app.core.converter import convert_to_schema
+from app.core.schema_validator import validate_schema, SchemaValidationError
 
 class TestTerraformConverterStrictGeneric(unittest.TestCase):
 

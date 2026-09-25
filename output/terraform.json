@@ -3,8 +3,8 @@
     "project_name": "validation_tes",
     "terraform_version": ">= 1.5",
     "cloud_provider": "aws",
-    "region": "ap-south-1",
-    "generated_at": "2026-09-12T23:23:18.278928+00:00"
+    "region": null,
+    "generated_at": "2026-09-25T08:04:42.564988+00:00"
   },
   "resources": [
     {
@@ -38,9 +38,9 @@
         "Environment": "${var.environment}"
       },
       "security": {
-        "internet_exposed": false,
+        "internet_exposed": null,
         "public_access": false,
-        "public_ip": false,
+        "public_ip": null,
         "encryption_enabled": true,
         "encryption_type": "at_rest",
         "logging_enabled": null,
@@ -90,9 +90,9 @@
         "Name": "test-web-role"
       },
       "security": {
-        "internet_exposed": false,
-        "public_access": false,
-        "public_ip": false,
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
         "encryption_enabled": null,
         "encryption_type": null,
         "logging_enabled": null,
@@ -140,9 +140,9 @@
       },
       "tags": {},
       "security": {
-        "internet_exposed": false,
-        "public_access": false,
-        "public_ip": false,
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
         "encryption_enabled": null,
         "encryption_type": null,
         "logging_enabled": null,
@@ -205,7 +205,7 @@
       "security": {
         "internet_exposed": true,
         "public_access": true,
-        "public_ip": false,
+        "public_ip": null,
         "encryption_enabled": null,
         "encryption_type": null,
         "logging_enabled": null,
@@ -251,9 +251,9 @@
         "Environment": "${var.environment}"
       },
       "security": {
-        "internet_exposed": false,
-        "public_access": false,
-        "public_ip": false,
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
         "encryption_enabled": null,
         "encryption_type": null,
         "logging_enabled": null,
@@ -298,7 +298,7 @@
       },
       "security": {
         "internet_exposed": true,
-        "public_access": false,
+        "public_access": null,
         "public_ip": true,
         "encryption_enabled": null,
         "encryption_type": null,
@@ -376,7 +376,7 @@
       "security": {
         "internet_exposed": true,
         "public_access": true,
-        "public_ip": false,
+        "public_ip": null,
         "encryption_enabled": null,
         "encryption_type": null,
         "logging_enabled": null,
@@ -455,7 +455,7 @@
       },
       "security": {
         "internet_exposed": true,
-        "public_access": false,
+        "public_access": null,
         "public_ip": true,
         "encryption_enabled": null,
         "encryption_type": null,
@@ -506,9 +506,9 @@
         "Environment": "${var.environment}"
       },
       "security": {
-        "internet_exposed": false,
-        "public_access": false,
-        "public_ip": false,
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
         "encryption_enabled": null,
         "encryption_type": null,
         "logging_enabled": null,
@@ -549,9 +549,9 @@
       },
       "tags": {},
       "security": {
-        "internet_exposed": false,
-        "public_access": false,
-        "public_ip": false,
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
         "encryption_enabled": null,
         "encryption_type": null,
         "logging_enabled": null,
@@ -591,9 +591,9 @@
       },
       "tags": {},
       "security": {
-        "internet_exposed": false,
-        "public_access": false,
-        "public_ip": false,
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
         "encryption_enabled": null,
         "encryption_type": null,
         "logging_enabled": null,
@@ -639,18 +639,18 @@
   ],
   "variables": [
     {
-      "name": "region",
-      "type": "string",
-      "default": "ap-south-1",
-      "description": "AWS deployment region",
-      "sensitive": false,
-      "validation": {}
-    },
-    {
       "name": "environment",
       "type": "string",
       "default": "test",
       "description": "Deployment environment",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "region",
+      "type": "string",
+      "default": "ap-south-1",
+      "description": "AWS deployment region",
       "sensitive": false,
       "validation": {}
     },
@@ -680,6 +680,12 @@
     }
   ],
   "outputs": [
+    {
+      "name": "environment",
+      "value": "${var.environment}",
+      "description": null,
+      "sensitive": false
+    },
     {
       "name": "vpc_id",
       "value": "${aws_vpc.main.id}",
@@ -1034,7 +1040,7 @@
       "title": "Resource is exposed to the internet",
       "description": "The resource configuration permits public network exposure.",
       "evidence": {
-        "public_access": false,
+        "public_access": null,
         "internet_exposed": true
       },
       "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
@@ -1102,7 +1108,7 @@
       "title": "Resource is exposed to the internet",
       "description": "The resource configuration permits public network exposure.",
       "evidence": {
-        "public_access": false,
+        "public_access": null,
         "internet_exposed": true
       },
       "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",

@@ -1,0 +1,1130 @@
+{
+  "nodes": [
+    {
+      "id": "internet",
+      "type": "external",
+      "name": "Internet",
+      "provider": "external",
+      "attributes": {
+        "description": "External Internet / Public Network"
+      },
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": true
+    },
+    {
+      "id": "aws_db_instance.main",
+      "type": "aws_db_instance",
+      "name": "main",
+      "provider": "aws",
+      "attributes": {
+        "identifier": "terraform-validation-db",
+        "engine": "postgres",
+        "engine_version": "16",
+        "instance_class": "db.t3.micro",
+        "allocated_storage": 20,
+        "username": "admin",
+        "password": "${var.db_password}",
+        "db_name": "testdb",
+        "storage_encrypted": true,
+        "publicly_accessible": false,
+        "skip_final_snapshot": true,
+        "vpc_security_group_ids": [
+          "${aws_security_group.web.id}"
+        ],
+        "tags": {
+          "Name": "test-database",
+          "Environment": "${var.environment}"
+        }
+      },
+      "tags": {
+        "Name": "test-database",
+        "Environment": "${var.environment}"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": false,
+        "public_ip": null,
+        "encryption_enabled": true,
+        "encryption_type": "at_rest",
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": [
+          {
+            "type": "password",
+            "reference": "var.db_password",
+            "exposed": false
+          }
+        ]
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_iam_role.web_role",
+      "type": "aws_iam_role",
+      "name": "web_role",
+      "provider": "aws",
+      "attributes": {
+        "name": "test-web-role",
+        "assume_role_policy": "${jsonencode({Version = \"2012-10-17\", Statement = [{Effect = \"Allow\", Principal = {Service = \"ec2.amazonaws.com\"}, Action = \"sts:AssumeRole\"}]})}",
+        "tags": {
+          "Name": "test-web-role"
+        }
+      },
+      "tags": {
+        "Name": "test-web-role"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": true,
+        "authorization_enabled": true,
+        "least_privilege": true,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [
+          {
+            "effect": "Allow",
+            "actions": [
+              "sts:AssumeRole"
+            ],
+            "resources": [],
+            "principals": [
+              "ec2.amazonaws.com"
+            ],
+            "conditions": {}
+          }
+        ],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_iam_role_policy.web_policy",
+      "type": "aws_iam_role_policy",
+      "name": "web_policy",
+      "provider": "aws",
+      "attributes": {
+        "name": "test-web-policy",
+        "role": "${aws_iam_role.web_role.id}",
+        "policy": "${jsonencode({Version = \"2012-10-17\", Statement = [{Effect = \"Allow\", Action = [\"s3:GetObject\"], Resource = \"*\"}]})}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": true,
+        "least_privilege": false,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [
+          {
+            "effect": "Allow",
+            "actions": [
+              "s3:GetObject"
+            ],
+            "resources": [
+              "*"
+            ],
+            "principals": [],
+            "conditions": {}
+          }
+        ],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_lb.web",
+      "type": "aws_lb",
+      "name": "web",
+      "provider": "aws",
+      "attributes": {
+        "name": "test-alb",
+        "internal": false,
+        "load_balancer_type": "application",
+        "subnets": [
+          "${aws_subnet.public.id}"
+        ],
+        "security_groups": [
+          "${aws_security_group.web.id}"
+        ],
+        "tags": {
+          "Name": "test-alb"
+        }
+      },
+      "tags": {
+        "Name": "test-alb"
+      },
+      "security": {
+        "internet_exposed": true,
+        "public_access": true,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [
+        {
+          "id": "INTERNET_EXPOSED_aws_lb.web",
+          "severity": "HIGH",
+          "category": "NETWORK_EXPOSURE",
+          "resource": "aws_lb.web",
+          "title": "Resource is exposed to the internet",
+          "description": "The resource configuration permits public network exposure.",
+          "evidence": {
+            "public_access": true,
+            "internet_exposed": true
+          },
+          "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
+          "recommendation": "Disable public network access unless explicitly required for public services.",
+          "remediation": "Set public network access to false or restrict inbound access."
+        }
+      ],
+      "is_special": false
+    },
+    {
+      "id": "aws_vpc.main",
+      "type": "aws_vpc",
+      "name": "main",
+      "provider": "aws",
+      "attributes": {
+        "cidr_block": "10.0.0.0/16",
+        "enable_dns_support": true,
+        "enable_dns_hostnames": true,
+        "tags": {
+          "Name": "test-vpc",
+          "Environment": "${var.environment}"
+        }
+      },
+      "tags": {
+        "Name": "test-vpc",
+        "Environment": "${var.environment}"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_subnet.public",
+      "type": "aws_subnet",
+      "name": "public",
+      "provider": "aws",
+      "attributes": {
+        "vpc_id": "${aws_vpc.main.id}",
+        "cidr_block": "10.0.1.0/24",
+        "availability_zone": "ap-south-1a",
+        "map_public_ip_on_launch": true,
+        "tags": {
+          "Name": "public-subnet"
+        }
+      },
+      "tags": {
+        "Name": "public-subnet"
+      },
+      "security": {
+        "internet_exposed": true,
+        "public_access": null,
+        "public_ip": true,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [
+        {
+          "id": "INTERNET_EXPOSED_aws_subnet.public",
+          "severity": "HIGH",
+          "category": "NETWORK_EXPOSURE",
+          "resource": "aws_subnet.public",
+          "title": "Resource is exposed to the internet",
+          "description": "The resource configuration permits public network exposure.",
+          "evidence": {
+            "public_access": null,
+            "internet_exposed": true
+          },
+          "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
+          "recommendation": "Disable public network access unless explicitly required for public services.",
+          "remediation": "Set public network access to false or restrict inbound access."
+        }
+      ],
+      "is_special": false
+    },
+    {
+      "id": "aws_security_group.web",
+      "type": "aws_security_group",
+      "name": "web",
+      "provider": "aws",
+      "attributes": {
+        "name": "test-web-sg",
+        "description": "Web security group",
+        "vpc_id": "${aws_vpc.main.id}",
+        "ingress": [
+          {
+            "description": "SSH from internet",
+            "protocol": "tcp",
+            "from_port": 22,
+            "to_port": 22,
+            "cidr_blocks": [
+              "0.0.0.0/0"
+            ]
+          },
+          {
+            "description": "HTTP from internet",
+            "protocol": "tcp",
+            "from_port": 80,
+            "to_port": 80,
+            "cidr_blocks": [
+              "0.0.0.0/0"
+            ]
+          }
+        ],
+        "egress": [
+          {
+            "protocol": "-1",
+            "from_port": 0,
+            "to_port": 0,
+            "cidr_blocks": [
+              "0.0.0.0/0"
+            ]
+          }
+        ],
+        "tags": {
+          "Name": "web-sg"
+        }
+      },
+      "tags": {
+        "Name": "web-sg"
+      },
+      "security": {
+        "internet_exposed": true,
+        "public_access": true,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 22,
+            "to_port": 22,
+            "sources": [
+              "0.0.0.0/0"
+            ],
+            "description": "SSH from internet"
+          },
+          {
+            "protocol": "tcp",
+            "from_port": 80,
+            "to_port": 80,
+            "sources": [
+              "0.0.0.0/0"
+            ],
+            "description": "HTTP from internet"
+          }
+        ],
+        "egress_rules": [
+          {
+            "protocol": "-1",
+            "from_port": 0,
+            "to_port": 0,
+            "destinations": [
+              "0.0.0.0/0"
+            ],
+            "description": null
+          }
+        ],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [
+        {
+          "id": "PUBLIC_INGRESS_aws_security_group.web_0",
+          "severity": "HIGH",
+          "category": "NETWORK_EXPOSURE",
+          "resource": "aws_security_group.web",
+          "title": "Inbound traffic is exposed to the internet",
+          "description": "Inbound traffic on port 22 is permitted from open internet sources.",
+          "evidence": {
+            "protocol": "tcp",
+            "from_port": 22,
+            "to_port": 22,
+            "sources": [
+              "0.0.0.0/0"
+            ]
+          },
+          "attack_vector": "An attacker on the internet can attempt connections to port 22.",
+          "recommendation": "Restrict inbound access to approved CIDR ranges.",
+          "remediation": "Modify security group or firewall ingress rules to remove wildcard sources."
+        }
+      ],
+      "is_special": false
+    },
+    {
+      "id": "aws_instance.web",
+      "type": "aws_instance",
+      "name": "web",
+      "provider": "aws",
+      "attributes": {
+        "ami": "${var.ami_id}",
+        "instance_type": "${var.instance_type}",
+        "subnet_id": "${aws_subnet.public.id}",
+        "vpc_security_group_ids": [
+          "${aws_security_group.web.id}"
+        ],
+        "associate_public_ip_address": true,
+        "tags": {
+          "Name": "test-web-server",
+          "Environment": "${var.environment}"
+        }
+      },
+      "tags": {
+        "Name": "test-web-server",
+        "Environment": "${var.environment}"
+      },
+      "security": {
+        "internet_exposed": true,
+        "public_access": null,
+        "public_ip": true,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [
+        {
+          "id": "INTERNET_EXPOSED_aws_instance.web",
+          "severity": "HIGH",
+          "category": "NETWORK_EXPOSURE",
+          "resource": "aws_instance.web",
+          "title": "Resource is exposed to the internet",
+          "description": "The resource configuration permits public network exposure.",
+          "evidence": {
+            "public_access": null,
+            "internet_exposed": true
+          },
+          "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
+          "recommendation": "Disable public network access unless explicitly required for public services.",
+          "remediation": "Set public network access to false or restrict inbound access."
+        }
+      ],
+      "is_special": false
+    },
+    {
+      "id": "aws_s3_bucket.data",
+      "type": "aws_s3_bucket",
+      "name": "data",
+      "provider": "aws",
+      "attributes": {
+        "bucket": "terraform-validation-test-bucket-12345",
+        "tags": {
+          "Name": "test-data-bucket",
+          "Environment": "${var.environment}"
+        }
+      },
+      "tags": {
+        "Name": "test-data-bucket",
+        "Environment": "${var.environment}"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_s3_bucket_versioning.data",
+      "type": "aws_s3_bucket_versioning",
+      "name": "data",
+      "provider": "aws",
+      "attributes": {
+        "bucket": "${aws_s3_bucket.data.id}",
+        "versioning_configuration": [
+          {
+            "status": "Enabled"
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": true,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "aws_s3_bucket_public_access_block.data",
+      "type": "aws_s3_bucket_public_access_block",
+      "name": "data",
+      "provider": "aws",
+      "attributes": {
+        "bucket": "${aws_s3_bucket.data.id}",
+        "block_public_acls": false,
+        "block_public_policy": false,
+        "ignore_public_acls": false,
+        "restrict_public_buckets": false
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.db_password",
+      "type": "unknown",
+      "name": "var.db_password",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.environment",
+      "type": "unknown",
+      "name": "var.environment",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.ami_id",
+      "type": "unknown",
+      "name": "var.ami_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.instance_type",
+      "type": "unknown",
+      "name": "var.instance_type",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.example",
+      "type": "unknown",
+      "name": "module.example",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "internet",
+      "target": "aws_lb.web",
+      "type": "EXPOSED_TO",
+      "rule_id": "INTERNET_EXPOSED_aws_lb.web",
+      "protocol": "tcp",
+      "sources": [
+        "0.0.0.0/0"
+      ]
+    },
+    {
+      "source": "internet",
+      "target": "aws_subnet.public",
+      "type": "EXPOSED_TO",
+      "rule_id": "INTERNET_EXPOSED_aws_subnet.public",
+      "protocol": "tcp",
+      "sources": [
+        "0.0.0.0/0"
+      ]
+    },
+    {
+      "source": "internet",
+      "target": "aws_security_group.web",
+      "type": "EXPOSED_TO",
+      "rule_id": "INTERNET_EXPOSED_aws_security_group.web",
+      "protocol": "tcp",
+      "port": 80,
+      "sources": [
+        "0.0.0.0/0"
+      ]
+    },
+    {
+      "source": "internet",
+      "target": "aws_instance.web",
+      "type": "EXPOSED_TO",
+      "rule_id": "INTERNET_EXPOSED_aws_instance.web",
+      "protocol": "tcp",
+      "sources": [
+        "0.0.0.0/0"
+      ]
+    },
+    {
+      "source": "aws_db_instance.main",
+      "target": "var.db_password",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.db_password"
+    },
+    {
+      "source": "aws_db_instance.main",
+      "target": "aws_security_group.web",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_security_group.web.id"
+    },
+    {
+      "source": "aws_db_instance.main",
+      "target": "var.environment",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.environment"
+    },
+    {
+      "source": "aws_iam_role_policy.web_policy",
+      "target": "aws_iam_role.web_role",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_iam_role.web_role.id"
+    },
+    {
+      "source": "aws_lb.web",
+      "target": "aws_subnet.public",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_subnet.public.id"
+    },
+    {
+      "source": "aws_lb.web",
+      "target": "aws_security_group.web",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_security_group.web.id"
+    },
+    {
+      "source": "aws_vpc.main",
+      "target": "var.environment",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.environment"
+    },
+    {
+      "source": "aws_subnet.public",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpc.main.id"
+    },
+    {
+      "source": "aws_security_group.web",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_vpc.main.id"
+    },
+    {
+      "source": "aws_instance.web",
+      "target": "aws_subnet.public",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_subnet.public.id"
+    },
+    {
+      "source": "aws_instance.web",
+      "target": "aws_security_group.web",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_security_group.web.id"
+    },
+    {
+      "source": "aws_instance.web",
+      "target": "var.ami_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.ami_id"
+    },
+    {
+      "source": "aws_instance.web",
+      "target": "var.instance_type",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.instance_type"
+    },
+    {
+      "source": "aws_instance.web",
+      "target": "var.environment",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.environment"
+    },
+    {
+      "source": "aws_s3_bucket.data",
+      "target": "var.environment",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.environment"
+    },
+    {
+      "source": "aws_s3_bucket_versioning.data",
+      "target": "aws_s3_bucket.data",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_s3_bucket.data.id"
+    },
+    {
+      "source": "aws_s3_bucket_public_access_block.data",
+      "target": "aws_s3_bucket.data",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "aws_s3_bucket.data.id"
+    },
+    {
+      "source": "module.example",
+      "target": "var.environment",
+      "type": "MODULE_INPUT",
+      "reference": "var.environment"
+    }
+  ],
+  "entry_points": [
+    "aws_instance.web",
+    "aws_lb.web",
+    "aws_security_group.web",
+    "aws_subnet.public"
+  ],
+  "crown_jewels": [
+    "aws_db_instance.main",
+    "aws_s3_bucket.data",
+    "aws_s3_bucket_public_access_block.data",
+    "aws_s3_bucket_versioning.data"
+  ],
+  "attack_paths": [
+    {
+      "source": "internet",
+      "target": "aws_db_instance.main",
+      "nodes": [
+        "internet",
+        "aws_security_group.web",
+        "aws_db_instance.main"
+      ],
+      "edges": [
+        {
+          "source": "internet",
+          "target": "aws_security_group.web",
+          "type": "EXPOSED_TO",
+          "rule_id": "INTERNET_EXPOSED_aws_security_group.web",
+          "protocol": "tcp",
+          "port": 80,
+          "sources": [
+            "0.0.0.0/0"
+          ]
+        },
+        {
+          "source": "aws_security_group.web",
+          "target": "aws_db_instance.main",
+          "type": "REFERENCES_RESOURCE"
+        }
+      ],
+      "rules_involved": [
+        "INTERNET_EXPOSED_aws_security_group.web"
+      ],
+      "length": 2
+    },
+    {
+      "source": "internet",
+      "target": "aws_db_instance.main",
+      "nodes": [
+        "internet",
+        "aws_instance.web",
+        "aws_security_group.web",
+        "aws_db_instance.main"
+      ],
+      "edges": [
+        {
+          "source": "internet",
+          "target": "aws_instance.web",
+          "type": "EXPOSED_TO",
+          "rule_id": "INTERNET_EXPOSED_aws_instance.web",
+          "protocol": "tcp",
+          "sources": [
+            "0.0.0.0/0"
+          ]
+        },
+        {
+          "source": "aws_instance.web",
+          "target": "aws_security_group.web",
+          "type": "REFERENCES_RESOURCE"
+        },
+        {
+          "source": "aws_security_group.web",
+          "target": "aws_db_instance.main",
+          "type": "REFERENCES_RESOURCE"
+        }
+      ],
+      "rules_involved": [
+        "INTERNET_EXPOSED_aws_instance.web"
+      ],
+      "length": 3
+    },
+    {
+      "source": "internet",
+      "target": "aws_db_instance.main",
+      "nodes": [
+        "internet",
+        "aws_lb.web",
+        "aws_security_group.web",
+        "aws_db_instance.main"
+      ],
+      "edges": [
+        {
+          "source": "internet",
+          "target": "aws_lb.web",
+          "type": "EXPOSED_TO",
+          "rule_id": "INTERNET_EXPOSED_aws_lb.web",
+          "protocol": "tcp",
+          "sources": [
+            "0.0.0.0/0"
+          ]
+        },
+        {
+          "source": "aws_lb.web",
+          "target": "aws_security_group.web",
+          "type": "REFERENCES_RESOURCE"
+        },
+        {
+          "source": "aws_security_group.web",
+          "target": "aws_db_instance.main",
+          "type": "REFERENCES_RESOURCE"
+        }
+      ],
+      "rules_involved": [
+        "INTERNET_EXPOSED_aws_lb.web"
+      ],
+      "length": 3
+    }
+  ],
+  "choke_points": [
+    {
+      "resource_id": "aws_db_instance.main",
+      "path_count": 3,
+      "path_percentage": 100.0
+    },
+    {
+      "resource_id": "aws_security_group.web",
+      "path_count": 3,
+      "path_percentage": 100.0
+    },
+    {
+      "resource_id": "aws_instance.web",
+      "path_count": 1,
+      "path_percentage": 33.3
+    },
+    {
+      "resource_id": "aws_lb.web",
+      "path_count": 1,
+      "path_percentage": 33.3
+    }
+  ],
+  "risk": {
+    "score": 18.9,
+    "risk_level": "HIGH"
+  },
+  "risk_scores": {
+    "aws_db_instance.main": {
+      "resource_id": "aws_db_instance.main",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "aws_security_group.web",
+        "aws_vpc.main",
+        "var.db_password",
+        "var.environment"
+      ]
+    },
+    "aws_iam_role.web_role": {
+      "resource_id": "aws_iam_role.web_role",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "aws_iam_role_policy.web_policy": {
+      "resource_id": "aws_iam_role_policy.web_policy",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "aws_iam_role.web_role"
+      ]
+    },
+    "aws_lb.web": {
+      "resource_id": "aws_lb.web",
+      "score": 16.1,
+      "risk_level": "HIGH",
+      "is_entry_point": true,
+      "is_crown_jewel": false,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "aws_security_group.web",
+        "aws_subnet.public",
+        "aws_vpc.main",
+        "var.environment"
+      ]
+    },
+    "aws_vpc.main": {
+      "resource_id": "aws_vpc.main",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.environment"
+      ]
+    },
+    "aws_subnet.public": {
+      "resource_id": "aws_subnet.public",
+      "score": 13.3,
+      "risk_level": "HIGH",
+      "is_entry_point": true,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "aws_vpc.main",
+        "var.environment"
+      ]
+    },
+    "aws_security_group.web": {
+      "resource_id": "aws_security_group.web",
+      "score": 13.3,
+      "risk_level": "HIGH",
+      "is_entry_point": true,
+      "is_crown_jewel": false,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "aws_vpc.main",
+        "var.environment"
+      ]
+    },
+    "aws_instance.web": {
+      "resource_id": "aws_instance.web",
+      "score": 18.9,
+      "risk_level": "HIGH",
+      "is_entry_point": true,
+      "is_crown_jewel": false,
+      "blast_radius_count": 6,
+      "blast_radius": [
+        "aws_security_group.web",
+        "aws_subnet.public",
+        "aws_vpc.main",
+        "var.ami_id",
+        "var.environment",
+        "var.instance_type"
+      ]
+    },
+    "aws_s3_bucket.data": {
+      "resource_id": "aws_s3_bucket.data",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.environment"
+      ]
+    },
+    "aws_s3_bucket_versioning.data": {
+      "resource_id": "aws_s3_bucket_versioning.data",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "aws_s3_bucket.data",
+        "var.environment"
+      ]
+    },
+    "aws_s3_bucket_public_access_block.data": {
+      "resource_id": "aws_s3_bucket_public_access_block.data",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": true,
+      "blast_radius_count": 2,
+      "blast_radius": [
+        "aws_s3_bucket.data",
+        "var.environment"
+      ]
+    },
+    "var.db_password": {
+      "resource_id": "var.db_password",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.environment": {
+      "resource_id": "var.environment",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.ami_id": {
+      "resource_id": "var.ami_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.instance_type": {
+      "resource_id": "var.instance_type",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.example": {
+      "resource_id": "module.example",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.environment"
+      ]
+    }
+  }
+}

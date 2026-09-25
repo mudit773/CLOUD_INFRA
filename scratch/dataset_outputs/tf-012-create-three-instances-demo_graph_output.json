@@ -1,0 +1,2425 @@
+{
+  "nodes": [
+    {
+      "id": "internet",
+      "type": "external",
+      "name": "Internet",
+      "provider": "external",
+      "attributes": {
+        "description": "External Internet / Public Network"
+      },
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": true
+    },
+    {
+      "id": "oci_identity_compartment.CreateCompartment",
+      "type": "oci_identity_compartment",
+      "name": "CreateCompartment",
+      "provider": "oci",
+      "attributes": {
+        "compartment_id": "${var.tenancy_ocid}",
+        "description": "${var.compartment_description}",
+        "name": "${var.compartment_name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "oci_core_internet_gateway.CreateIGW",
+      "type": "oci_core_internet_gateway",
+      "name": "CreateIGW",
+      "provider": "oci",
+      "attributes": {
+        "compartment_id": "${var.compartment_ocid}",
+        "enabled": "${var.internet_gateway_enabled}",
+        "vcn_id": "${var.vcn_id}",
+        "display_name": "${var.internet_gateway_display_name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "oci_core_instance.CreateInstance",
+      "type": "oci_core_instance",
+      "name": "CreateInstance",
+      "provider": "oci",
+      "attributes": {
+        "for_each": "${var.instance_variables}",
+        "availability_domain": "${var.instance_availability_domain}",
+        "compartment_id": "${var.compartment_id}",
+        "shape": "${var.shape_id}",
+        "source_details": [
+          {
+            "source_id": "${var.image_id}",
+            "source_type": "image"
+          }
+        ],
+        "create_vnic_details": [
+          {
+            "subnet_id": "${var.subnet_id}",
+            "display_name": "${each.key}",
+            "hostname_label": "${each.value}",
+            "skip_source_dest_check": "${var.instance_create_vnic_details_skip_source_dest_check}",
+            "assign_public_ip": "${var.assign_public_ip}"
+          }
+        ],
+        "metadata": {
+          "ssh_authorized_keys": "${var.ssh_public_key}"
+        },
+        "subnet_id": "${var.subnet_id}",
+        "display_name": "${each.key}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "oci_core_route_table.CreateRouteTable",
+      "type": "oci_core_route_table",
+      "name": "CreateRouteTable",
+      "provider": "oci",
+      "attributes": {
+        "compartment_id": "${var.compartment_ocid}",
+        "vcn_id": "${var.vcn_id}",
+        "display_name": "${var.route_table_display_name}",
+        "dynamic": [
+          {
+            "\"route_rules\"": {
+              "for_each": "${zipmap(var.network_id, var.route_table_route_rules_cidr_block)}",
+              "content": [
+                {
+                  "network_entity_id": "${route_rules.key}",
+                  "destination": "${route_rules.value}"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "oci_core_security_list.CreateSecurityList",
+      "type": "oci_core_security_list",
+      "name": "CreateSecurityList",
+      "provider": "oci",
+      "attributes": {
+        "compartment_id": "${var.compartment_ocid}",
+        "vcn_id": "${var.vcn_id}",
+        "display_name": "${var.sl_display_name}",
+        "egress_security_rules": [
+          {
+            "destination": "${var.egress_destination}",
+            "protocol": "${var.egress_protocol}"
+          }
+        ],
+        "dynamic": [
+          {
+            "\"ingress_security_rules\"": {
+              "iterator": "port",
+              "for_each": "${[for y in var.ingress_ports : {minport = y.minport, maxport = y.maxport, source_cidr = y.source_cidr}]}",
+              "content": [
+                {
+                  "protocol": "${var.ingress_protocol}",
+                  "source": "${port.value.source_cidr}",
+                  "stateless": "${var.ingress_stateless}",
+                  "tcp_options": [
+                    {
+                      "min": "${port.value.minport}",
+                      "max": "${port.value.maxport}"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "oci_core_subnet.CreateSubnet",
+      "type": "oci_core_subnet",
+      "name": "CreateSubnet",
+      "provider": "oci",
+      "attributes": {
+        "availability_domain": "${var.availability_domain}",
+        "cidr_block": "${var.sub_cidr_block}",
+        "display_name": "${var.sub_display_name}",
+        "dns_label": "${var.sub_dns_label}",
+        "compartment_id": "${var.compartment_ocid}",
+        "vcn_id": "${var.vcn_id}",
+        "security_list_ids": "${var.vcn_default_security_list_id}",
+        "route_table_id": "${var.vcn_default_route_table_id}",
+        "dhcp_options_id": "${var.vcn_default_dhcp_options_id}",
+        "prohibit_public_ip_on_vnic": "${var.prohibit_public_ip_on_vnic}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "oci_identity_tag_namespace.CreateTagNamespace",
+      "type": "oci_identity_tag_namespace",
+      "name": "CreateTagNamespace",
+      "provider": "oci",
+      "attributes": {
+        "compartment_id": "${var.compartment_ocid}",
+        "description": "${var.tag_namespace_description}",
+        "name": "${var.tag_namespace_name}",
+        "is_retired": "${var.is_retired}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "oci_identity_tag.CreateTag",
+      "type": "oci_identity_tag",
+      "name": "CreateTag",
+      "provider": "oci",
+      "attributes": {
+        "count": "${length(var.tag_names)}",
+        "description": "${var.tag_description[count.index]}",
+        "name": "${var.tag_names[count.index]}",
+        "tag_namespace_id": "${oci_identity_tag_namespace.CreateTagNamespace.id}",
+        "is_retired": false
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "oci_core_virtual_network.CreateVCN",
+      "type": "oci_core_virtual_network",
+      "name": "CreateVCN",
+      "provider": "oci",
+      "attributes": {
+        "cidr_block": "${var.vcn_cidr_block}",
+        "dns_label": "${var.dns_label}",
+        "compartment_id": "${var.compartment_ocid}",
+        "display_name": "${var.display_name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.tenancy_ocid",
+      "type": "unknown",
+      "name": "var.tenancy_ocid",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.compartment_description",
+      "type": "unknown",
+      "name": "var.compartment_description",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.compartment_name",
+      "type": "unknown",
+      "name": "var.compartment_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.compartment_ocid",
+      "type": "unknown",
+      "name": "var.compartment_ocid",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.internet_gateway_enabled",
+      "type": "unknown",
+      "name": "var.internet_gateway_enabled",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.vcn_id",
+      "type": "unknown",
+      "name": "var.vcn_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.internet_gateway_display_name",
+      "type": "unknown",
+      "name": "var.internet_gateway_display_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.instance_variables",
+      "type": "unknown",
+      "name": "var.instance_variables",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.instance_availability_domain",
+      "type": "unknown",
+      "name": "var.instance_availability_domain",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.compartment_id",
+      "type": "unknown",
+      "name": "var.compartment_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.shape_id",
+      "type": "unknown",
+      "name": "var.shape_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.image_id",
+      "type": "unknown",
+      "name": "var.image_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.subnet_id",
+      "type": "unknown",
+      "name": "var.subnet_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.instance_create_vnic_details_skip_source_dest_check",
+      "type": "unknown",
+      "name": "var.instance_create_vnic_details_skip_source_dest_check",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.assign_public_ip",
+      "type": "unknown",
+      "name": "var.assign_public_ip",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.ssh_public_key",
+      "type": "unknown",
+      "name": "var.ssh_public_key",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.route_table_display_name",
+      "type": "unknown",
+      "name": "var.route_table_display_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.network_id",
+      "type": "unknown",
+      "name": "var.network_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.route_table_route_rules_cidr_block",
+      "type": "unknown",
+      "name": "var.route_table_route_rules_cidr_block",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.sl_display_name",
+      "type": "unknown",
+      "name": "var.sl_display_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.egress_destination",
+      "type": "unknown",
+      "name": "var.egress_destination",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.egress_protocol",
+      "type": "unknown",
+      "name": "var.egress_protocol",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.ingress_ports",
+      "type": "unknown",
+      "name": "var.ingress_ports",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.ingress_protocol",
+      "type": "unknown",
+      "name": "var.ingress_protocol",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.ingress_stateless",
+      "type": "unknown",
+      "name": "var.ingress_stateless",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.availability_domain",
+      "type": "unknown",
+      "name": "var.availability_domain",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.sub_cidr_block",
+      "type": "unknown",
+      "name": "var.sub_cidr_block",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.sub_display_name",
+      "type": "unknown",
+      "name": "var.sub_display_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.sub_dns_label",
+      "type": "unknown",
+      "name": "var.sub_dns_label",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.vcn_default_security_list_id",
+      "type": "unknown",
+      "name": "var.vcn_default_security_list_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.vcn_default_route_table_id",
+      "type": "unknown",
+      "name": "var.vcn_default_route_table_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.vcn_default_dhcp_options_id",
+      "type": "unknown",
+      "name": "var.vcn_default_dhcp_options_id",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.prohibit_public_ip_on_vnic",
+      "type": "unknown",
+      "name": "var.prohibit_public_ip_on_vnic",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.tag_namespace_description",
+      "type": "unknown",
+      "name": "var.tag_namespace_description",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.tag_namespace_name",
+      "type": "unknown",
+      "name": "var.tag_namespace_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.is_retired",
+      "type": "unknown",
+      "name": "var.is_retired",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.tag_names",
+      "type": "unknown",
+      "name": "var.tag_names",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.tag_description",
+      "type": "unknown",
+      "name": "var.tag_description",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.vcn_cidr_block",
+      "type": "unknown",
+      "name": "var.vcn_cidr_block",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.dns_label",
+      "type": "unknown",
+      "name": "var.dns_label",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.display_name",
+      "type": "unknown",
+      "name": "var.display_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.CreateCompartment",
+      "type": "unknown",
+      "name": "module.CreateCompartment",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.CreateVCN",
+      "type": "unknown",
+      "name": "module.CreateVCN",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.vcn_display_name",
+      "type": "unknown",
+      "name": "var.vcn_display_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.vcn_dns_label",
+      "type": "unknown",
+      "name": "var.vcn_dns_label",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.CreateIGW",
+      "type": "unknown",
+      "name": "module.CreateIGW",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.CreateRouteRule",
+      "type": "unknown",
+      "name": "module.CreateRouteRule",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.igw_route_table_rules_cidr_block",
+      "type": "unknown",
+      "name": "var.igw_route_table_rules_cidr_block",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.CreatePrivateSecurityListPOC",
+      "type": "unknown",
+      "name": "module.CreatePrivateSecurityListPOC",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.private_security_list_name",
+      "type": "unknown",
+      "name": "var.private_security_list_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.ingress_source",
+      "type": "unknown",
+      "name": "var.ingress_source",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.CreateSubnetPOC",
+      "type": "unknown",
+      "name": "module.CreateSubnetPOC",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "data.oci_identity_availability_domains",
+      "type": "unknown",
+      "name": "data.oci_identity_availability_domains",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.cidr_block_subnet",
+      "type": "unknown",
+      "name": "var.cidr_block_subnet",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.display_name_subnet",
+      "type": "unknown",
+      "name": "var.display_name_subnet",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.dns_label_subnet",
+      "type": "unknown",
+      "name": "var.dns_label_subnet",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.CreateInstances",
+      "type": "unknown",
+      "name": "module.CreateInstances",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "data.oci_core_images",
+      "type": "unknown",
+      "name": "data.oci_core_images",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.shape_name",
+      "type": "unknown",
+      "name": "var.shape_name",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.instance_create_vnic_details_hostname_label",
+      "type": "unknown",
+      "name": "var.instance_create_vnic_details_hostname_label",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "oci_identity_compartment.CreateCompartment",
+      "target": "var.tenancy_ocid",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.tenancy_ocid"
+    },
+    {
+      "source": "oci_identity_compartment.CreateCompartment",
+      "target": "var.compartment_description",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.compartment_description"
+    },
+    {
+      "source": "oci_identity_compartment.CreateCompartment",
+      "target": "var.compartment_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.compartment_name"
+    },
+    {
+      "source": "oci_core_internet_gateway.CreateIGW",
+      "target": "var.compartment_ocid",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.compartment_ocid"
+    },
+    {
+      "source": "oci_core_internet_gateway.CreateIGW",
+      "target": "var.internet_gateway_enabled",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.internet_gateway_enabled"
+    },
+    {
+      "source": "oci_core_internet_gateway.CreateIGW",
+      "target": "var.vcn_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vcn_id"
+    },
+    {
+      "source": "oci_core_internet_gateway.CreateIGW",
+      "target": "var.internet_gateway_display_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.internet_gateway_display_name"
+    },
+    {
+      "source": "oci_core_instance.CreateInstance",
+      "target": "var.instance_variables",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.instance_variables"
+    },
+    {
+      "source": "oci_core_instance.CreateInstance",
+      "target": "var.instance_availability_domain",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.instance_availability_domain"
+    },
+    {
+      "source": "oci_core_instance.CreateInstance",
+      "target": "var.compartment_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.compartment_id"
+    },
+    {
+      "source": "oci_core_instance.CreateInstance",
+      "target": "var.shape_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.shape_id"
+    },
+    {
+      "source": "oci_core_instance.CreateInstance",
+      "target": "var.image_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.image_id"
+    },
+    {
+      "source": "oci_core_instance.CreateInstance",
+      "target": "var.subnet_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.subnet_id"
+    },
+    {
+      "source": "oci_core_instance.CreateInstance",
+      "target": "var.instance_create_vnic_details_skip_source_dest_check",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.instance_create_vnic_details_skip_source_dest_check"
+    },
+    {
+      "source": "oci_core_instance.CreateInstance",
+      "target": "var.assign_public_ip",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.assign_public_ip"
+    },
+    {
+      "source": "oci_core_instance.CreateInstance",
+      "target": "var.ssh_public_key",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.ssh_public_key"
+    },
+    {
+      "source": "oci_core_route_table.CreateRouteTable",
+      "target": "var.compartment_ocid",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.compartment_ocid"
+    },
+    {
+      "source": "oci_core_route_table.CreateRouteTable",
+      "target": "var.vcn_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vcn_id"
+    },
+    {
+      "source": "oci_core_route_table.CreateRouteTable",
+      "target": "var.route_table_display_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.route_table_display_name"
+    },
+    {
+      "source": "oci_core_route_table.CreateRouteTable",
+      "target": "var.network_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.network_id"
+    },
+    {
+      "source": "oci_core_route_table.CreateRouteTable",
+      "target": "var.route_table_route_rules_cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.route_table_route_rules_cidr_block"
+    },
+    {
+      "source": "oci_core_security_list.CreateSecurityList",
+      "target": "var.compartment_ocid",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.compartment_ocid"
+    },
+    {
+      "source": "oci_core_security_list.CreateSecurityList",
+      "target": "var.vcn_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vcn_id"
+    },
+    {
+      "source": "oci_core_security_list.CreateSecurityList",
+      "target": "var.sl_display_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.sl_display_name"
+    },
+    {
+      "source": "oci_core_security_list.CreateSecurityList",
+      "target": "var.egress_destination",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.egress_destination"
+    },
+    {
+      "source": "oci_core_security_list.CreateSecurityList",
+      "target": "var.egress_protocol",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.egress_protocol"
+    },
+    {
+      "source": "oci_core_security_list.CreateSecurityList",
+      "target": "var.ingress_ports",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.ingress_ports"
+    },
+    {
+      "source": "oci_core_security_list.CreateSecurityList",
+      "target": "var.ingress_protocol",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.ingress_protocol"
+    },
+    {
+      "source": "oci_core_security_list.CreateSecurityList",
+      "target": "var.ingress_stateless",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.ingress_stateless"
+    },
+    {
+      "source": "oci_core_subnet.CreateSubnet",
+      "target": "var.availability_domain",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.availability_domain"
+    },
+    {
+      "source": "oci_core_subnet.CreateSubnet",
+      "target": "var.sub_cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.sub_cidr_block"
+    },
+    {
+      "source": "oci_core_subnet.CreateSubnet",
+      "target": "var.sub_display_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.sub_display_name"
+    },
+    {
+      "source": "oci_core_subnet.CreateSubnet",
+      "target": "var.sub_dns_label",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.sub_dns_label"
+    },
+    {
+      "source": "oci_core_subnet.CreateSubnet",
+      "target": "var.compartment_ocid",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.compartment_ocid"
+    },
+    {
+      "source": "oci_core_subnet.CreateSubnet",
+      "target": "var.vcn_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vcn_id"
+    },
+    {
+      "source": "oci_core_subnet.CreateSubnet",
+      "target": "var.vcn_default_security_list_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vcn_default_security_list_id"
+    },
+    {
+      "source": "oci_core_subnet.CreateSubnet",
+      "target": "var.vcn_default_route_table_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vcn_default_route_table_id"
+    },
+    {
+      "source": "oci_core_subnet.CreateSubnet",
+      "target": "var.vcn_default_dhcp_options_id",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vcn_default_dhcp_options_id"
+    },
+    {
+      "source": "oci_core_subnet.CreateSubnet",
+      "target": "var.prohibit_public_ip_on_vnic",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.prohibit_public_ip_on_vnic"
+    },
+    {
+      "source": "oci_identity_tag_namespace.CreateTagNamespace",
+      "target": "var.compartment_ocid",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.compartment_ocid"
+    },
+    {
+      "source": "oci_identity_tag_namespace.CreateTagNamespace",
+      "target": "var.tag_namespace_description",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.tag_namespace_description"
+    },
+    {
+      "source": "oci_identity_tag_namespace.CreateTagNamespace",
+      "target": "var.tag_namespace_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.tag_namespace_name"
+    },
+    {
+      "source": "oci_identity_tag_namespace.CreateTagNamespace",
+      "target": "var.is_retired",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.is_retired"
+    },
+    {
+      "source": "oci_identity_tag.CreateTag",
+      "target": "var.tag_names",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.tag_names"
+    },
+    {
+      "source": "oci_identity_tag.CreateTag",
+      "target": "var.tag_description",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.tag_description"
+    },
+    {
+      "source": "oci_identity_tag.CreateTag",
+      "target": "oci_identity_tag_namespace.CreateTagNamespace",
+      "type": "REFERENCES_RESOURCE",
+      "reference": "oci_identity_tag_namespace.CreateTagNamespace.id"
+    },
+    {
+      "source": "oci_core_virtual_network.CreateVCN",
+      "target": "var.vcn_cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.vcn_cidr_block"
+    },
+    {
+      "source": "oci_core_virtual_network.CreateVCN",
+      "target": "var.dns_label",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.dns_label"
+    },
+    {
+      "source": "oci_core_virtual_network.CreateVCN",
+      "target": "var.compartment_ocid",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.compartment_ocid"
+    },
+    {
+      "source": "oci_core_virtual_network.CreateVCN",
+      "target": "var.display_name",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.display_name"
+    },
+    {
+      "source": "module.CreateCompartment",
+      "target": "var.tenancy_ocid",
+      "type": "MODULE_INPUT",
+      "reference": "var.tenancy_ocid"
+    },
+    {
+      "source": "module.CreateCompartment",
+      "target": "var.compartment_name",
+      "type": "MODULE_INPUT",
+      "reference": "var.compartment_name"
+    },
+    {
+      "source": "module.CreateCompartment",
+      "target": "var.compartment_description",
+      "type": "MODULE_INPUT",
+      "reference": "var.compartment_description"
+    },
+    {
+      "source": "module.CreateVCN",
+      "target": "module.CreateCompartment",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreateCompartment.compartment"
+    },
+    {
+      "source": "module.CreateVCN",
+      "target": "var.vcn_cidr_block",
+      "type": "MODULE_INPUT",
+      "reference": "var.vcn_cidr_block"
+    },
+    {
+      "source": "module.CreateVCN",
+      "target": "var.vcn_display_name",
+      "type": "MODULE_INPUT",
+      "reference": "var.vcn_display_name"
+    },
+    {
+      "source": "module.CreateVCN",
+      "target": "var.vcn_dns_label",
+      "type": "MODULE_INPUT",
+      "reference": "var.vcn_dns_label"
+    },
+    {
+      "source": "module.CreateIGW",
+      "target": "module.CreateCompartment",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreateCompartment.compartment"
+    },
+    {
+      "source": "module.CreateIGW",
+      "target": "module.CreateVCN",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreateVCN.vcn"
+    },
+    {
+      "source": "module.CreateIGW",
+      "target": "var.internet_gateway_enabled",
+      "type": "MODULE_INPUT",
+      "reference": "var.internet_gateway_enabled"
+    },
+    {
+      "source": "module.CreateIGW",
+      "target": "var.internet_gateway_display_name",
+      "type": "MODULE_INPUT",
+      "reference": "var.internet_gateway_display_name"
+    },
+    {
+      "source": "module.CreateRouteRule",
+      "target": "var.tenancy_ocid",
+      "type": "MODULE_INPUT",
+      "reference": "var.tenancy_ocid"
+    },
+    {
+      "source": "module.CreateRouteRule",
+      "target": "module.CreateCompartment",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreateCompartment.compartment"
+    },
+    {
+      "source": "module.CreateRouteRule",
+      "target": "module.CreateVCN",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreateVCN.vcn"
+    },
+    {
+      "source": "module.CreateRouteRule",
+      "target": "module.CreateIGW",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreateIGW.internetgateway"
+    },
+    {
+      "source": "module.CreateRouteRule",
+      "target": "var.route_table_display_name",
+      "type": "MODULE_INPUT",
+      "reference": "var.route_table_display_name"
+    },
+    {
+      "source": "module.CreateRouteRule",
+      "target": "var.igw_route_table_rules_cidr_block",
+      "type": "MODULE_INPUT",
+      "reference": "var.igw_route_table_rules_cidr_block"
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "module.CreateCompartment",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreateCompartment.compartment"
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "module.CreateVCN",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreateVCN.vcn"
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.tenancy_ocid",
+      "type": "MODULE_INPUT",
+      "reference": "var.tenancy_ocid"
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.private_security_list_name",
+      "type": "MODULE_INPUT",
+      "reference": "var.private_security_list_name"
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.egress_destination",
+      "type": "MODULE_INPUT",
+      "reference": "var.egress_destination"
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.egress_protocol",
+      "type": "MODULE_INPUT",
+      "reference": "var.egress_protocol"
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.ingress_protocol",
+      "type": "MODULE_INPUT",
+      "reference": "var.ingress_protocol"
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.ingress_source",
+      "type": "MODULE_INPUT",
+      "reference": "var.ingress_source"
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.ingress_stateless",
+      "type": "MODULE_INPUT",
+      "reference": "var.ingress_stateless"
+    },
+    {
+      "source": "module.CreatePrivateSecurityListPOC",
+      "target": "var.ingress_ports",
+      "type": "MODULE_INPUT",
+      "reference": "var.ingress_ports"
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "data.oci_identity_availability_domains",
+      "type": "MODULE_INPUT",
+      "reference": "data.oci_identity_availability_domains.GetAds.availability_domains"
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "module.CreateVCN",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreateVCN.vcn"
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "module.CreateCompartment",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreateCompartment.compartment"
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "module.CreatePrivateSecurityListPOC",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreatePrivateSecurityListPOC.securitylist"
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "module.CreateRouteRule",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreateRouteRule.routetable"
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "var.cidr_block_subnet",
+      "type": "MODULE_INPUT",
+      "reference": "var.cidr_block_subnet"
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "var.display_name_subnet",
+      "type": "MODULE_INPUT",
+      "reference": "var.display_name_subnet"
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "var.dns_label_subnet",
+      "type": "MODULE_INPUT",
+      "reference": "var.dns_label_subnet"
+    },
+    {
+      "source": "module.CreateSubnetPOC",
+      "target": "var.tenancy_ocid",
+      "type": "MODULE_INPUT",
+      "reference": "var.tenancy_ocid"
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "module.CreateCompartment",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreateCompartment.compartment"
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "data.oci_identity_availability_domains",
+      "type": "MODULE_INPUT",
+      "reference": "data.oci_identity_availability_domains.GetAds.availability_domains"
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "module.CreateSubnetPOC",
+      "type": "MODULE_INPUT",
+      "reference": "module.CreateSubnetPOC.subnet"
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "data.oci_core_images",
+      "type": "MODULE_INPUT",
+      "reference": "data.oci_core_images.oraclelinux.images"
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "var.shape_name",
+      "type": "MODULE_INPUT",
+      "reference": "var.shape_name"
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "var.ssh_public_key",
+      "type": "MODULE_INPUT",
+      "reference": "var.ssh_public_key"
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "var.assign_public_ip",
+      "type": "MODULE_INPUT",
+      "reference": "var.assign_public_ip"
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "var.instance_create_vnic_details_hostname_label",
+      "type": "MODULE_INPUT",
+      "reference": "var.instance_create_vnic_details_hostname_label"
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "var.instance_create_vnic_details_skip_source_dest_check",
+      "type": "MODULE_INPUT",
+      "reference": "var.instance_create_vnic_details_skip_source_dest_check"
+    },
+    {
+      "source": "module.CreateInstances",
+      "target": "var.instance_variables",
+      "type": "MODULE_INPUT",
+      "reference": "var.instance_variables"
+    }
+  ],
+  "entry_points": [],
+  "crown_jewels": [],
+  "attack_paths": [],
+  "choke_points": [],
+  "risk": {
+    "score": 0.0,
+    "risk_level": "LOW"
+  },
+  "risk_scores": {
+    "oci_identity_compartment.CreateCompartment": {
+      "resource_id": "oci_identity_compartment.CreateCompartment",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "var.compartment_description",
+        "var.compartment_name",
+        "var.tenancy_ocid"
+      ]
+    },
+    "oci_core_internet_gateway.CreateIGW": {
+      "resource_id": "oci_core_internet_gateway.CreateIGW",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "var.compartment_ocid",
+        "var.internet_gateway_display_name",
+        "var.internet_gateway_enabled",
+        "var.vcn_id"
+      ]
+    },
+    "oci_core_instance.CreateInstance": {
+      "resource_id": "oci_core_instance.CreateInstance",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 9,
+      "blast_radius": [
+        "var.assign_public_ip",
+        "var.compartment_id",
+        "var.image_id",
+        "var.instance_availability_domain",
+        "var.instance_create_vnic_details_skip_source_dest_check",
+        "var.instance_variables",
+        "var.shape_id",
+        "var.ssh_public_key",
+        "var.subnet_id"
+      ]
+    },
+    "oci_core_route_table.CreateRouteTable": {
+      "resource_id": "oci_core_route_table.CreateRouteTable",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 5,
+      "blast_radius": [
+        "var.compartment_ocid",
+        "var.network_id",
+        "var.route_table_display_name",
+        "var.route_table_route_rules_cidr_block",
+        "var.vcn_id"
+      ]
+    },
+    "oci_core_security_list.CreateSecurityList": {
+      "resource_id": "oci_core_security_list.CreateSecurityList",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 8,
+      "blast_radius": [
+        "var.compartment_ocid",
+        "var.egress_destination",
+        "var.egress_protocol",
+        "var.ingress_ports",
+        "var.ingress_protocol",
+        "var.ingress_stateless",
+        "var.sl_display_name",
+        "var.vcn_id"
+      ]
+    },
+    "oci_core_subnet.CreateSubnet": {
+      "resource_id": "oci_core_subnet.CreateSubnet",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 10,
+      "blast_radius": [
+        "var.availability_domain",
+        "var.compartment_ocid",
+        "var.prohibit_public_ip_on_vnic",
+        "var.sub_cidr_block",
+        "var.sub_display_name",
+        "var.sub_dns_label",
+        "var.vcn_default_dhcp_options_id",
+        "var.vcn_default_route_table_id",
+        "var.vcn_default_security_list_id",
+        "var.vcn_id"
+      ]
+    },
+    "oci_identity_tag_namespace.CreateTagNamespace": {
+      "resource_id": "oci_identity_tag_namespace.CreateTagNamespace",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "var.compartment_ocid",
+        "var.is_retired",
+        "var.tag_namespace_description",
+        "var.tag_namespace_name"
+      ]
+    },
+    "oci_identity_tag.CreateTag": {
+      "resource_id": "oci_identity_tag.CreateTag",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 7,
+      "blast_radius": [
+        "oci_identity_tag_namespace.CreateTagNamespace",
+        "var.compartment_ocid",
+        "var.is_retired",
+        "var.tag_description",
+        "var.tag_names",
+        "var.tag_namespace_description",
+        "var.tag_namespace_name"
+      ]
+    },
+    "oci_core_virtual_network.CreateVCN": {
+      "resource_id": "oci_core_virtual_network.CreateVCN",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "var.compartment_ocid",
+        "var.display_name",
+        "var.dns_label",
+        "var.vcn_cidr_block"
+      ]
+    },
+    "var.tenancy_ocid": {
+      "resource_id": "var.tenancy_ocid",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.compartment_description": {
+      "resource_id": "var.compartment_description",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.compartment_name": {
+      "resource_id": "var.compartment_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.compartment_ocid": {
+      "resource_id": "var.compartment_ocid",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.internet_gateway_enabled": {
+      "resource_id": "var.internet_gateway_enabled",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.vcn_id": {
+      "resource_id": "var.vcn_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.internet_gateway_display_name": {
+      "resource_id": "var.internet_gateway_display_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.instance_variables": {
+      "resource_id": "var.instance_variables",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.instance_availability_domain": {
+      "resource_id": "var.instance_availability_domain",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.compartment_id": {
+      "resource_id": "var.compartment_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.shape_id": {
+      "resource_id": "var.shape_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.image_id": {
+      "resource_id": "var.image_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.subnet_id": {
+      "resource_id": "var.subnet_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.instance_create_vnic_details_skip_source_dest_check": {
+      "resource_id": "var.instance_create_vnic_details_skip_source_dest_check",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.assign_public_ip": {
+      "resource_id": "var.assign_public_ip",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.ssh_public_key": {
+      "resource_id": "var.ssh_public_key",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.route_table_display_name": {
+      "resource_id": "var.route_table_display_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.network_id": {
+      "resource_id": "var.network_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.route_table_route_rules_cidr_block": {
+      "resource_id": "var.route_table_route_rules_cidr_block",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.sl_display_name": {
+      "resource_id": "var.sl_display_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.egress_destination": {
+      "resource_id": "var.egress_destination",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.egress_protocol": {
+      "resource_id": "var.egress_protocol",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.ingress_ports": {
+      "resource_id": "var.ingress_ports",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.ingress_protocol": {
+      "resource_id": "var.ingress_protocol",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.ingress_stateless": {
+      "resource_id": "var.ingress_stateless",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.availability_domain": {
+      "resource_id": "var.availability_domain",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.sub_cidr_block": {
+      "resource_id": "var.sub_cidr_block",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.sub_display_name": {
+      "resource_id": "var.sub_display_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.sub_dns_label": {
+      "resource_id": "var.sub_dns_label",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.vcn_default_security_list_id": {
+      "resource_id": "var.vcn_default_security_list_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.vcn_default_route_table_id": {
+      "resource_id": "var.vcn_default_route_table_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.vcn_default_dhcp_options_id": {
+      "resource_id": "var.vcn_default_dhcp_options_id",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.prohibit_public_ip_on_vnic": {
+      "resource_id": "var.prohibit_public_ip_on_vnic",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.tag_namespace_description": {
+      "resource_id": "var.tag_namespace_description",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.tag_namespace_name": {
+      "resource_id": "var.tag_namespace_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.is_retired": {
+      "resource_id": "var.is_retired",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.tag_names": {
+      "resource_id": "var.tag_names",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.tag_description": {
+      "resource_id": "var.tag_description",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.vcn_cidr_block": {
+      "resource_id": "var.vcn_cidr_block",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.dns_label": {
+      "resource_id": "var.dns_label",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.display_name": {
+      "resource_id": "var.display_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.CreateCompartment": {
+      "resource_id": "module.CreateCompartment",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "var.compartment_description",
+        "var.compartment_name",
+        "var.tenancy_ocid"
+      ]
+    },
+    "module.CreateVCN": {
+      "resource_id": "module.CreateVCN",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 7,
+      "blast_radius": [
+        "module.CreateCompartment",
+        "var.compartment_description",
+        "var.compartment_name",
+        "var.tenancy_ocid",
+        "var.vcn_cidr_block",
+        "var.vcn_display_name",
+        "var.vcn_dns_label"
+      ]
+    },
+    "var.vcn_display_name": {
+      "resource_id": "var.vcn_display_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.vcn_dns_label": {
+      "resource_id": "var.vcn_dns_label",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.CreateIGW": {
+      "resource_id": "module.CreateIGW",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 10,
+      "blast_radius": [
+        "module.CreateCompartment",
+        "module.CreateVCN",
+        "var.compartment_description",
+        "var.compartment_name",
+        "var.internet_gateway_display_name",
+        "var.internet_gateway_enabled",
+        "var.tenancy_ocid",
+        "var.vcn_cidr_block",
+        "var.vcn_display_name",
+        "var.vcn_dns_label"
+      ]
+    },
+    "module.CreateRouteRule": {
+      "resource_id": "module.CreateRouteRule",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 13,
+      "blast_radius": [
+        "module.CreateCompartment",
+        "module.CreateIGW",
+        "module.CreateVCN",
+        "var.compartment_description",
+        "var.compartment_name",
+        "var.igw_route_table_rules_cidr_block",
+        "var.internet_gateway_display_name",
+        "var.internet_gateway_enabled",
+        "var.route_table_display_name",
+        "var.tenancy_ocid",
+        "var.vcn_cidr_block",
+        "var.vcn_display_name",
+        "var.vcn_dns_label"
+      ]
+    },
+    "var.igw_route_table_rules_cidr_block": {
+      "resource_id": "var.igw_route_table_rules_cidr_block",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.CreatePrivateSecurityListPOC": {
+      "resource_id": "module.CreatePrivateSecurityListPOC",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 15,
+      "blast_radius": [
+        "module.CreateCompartment",
+        "module.CreateVCN",
+        "var.compartment_description",
+        "var.compartment_name",
+        "var.egress_destination",
+        "var.egress_protocol",
+        "var.ingress_ports",
+        "var.ingress_protocol",
+        "var.ingress_source",
+        "var.ingress_stateless",
+        "var.private_security_list_name",
+        "var.tenancy_ocid",
+        "var.vcn_cidr_block",
+        "var.vcn_display_name",
+        "var.vcn_dns_label"
+      ]
+    },
+    "var.private_security_list_name": {
+      "resource_id": "var.private_security_list_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.ingress_source": {
+      "resource_id": "var.ingress_source",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.CreateSubnetPOC": {
+      "resource_id": "module.CreateSubnetPOC",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 26,
+      "blast_radius": [
+        "data.oci_identity_availability_domains",
+        "module.CreateCompartment",
+        "module.CreateIGW",
+        "module.CreatePrivateSecurityListPOC",
+        "module.CreateRouteRule",
+        "module.CreateVCN",
+        "var.cidr_block_subnet",
+        "var.compartment_description",
+        "var.compartment_name",
+        "var.display_name_subnet",
+        "var.dns_label_subnet",
+        "var.egress_destination",
+        "var.egress_protocol",
+        "var.igw_route_table_rules_cidr_block",
+        "var.ingress_ports",
+        "var.ingress_protocol",
+        "var.ingress_source",
+        "var.ingress_stateless",
+        "var.internet_gateway_display_name",
+        "var.internet_gateway_enabled",
+        "var.private_security_list_name",
+        "var.route_table_display_name",
+        "var.tenancy_ocid",
+        "var.vcn_cidr_block",
+        "var.vcn_display_name",
+        "var.vcn_dns_label"
+      ]
+    },
+    "data.oci_identity_availability_domains": {
+      "resource_id": "data.oci_identity_availability_domains",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.cidr_block_subnet": {
+      "resource_id": "var.cidr_block_subnet",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.display_name_subnet": {
+      "resource_id": "var.display_name_subnet",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.dns_label_subnet": {
+      "resource_id": "var.dns_label_subnet",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.CreateInstances": {
+      "resource_id": "module.CreateInstances",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 34,
+      "blast_radius": [
+        "data.oci_core_images",
+        "data.oci_identity_availability_domains",
+        "module.CreateCompartment",
+        "module.CreateIGW",
+        "module.CreatePrivateSecurityListPOC",
+        "module.CreateRouteRule",
+        "module.CreateSubnetPOC",
+        "module.CreateVCN",
+        "var.assign_public_ip",
+        "var.cidr_block_subnet",
+        "var.compartment_description",
+        "var.compartment_name",
+        "var.display_name_subnet",
+        "var.dns_label_subnet",
+        "var.egress_destination",
+        "var.egress_protocol",
+        "var.igw_route_table_rules_cidr_block",
+        "var.ingress_ports",
+        "var.ingress_protocol",
+        "var.ingress_source",
+        "var.ingress_stateless",
+        "var.instance_create_vnic_details_hostname_label",
+        "var.instance_create_vnic_details_skip_source_dest_check",
+        "var.instance_variables",
+        "var.internet_gateway_display_name",
+        "var.internet_gateway_enabled",
+        "var.private_security_list_name",
+        "var.route_table_display_name",
+        "var.shape_name",
+        "var.ssh_public_key",
+        "var.tenancy_ocid",
+        "var.vcn_cidr_block",
+        "var.vcn_display_name",
+        "var.vcn_dns_label"
+      ]
+    },
+    "data.oci_core_images": {
+      "resource_id": "data.oci_core_images",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.shape_name": {
+      "resource_id": "var.shape_name",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.instance_create_vnic_details_hostname_label": {
+      "resource_id": "var.instance_create_vnic_details_hostname_label",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    }
+  }
+}

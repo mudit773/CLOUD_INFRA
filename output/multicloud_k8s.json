@@ -2,11 +2,508 @@
   "metadata": {
     "project_name": "multicloud_k8s",
     "terraform_version": null,
-    "cloud_provider": "aws",
+    "cloud_provider": null,
     "region": null,
-    "generated_at": "2026-09-12T23:17:09.380316+00:00"
+    "generated_at": "2026-09-24T20:12:32.835650+00:00"
   },
-  "resources": [],
+  "resources": [
+    {
+      "id": "azurerm_kubernetes_cluster.default",
+      "type": "azurerm_kubernetes_cluster",
+      "name": "default",
+      "provider": "azurerm",
+      "region": "${azurerm_resource_group.main.location}",
+      "attributes": {
+        "name": "aks-${random_id.prefix.hex}",
+        "location": "${azurerm_resource_group.main.location}",
+        "resource_group_name": "${azurerm_resource_group.main.name}",
+        "dns_prefix": "k8s-${random_id.prefix.hex}",
+        "automatic_channel_upgrade": "stable",
+        "role_based_access_control_enabled": true,
+        "default_node_pool": [
+          {
+            "name": "default",
+            "node_count": 1,
+            "vm_size": "${var.instance_type}",
+            "os_disk_size_gb": 30
+          }
+        ],
+        "service_principal": [
+          {
+            "client_id": "${var.client_id}",
+            "client_secret": "${var.password}"
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": [
+          {
+            "type": "password",
+            "reference": "var.password",
+            "exposed": false
+          }
+        ]
+      },
+      "references": [
+        "random_id.prefix.hex",
+        "azurerm_resource_group.main.location",
+        "azurerm_resource_group.main.name",
+        "var.instance_type",
+        "var.client_id",
+        "var.password"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aks_azure/aks.tf",
+        "line": 2,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_resource_group.main",
+      "type": "azurerm_resource_group",
+      "name": "main",
+      "provider": "azurerm",
+      "region": "UK South",
+      "attributes": {
+        "location": "${var.location}",
+        "name": "${coalesce(var.resource_group_name, \"${random_id.prefix.hex}-rg\")}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.location",
+        "var.resource_group_name",
+        "random_id.prefix.hex"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aks_azure/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "id": "random_id.prefix",
+      "type": "random_id",
+      "name": "prefix",
+      "provider": "random",
+      "region": null,
+      "attributes": {
+        "byte_length": 8
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [],
+      "depends_on": [],
+      "source_location": {
+        "file": "aks_azure/main.tf",
+        "line": 7,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_security_group.node_group",
+      "type": "aws_security_group",
+      "name": "node_group",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "name_prefix": "node_group",
+        "vpc_id": "${module.vpc.vpc_id}",
+        "ingress": [
+          {
+            "from_port": 22,
+            "to_port": 22,
+            "protocol": "tcp",
+            "cidr_blocks": [
+              "10.0.0.0/8"
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 22,
+            "to_port": 22,
+            "sources": [
+              "10.0.0.0/8"
+            ],
+            "description": null
+          }
+        ],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "module.vpc.vpc_id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "eks_aws/security-group.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_project_service.compute",
+      "type": "google_project_service",
+      "name": "compute",
+      "provider": "google",
+      "region": null,
+      "attributes": {
+        "service": "compute.googleapis.com",
+        "project": "${var.project}",
+        "disable_dependent_services": true,
+        "disable_on_destroy": false
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.project"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "gke_gcp/services.tf",
+        "line": 4,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_project_service.container",
+      "type": "google_project_service",
+      "name": "container",
+      "provider": "google",
+      "region": null,
+      "attributes": {
+        "service": "container.googleapis.com",
+        "project": "${var.project}",
+        "disable_dependent_services": true,
+        "disable_on_destroy": false
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.project"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "gke_gcp/services.tf",
+        "line": 11,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_project_service.cloudresourcemanager",
+      "type": "google_project_service",
+      "name": "cloudresourcemanager",
+      "provider": "google",
+      "region": null,
+      "attributes": {
+        "service": "cloudresourcemanager.googleapis.com",
+        "project": "${var.project}",
+        "disable_dependent_services": true,
+        "disable_on_destroy": false
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.project"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "gke_gcp/services.tf",
+        "line": 18,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_network.vpc",
+      "type": "google_compute_network",
+      "name": "vpc",
+      "provider": "google",
+      "region": null,
+      "attributes": {
+        "name": "${var.project}-vpc",
+        "routing_mode": "REGIONAL",
+        "auto_create_subnetworks": "false"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.project"
+      ],
+      "depends_on": [
+        "google_project_service.compute",
+        "google_project_service.container",
+        "google_project_service.cloudresourcemanager"
+      ],
+      "source_location": {
+        "file": "gke_gcp/vpc.tf",
+        "line": 2,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_subnetwork.subnet",
+      "type": "google_compute_subnetwork",
+      "name": "subnet",
+      "provider": "google",
+      "region": "${var.region}",
+      "attributes": {
+        "name": "${var.project}-subnet",
+        "region": "${var.region}",
+        "network": "${google_compute_network.vpc.id}",
+        "ip_cidr_range": "${var.subnet_cidr}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.project",
+        "var.region",
+        "google_compute_network.vpc.id",
+        "var.subnet_cidr"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "gke_gcp/vpc.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "id": "kubernetes_deployment.nginx",
+      "type": "kubernetes_deployment",
+      "name": "nginx",
+      "provider": "kubernetes",
+      "region": null,
+      "attributes": {
+        "metadata": [
+          {
+            "name": "scalable-nginx-example",
+            "labels": {
+              "App": "ScalableNginxExample"
+            }
+          }
+        ],
+        "spec": [
+          {
+            "replicas": 2,
+            "selector": [
+              {
+                "match_labels": {
+                  "App": "ScalableNginxExample"
+                }
+              }
+            ],
+            "template": [
+              {
+                "metadata": [
+                  {
+                    "labels": {
+                      "App": "ScalableNginxExample"
+                    }
+                  }
+                ],
+                "spec": [
+                  {
+                    "container": [
+                      {
+                        "image": "nginx:1.7.8",
+                        "name": "example",
+                        "port": [
+                          {
+                            "container_port": 80
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [],
+      "depends_on": [],
+      "source_location": {
+        "file": "k8s_deployment/deployment.tf",
+        "line": 3,
+        "column": 1
+      }
+    }
+  ],
   "data_sources": [
     {
       "id": "google_client_config.default",
@@ -18,6 +515,134 @@
     }
   ],
   "variables": [
+    {
+      "name": "resource_group_name",
+      "type": "string",
+      "default": null,
+      "description": "Name of Rersource group",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "location",
+      "type": "string",
+      "default": "UK South",
+      "description": "Name of region/.location of cluster",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "instance_type",
+      "type": "string",
+      "default": "e2-micro",
+      "description": "Instance type for GKE nodes",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "client_id",
+      "type": "string",
+      "default": null,
+      "description": "AppID for Service Principal RBAC",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "password",
+      "type": "string",
+      "default": null,
+      "description": "Password for Service Principal RBAC",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "region",
+      "type": "string",
+      "default": null,
+      "description": "Region where should GKE will be placed",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": null,
+      "description": "Name of GKE cluster",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "eks_version",
+      "type": "string",
+      "default": "1.23",
+      "description": "Version of EKS",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "vpc_cidr",
+      "type": "string",
+      "default": null,
+      "description": "CIDR of VPC",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "public_subnets",
+      "type": "list(string)",
+      "default": null,
+      "description": "List of public subnets cidrs in VPC",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "private_subnets",
+      "type": "list(string)",
+      "default": null,
+      "description": "List of private subnets cidrs in VPC",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "azs",
+      "type": "list(string)",
+      "default": null,
+      "description": "List of AZ where should be nodes",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "zones",
+      "type": "list(string)",
+      "default": null,
+      "description": "List of zones where should be nodes",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "project",
+      "type": "string",
+      "default": null,
+      "description": "Name of GCP project",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "service_account",
+      "type": "string",
+      "default": null,
+      "description": "Service account for access to requred resources",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "subnet_cidr",
+      "type": "string",
+      "default": null,
+      "description": "IP range subnet CIDR",
+      "sensitive": false,
+      "validation": {}
+    },
     {
       "name": "gcp",
       "type": "object({project_id = string, region = string, zone = string, credentials = string, cluster = object({name = string, service_account = string, subnet_cidr = string})})",
@@ -44,6 +669,72 @@
     }
   ],
   "outputs": [
+    {
+      "name": "kube_config",
+      "value": "${azurerm_kubernetes_cluster.default.kube_config[0]}",
+      "description": "AKS cluster kube config variable",
+      "sensitive": false
+    },
+    {
+      "name": "cluster_name",
+      "value": "${azurerm_kubernetes_cluster.default.name}",
+      "description": "AKS cluster Name",
+      "sensitive": false
+    },
+    {
+      "name": "rg_name",
+      "value": "${azurerm_resource_group.main.name}",
+      "description": "Azure Resource Group Name where aks was provision",
+      "sensitive": false
+    },
+    {
+      "name": "cluster_name",
+      "value": "${module.eks.cluster_id}",
+      "description": "EKS cluster name",
+      "sensitive": false
+    },
+    {
+      "name": "cluster_endpoint",
+      "value": "${module.eks.cluster_endpoint}",
+      "description": "EKS cluster endpoint url",
+      "sensitive": false
+    },
+    {
+      "name": "cluster_ca",
+      "value": "${module.eks.cluster_certificate_authority_data}",
+      "description": "EKS cluster certificate authority",
+      "sensitive": false
+    },
+    {
+      "name": "cluster_region",
+      "value": "${var.region}",
+      "description": "GKE cluster region",
+      "sensitive": false
+    },
+    {
+      "name": "cluster_host",
+      "value": "${module.gke.endpoint}",
+      "description": "GKE cluster host",
+      "sensitive": false
+    },
+    {
+      "name": "ca_certificate",
+      "value": "${module.gke.ca_certificate}",
+      "description": "GKE cluster certificate authority",
+      "sensitive": false
+    },
+    {
+      "name": "cluster_name",
+      "value": "${module.gke.name}",
+      "description": "GKE cluster name",
+      "sensitive": false
+    },
+    {
+      "name": "cluster_region",
+      "value": "${module.gke.location}",
+      "description": "Cluster region",
+      "sensitive": false
+    },
     {
       "name": "aws_region",
       "value": "${var.aws.region}",
@@ -130,6 +821,117 @@
       "source_location": {
         "file": "deployment.tf",
         "line": 18,
+        "column": 1
+      }
+    },
+    {
+      "name": "eks",
+      "source": "terraform-aws-modules/eks/aws",
+      "version": "~> 18.29.0",
+      "inputs": {
+        "source": "terraform-aws-modules/eks/aws",
+        "version": "~> 18.29.0",
+        "cluster_name": "${var.name}",
+        "cluster_version": "${var.eks_version}",
+        "vpc_id": "${module.vpc.vpc_id}",
+        "subnet_ids": "${module.vpc.private_subnets}",
+        "eks_managed_node_group_defaults": {
+          "disk_size": 4,
+          "instance_types": [
+            "${var.instance_type}"
+          ],
+          "ami_type": "AL2_x86_64",
+          "attach_cluster_primary_security_group": true,
+          "create_security_group": false
+        },
+        "eks_managed_node_groups": {
+          "control_plane": {
+            "name": "node-group-1",
+            "disk_size": 4,
+            "min_size": 1,
+            "max_size": 1,
+            "desired_size": 1,
+            "instance_types": [
+              "${var.instance_type}"
+            ],
+            "capacity_type": "SPOT",
+            "vpc_security_group_ids": [
+              "${aws_security_group.node_group.id}"
+            ]
+          }
+        }
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "eks_aws/eks.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "name": "vpc",
+      "source": "terraform-aws-modules/vpc/aws",
+      "version": "~> 3.14.4",
+      "inputs": {
+        "source": "terraform-aws-modules/vpc/aws",
+        "version": "~> 3.14.4",
+        "cidr": "${var.vpc_cidr}",
+        "private_subnets": "${var.private_subnets}",
+        "public_subnets": "${var.public_subnets}",
+        "azs": "${var.azs}",
+        "enable_nat_gateway": true,
+        "single_nat_gateway": true,
+        "enable_dns_hostnames": true
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "eks_aws/vpc.tf",
+        "line": 3,
+        "column": 1
+      }
+    },
+    {
+      "name": "gke",
+      "source": "terraform-google-modules/kubernetes-engine/google",
+      "version": null,
+      "inputs": {
+        "source": "terraform-google-modules/kubernetes-engine/google",
+        "project_id": "${var.project}",
+        "name": "${var.name}",
+        "regional": false,
+        "region": "${var.region}",
+        "zones": "${var.zones}",
+        "network": "${google_compute_network.vpc.name}",
+        "subnetwork": "${google_compute_subnetwork.subnet.name}",
+        "ip_range_pods": "",
+        "ip_range_services": "",
+        "http_load_balancing": false,
+        "network_policy": false,
+        "horizontal_pod_autoscaling": true,
+        "node_pools": [
+          {
+            "name": "default-node-pool",
+            "machine_type": "${var.instance_type}",
+            "min_count": 1,
+            "max_count": 1,
+            "spot": true,
+            "disk_size_gb": 10,
+            "disk_type": "pd-standard",
+            "image_type": "COS_CONTAINERD",
+            "service_account": "${var.service_account}",
+            "initial_node_count": 1
+          }
+        ],
+        "depends_on": [
+          "${google_project_service.compute}",
+          "${google_project_service.container}",
+          "${google_project_service.cloudresourcemanager}"
+        ]
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "gke_gcp/gke.tf",
+        "line": 1,
         "column": 1
       }
     },
@@ -269,6 +1071,481 @@
     }
   ],
   "relationships": [
+    {
+      "source": "azurerm_kubernetes_cluster.default",
+      "target": "random_id.prefix",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "random_id.prefix.hex"
+      },
+      "source_location": {
+        "file": "aks_azure/aks.tf",
+        "line": 2,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_kubernetes_cluster.default",
+      "target": "azurerm_resource_group.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_resource_group.main.location"
+      },
+      "source_location": {
+        "file": "aks_azure/aks.tf",
+        "line": 2,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_kubernetes_cluster.default",
+      "target": "var.instance_type",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.instance_type"
+      },
+      "source_location": {
+        "file": "aks_azure/aks.tf",
+        "line": 2,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_kubernetes_cluster.default",
+      "target": "var.client_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.client_id"
+      },
+      "source_location": {
+        "file": "aks_azure/aks.tf",
+        "line": 2,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_kubernetes_cluster.default",
+      "target": "var.password",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.password"
+      },
+      "source_location": {
+        "file": "aks_azure/aks.tf",
+        "line": 2,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_resource_group.main",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.location"
+      },
+      "source_location": {
+        "file": "aks_azure/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_resource_group.main",
+      "target": "var.resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.resource_group_name"
+      },
+      "source_location": {
+        "file": "aks_azure/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_resource_group.main",
+      "target": "random_id.prefix",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "random_id.prefix.hex"
+      },
+      "source_location": {
+        "file": "aks_azure/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_security_group.node_group",
+      "target": "module.vpc",
+      "type": "REFERENCES_MODULE",
+      "attributes": {
+        "reference": "module.vpc.vpc_id"
+      },
+      "source_location": {
+        "file": "eks_aws/security-group.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_project_service.compute",
+      "target": "var.project",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.project"
+      },
+      "source_location": {
+        "file": "gke_gcp/services.tf",
+        "line": 4,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_project_service.container",
+      "target": "var.project",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.project"
+      },
+      "source_location": {
+        "file": "gke_gcp/services.tf",
+        "line": 11,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_project_service.cloudresourcemanager",
+      "target": "var.project",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.project"
+      },
+      "source_location": {
+        "file": "gke_gcp/services.tf",
+        "line": 18,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_network.vpc",
+      "target": "google_project_service.compute",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "gke_gcp/vpc.tf",
+        "line": 2,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_network.vpc",
+      "target": "google_project_service.container",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "gke_gcp/vpc.tf",
+        "line": 2,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_network.vpc",
+      "target": "google_project_service.cloudresourcemanager",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "gke_gcp/vpc.tf",
+        "line": 2,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_network.vpc",
+      "target": "var.project",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.project"
+      },
+      "source_location": {
+        "file": "gke_gcp/vpc.tf",
+        "line": 2,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_subnetwork.subnet",
+      "target": "var.project",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.project"
+      },
+      "source_location": {
+        "file": "gke_gcp/vpc.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_subnetwork.subnet",
+      "target": "var.region",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.region"
+      },
+      "source_location": {
+        "file": "gke_gcp/vpc.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_subnetwork.subnet",
+      "target": "google_compute_network.vpc",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_network.vpc.id"
+      },
+      "source_location": {
+        "file": "gke_gcp/vpc.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_subnetwork.subnet",
+      "target": "var.subnet_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.subnet_cidr"
+      },
+      "source_location": {
+        "file": "gke_gcp/vpc.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.eks",
+      "target": "var.name",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.name"
+      },
+      "source_location": {
+        "file": "eks_aws/eks.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.eks",
+      "target": "var.eks_version",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.eks_version"
+      },
+      "source_location": {
+        "file": "eks_aws/eks.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.eks",
+      "target": "module.vpc",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.vpc.vpc_id"
+      },
+      "source_location": {
+        "file": "eks_aws/eks.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.eks",
+      "target": "var.instance_type",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.instance_type"
+      },
+      "source_location": {
+        "file": "eks_aws/eks.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.eks",
+      "target": "aws_security_group.node_group",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "aws_security_group.node_group.id"
+      },
+      "source_location": {
+        "file": "eks_aws/eks.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.vpc",
+      "target": "var.vpc_cidr",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.vpc_cidr"
+      },
+      "source_location": {
+        "file": "eks_aws/vpc.tf",
+        "line": 3,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.vpc",
+      "target": "var.private_subnets",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.private_subnets"
+      },
+      "source_location": {
+        "file": "eks_aws/vpc.tf",
+        "line": 3,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.vpc",
+      "target": "var.public_subnets",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.public_subnets"
+      },
+      "source_location": {
+        "file": "eks_aws/vpc.tf",
+        "line": 3,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.vpc",
+      "target": "var.azs",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.azs"
+      },
+      "source_location": {
+        "file": "eks_aws/vpc.tf",
+        "line": 3,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.gke",
+      "target": "var.project",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.project"
+      },
+      "source_location": {
+        "file": "gke_gcp/gke.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.gke",
+      "target": "var.name",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.name"
+      },
+      "source_location": {
+        "file": "gke_gcp/gke.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.gke",
+      "target": "var.region",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.region"
+      },
+      "source_location": {
+        "file": "gke_gcp/gke.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.gke",
+      "target": "var.zones",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.zones"
+      },
+      "source_location": {
+        "file": "gke_gcp/gke.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.gke",
+      "target": "google_compute_network.vpc",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "google_compute_network.vpc.name"
+      },
+      "source_location": {
+        "file": "gke_gcp/gke.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.gke",
+      "target": "google_compute_subnetwork.subnet",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "google_compute_subnetwork.subnet.name"
+      },
+      "source_location": {
+        "file": "gke_gcp/gke.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.gke",
+      "target": "var.instance_type",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.instance_type"
+      },
+      "source_location": {
+        "file": "gke_gcp/gke.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.gke",
+      "target": "var.service_account",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.service_account"
+      },
+      "source_location": {
+        "file": "gke_gcp/gke.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
     {
       "source": "module.eks_aws",
       "target": "var.aws",

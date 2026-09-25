@@ -1,0 +1,109 @@
+{
+  "nodes": [
+    {
+      "id": "internet",
+      "type": "external",
+      "name": "Internet",
+      "provider": "external",
+      "attributes": {
+        "description": "External Internet / Public Network"
+      },
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": true
+    },
+    {
+      "id": "test_network_resource.example",
+      "type": "test_network_resource",
+      "name": "example",
+      "provider": "test",
+      "attributes": {
+        "name": "security-test",
+        "ingress": [
+          {
+            "protocol": "tcp",
+            "from_port": 1234,
+            "to_port": 5678,
+            "sources": [
+              "10.0.0.0/16"
+            ],
+            "description": "internal ingress"
+          }
+        ],
+        "egress": [
+          {
+            "protocol": "tcp",
+            "from_port": 8000,
+            "to_port": 9000,
+            "destinations": [
+              "10.1.0.0/16"
+            ],
+            "description": "internal egress"
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 1234,
+            "to_port": 5678,
+            "sources": [
+              "10.0.0.0/16"
+            ],
+            "description": "internal ingress"
+          }
+        ],
+        "egress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 8000,
+            "to_port": 9000,
+            "destinations": [
+              "10.1.0.0/16"
+            ],
+            "description": "internal egress"
+          }
+        ],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    }
+  ],
+  "edges": [],
+  "entry_points": [],
+  "crown_jewels": [],
+  "attack_paths": [],
+  "choke_points": [],
+  "risk": {
+    "score": 0.0,
+    "risk_level": "LOW"
+  },
+  "risk_scores": {
+    "test_network_resource.example": {
+      "resource_id": "test_network_resource.example",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    }
+  }
+}

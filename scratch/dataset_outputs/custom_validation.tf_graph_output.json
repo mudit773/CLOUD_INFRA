@@ -1,0 +1,261 @@
+{
+  "nodes": [
+    {
+      "id": "internet",
+      "type": "external",
+      "name": "Internet",
+      "provider": "external",
+      "attributes": {
+        "description": "External Internet / Public Network"
+      },
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": true
+    },
+    {
+      "id": "acme_network.main",
+      "type": "acme_network",
+      "name": "main",
+      "provider": "acme",
+      "attributes": {
+        "name": "custom-network",
+        "environment": "${var.environment}",
+        "tags": {
+          "Environment": "${var.environment}",
+          "Owner": "test"
+        }
+      },
+      "tags": {
+        "Environment": "${var.environment}",
+        "Owner": "test"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "acme_firewall.main",
+      "type": "acme_firewall",
+      "name": "main",
+      "provider": "acme",
+      "attributes": {
+        "name": "custom-firewall",
+        "ingress": [
+          {
+            "protocol": "tcp",
+            "from_port": 1234,
+            "to_port": 1234,
+            "sources": "${var.allowed_sources}",
+            "description": "Internal application traffic"
+          }
+        ],
+        "egress": [
+          {
+            "protocol": "tcp",
+            "from_port": 5678,
+            "to_port": 5678,
+            "destinations": [
+              "10.30.0.0/16"
+            ],
+            "description": "Internal outbound traffic"
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 1234,
+            "to_port": 1234,
+            "sources": [
+              "${var.allowed_sources}"
+            ],
+            "description": "Internal application traffic"
+          }
+        ],
+        "egress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 5678,
+            "to_port": 5678,
+            "destinations": [
+              "10.30.0.0/16"
+            ],
+            "description": "Internal outbound traffic"
+          }
+        ],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.environment",
+      "type": "unknown",
+      "name": "var.environment",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "var.allowed_sources",
+      "type": "unknown",
+      "name": "var.allowed_sources",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    },
+    {
+      "id": "module.application",
+      "type": "unknown",
+      "name": "module.application",
+      "provider": "aws",
+      "attributes": {},
+      "tags": {},
+      "security": {},
+      "findings": [],
+      "is_special": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "acme_network.main",
+      "target": "var.environment",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.environment"
+    },
+    {
+      "source": "acme_firewall.main",
+      "target": "acme_network.main",
+      "type": "DEPENDS_ON"
+    },
+    {
+      "source": "acme_firewall.main",
+      "target": "var.allowed_sources",
+      "type": "REFERENCES_VARIABLE",
+      "reference": "var.allowed_sources"
+    },
+    {
+      "source": "module.application",
+      "target": "acme_network.main",
+      "type": "MODULE_INPUT",
+      "reference": "acme_network.main.id"
+    },
+    {
+      "source": "module.application",
+      "target": "acme_firewall.main",
+      "type": "MODULE_INPUT",
+      "reference": "acme_firewall.main.id"
+    },
+    {
+      "source": "module.application",
+      "target": "var.environment",
+      "type": "MODULE_INPUT",
+      "reference": "var.environment"
+    }
+  ],
+  "entry_points": [],
+  "crown_jewels": [],
+  "attack_paths": [],
+  "choke_points": [],
+  "risk": {
+    "score": 0.0,
+    "risk_level": "LOW"
+  },
+  "risk_scores": {
+    "acme_network.main": {
+      "resource_id": "acme_network.main",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 1,
+      "blast_radius": [
+        "var.environment"
+      ]
+    },
+    "acme_firewall.main": {
+      "resource_id": "acme_firewall.main",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 3,
+      "blast_radius": [
+        "acme_network.main",
+        "var.allowed_sources",
+        "var.environment"
+      ]
+    },
+    "var.environment": {
+      "resource_id": "var.environment",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "var.allowed_sources": {
+      "resource_id": "var.allowed_sources",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 0,
+      "blast_radius": []
+    },
+    "module.application": {
+      "resource_id": "module.application",
+      "score": 0.0,
+      "risk_level": "LOW",
+      "is_entry_point": false,
+      "is_crown_jewel": false,
+      "blast_radius_count": 4,
+      "blast_radius": [
+        "acme_firewall.main",
+        "acme_network.main",
+        "var.allowed_sources",
+        "var.environment"
+      ]
+    }
+  }
+}

@@ -1,0 +1,357 @@
+{
+  "metadata": {
+    "project_name": "terraform-gcp-cloudsql",
+    "terraform_version": null,
+    "cloud_provider": "google",
+    "region": "us-central1",
+    "generated_at": "2026-09-24T20:20:03.971662+00:00"
+  },
+  "resources": [
+    {
+      "id": "random_pet.database_name",
+      "type": "random_pet",
+      "name": "database_name",
+      "provider": "random",
+      "region": null,
+      "attributes": {
+        "prefix": "${var.database_name_prefix}",
+        "separator": "-"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.database_name_prefix"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "main.tf",
+        "line": 8,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_sql_database_instance.cloudsql-postgres-master",
+      "type": "google_sql_database_instance",
+      "name": "cloudsql-postgres-master",
+      "provider": "google",
+      "region": "us-central1",
+      "attributes": {
+        "name": "${random_pet.database_name.id}",
+        "database_version": "${var.database_version}",
+        "region": "${var.region}",
+        "settings": [
+          {
+            "tier": "db-f1-micro",
+            "ip_configuration": [
+              {
+                "ipv4_enabled": true,
+                "require_ssl": false,
+                "authorized_networks": {
+                  "name": "terraform-server-IP-allowed-list",
+                  "value": "${var.authorized_network}"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "random_pet.database_name.id",
+        "var.database_version",
+        "var.region",
+        "var.authorized_network"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "main.tf",
+        "line": 13,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_sql_user.users",
+      "type": "google_sql_user",
+      "name": "users",
+      "provider": "google",
+      "region": null,
+      "attributes": {
+        "name": "${var.gcp_sql_root_user_name}",
+        "instance": "${google_sql_database_instance.cloudsql-postgres-master.name}",
+        "password": "${var.gcp_sql_root_user_pw}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": [
+          {
+            "type": "password",
+            "reference": "var.gcp_sql_root_user_pw",
+            "exposed": false
+          }
+        ]
+      },
+      "references": [
+        "var.gcp_sql_root_user_name",
+        "google_sql_database_instance.cloudsql-postgres-master.name",
+        "var.gcp_sql_root_user_pw"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "main.tf",
+        "line": 33,
+        "column": 1
+      }
+    }
+  ],
+  "data_sources": [],
+  "variables": [
+    {
+      "name": "gcp_credentials",
+      "type": null,
+      "default": null,
+      "description": "GCP credentials needed by Google Terraform provider",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "gcp_project",
+      "type": null,
+      "default": null,
+      "description": "GCP project name needed by Google Terraform provider",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "region",
+      "type": null,
+      "default": "us-central1",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "gcp_sql_root_user_name",
+      "type": null,
+      "default": "root",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "gcp_sql_root_user_pw",
+      "type": null,
+      "default": null,
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "authorized_network",
+      "type": null,
+      "default": null,
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "database_name_prefix",
+      "type": null,
+      "default": "cloudsql-master",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "database_version",
+      "type": null,
+      "default": "POSTGRES_9_6",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    }
+  ],
+  "outputs": [
+    {
+      "name": "connection_name",
+      "value": "${google_sql_database_instance.cloudsql-postgres-master.connection_name}",
+      "description": null,
+      "sensitive": false
+    },
+    {
+      "name": "ip",
+      "value": "${google_sql_database_instance.cloudsql-postgres-master.ip_address.0.ip_address}",
+      "description": null,
+      "sensitive": false
+    }
+  ],
+  "modules": [],
+  "providers": [
+    {
+      "name": "google",
+      "alias": null,
+      "version": null,
+      "configuration": {
+        "credentials": "${var.gcp_credentials}",
+        "project": "${var.gcp_project}",
+        "region": "${var.region}"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "source": "random_pet.database_name",
+      "target": "var.database_name_prefix",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.database_name_prefix"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 8,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_sql_database_instance.cloudsql-postgres-master",
+      "target": "random_pet.database_name",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "random_pet.database_name.id"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 13,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_sql_database_instance.cloudsql-postgres-master",
+      "target": "var.database_version",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.database_version"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 13,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_sql_database_instance.cloudsql-postgres-master",
+      "target": "var.region",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.region"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 13,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_sql_database_instance.cloudsql-postgres-master",
+      "target": "var.authorized_network",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.authorized_network"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 13,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_sql_user.users",
+      "target": "var.gcp_sql_root_user_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.gcp_sql_root_user_name"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 33,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_sql_user.users",
+      "target": "google_sql_database_instance.cloudsql-postgres-master",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_sql_database_instance.cloudsql-postgres-master.name"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 33,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_sql_user.users",
+      "target": "var.gcp_sql_root_user_pw",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.gcp_sql_root_user_pw"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 33,
+        "column": 1
+      }
+    }
+  ],
+  "security_findings": []
+}

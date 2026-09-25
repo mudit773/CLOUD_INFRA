@@ -1,0 +1,291 @@
+{
+  "metadata": {
+    "project_name": "custom_validation.tf",
+    "terraform_version": ">= 1.3.0",
+    "cloud_provider": "acme",
+    "region": null,
+    "generated_at": "2026-09-24T20:59:46.801151+00:00"
+  },
+  "resources": [
+    {
+      "id": "acme_network.main",
+      "type": "acme_network",
+      "name": "main",
+      "provider": "acme",
+      "region": null,
+      "attributes": {
+        "name": "custom-network",
+        "environment": "${var.environment}",
+        "tags": {
+          "Environment": "${var.environment}",
+          "Owner": "test"
+        }
+      },
+      "tags": {
+        "Environment": "${var.environment}",
+        "Owner": "test"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.environment"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "custom_validation.tf",
+        "line": 27,
+        "column": 1
+      }
+    },
+    {
+      "id": "acme_firewall.main",
+      "type": "acme_firewall",
+      "name": "main",
+      "provider": "acme",
+      "region": null,
+      "attributes": {
+        "name": "custom-firewall",
+        "ingress": [
+          {
+            "protocol": "tcp",
+            "from_port": 1234,
+            "to_port": 1234,
+            "sources": "${var.allowed_sources}",
+            "description": "Internal application traffic"
+          }
+        ],
+        "egress": [
+          {
+            "protocol": "tcp",
+            "from_port": 5678,
+            "to_port": 5678,
+            "destinations": [
+              "10.30.0.0/16"
+            ],
+            "description": "Internal outbound traffic"
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 1234,
+            "to_port": 1234,
+            "sources": [
+              "${var.allowed_sources}"
+            ],
+            "description": "Internal application traffic"
+          }
+        ],
+        "egress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 5678,
+            "to_port": 5678,
+            "destinations": [
+              "10.30.0.0/16"
+            ],
+            "description": "Internal outbound traffic"
+          }
+        ],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.allowed_sources"
+      ],
+      "depends_on": [
+        "acme_network.main"
+      ],
+      "source_location": {
+        "file": "custom_validation.tf",
+        "line": 37,
+        "column": 1
+      }
+    }
+  ],
+  "data_sources": [
+    {
+      "id": "acme_image.base",
+      "type": "acme_image",
+      "name": "base",
+      "provider": "acme",
+      "attributes": {
+        "name": "custom-base-image"
+      },
+      "references": []
+    }
+  ],
+  "variables": [
+    {
+      "name": "environment",
+      "type": "string",
+      "default": "testing",
+      "description": "Deployment environment",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "allowed_sources",
+      "type": "list(string)",
+      "default": [
+        "10.20.0.0/16"
+      ],
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    }
+  ],
+  "outputs": [
+    {
+      "name": "network_id",
+      "value": "${acme_network.main.id}",
+      "description": "ID of the custom network",
+      "sensitive": false
+    },
+    {
+      "name": "base_image",
+      "value": "${data.acme_image.base.id}",
+      "description": null,
+      "sensitive": false
+    }
+  ],
+  "modules": [
+    {
+      "name": "application",
+      "source": "./modules/application",
+      "version": null,
+      "inputs": {
+        "source": "./modules/application",
+        "network_id": "${acme_network.main.id}",
+        "firewall_id": "${acme_firewall.main.id}",
+        "environment": "${var.environment}"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "custom_validation.tf",
+        "line": 65,
+        "column": 1
+      }
+    }
+  ],
+  "providers": [
+    {
+      "name": "acme",
+      "alias": null,
+      "version": "1.2.3",
+      "configuration": {
+        "endpoint": "https://example.internal"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "source": "acme_network.main",
+      "target": "var.environment",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.environment"
+      },
+      "source_location": {
+        "file": "custom_validation.tf",
+        "line": 27,
+        "column": 1
+      }
+    },
+    {
+      "source": "acme_firewall.main",
+      "target": "acme_network.main",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "custom_validation.tf",
+        "line": 37,
+        "column": 1
+      }
+    },
+    {
+      "source": "acme_firewall.main",
+      "target": "var.allowed_sources",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.allowed_sources"
+      },
+      "source_location": {
+        "file": "custom_validation.tf",
+        "line": 37,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.application",
+      "target": "acme_network.main",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "acme_network.main.id"
+      },
+      "source_location": {
+        "file": "custom_validation.tf",
+        "line": 65,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.application",
+      "target": "acme_firewall.main",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "acme_firewall.main.id"
+      },
+      "source_location": {
+        "file": "custom_validation.tf",
+        "line": 65,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.application",
+      "target": "var.environment",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.environment"
+      },
+      "source_location": {
+        "file": "custom_validation.tf",
+        "line": 65,
+        "column": 1
+      }
+    }
+  ],
+  "security_findings": []
+}

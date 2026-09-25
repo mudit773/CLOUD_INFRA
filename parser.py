@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 import json
+import subprocess
+import sys
 
 from ast_extractor import parse_terraform_directory
 from converter import convert_to_schema, save_json
@@ -43,6 +45,11 @@ if __name__ == "__main__":
         file_size = os.path.getsize(output_file)
         last_modified = datetime.fromtimestamp(os.path.getmtime(output_file))
         print(f"Done! JSON successfully generated at: {output_file}")
+        print("\n[INFO] Starting security scanner...")
+        subprocess.run(
+    [sys.executable, "-m", "app.security.scanner"],
+    check=True
+)
         print(f"  File size:      {file_size} bytes")
         print(f"  Last modified:  {last_modified}")
     else:

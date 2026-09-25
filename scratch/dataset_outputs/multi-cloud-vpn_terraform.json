@@ -1,0 +1,6018 @@
+{
+  "metadata": {
+    "project_name": "multi-cloud-vpn",
+    "terraform_version": null,
+    "cloud_provider": null,
+    "region": null,
+    "generated_at": "2026-09-24T20:59:46.970945+00:00"
+  },
+  "resources": [
+    {
+      "id": "aws_subnet.dns",
+      "type": "aws_subnet",
+      "name": "dns",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${length(local.dns_subnet_availability_zones)}",
+        "vpc_id": "${var.vpc_id}",
+        "cidr_block": "${cidrsubnet(var.dns_subnet_cidr_prefix, 4, count.index)}",
+        "availability_zone": "${local.dns_subnet_availability_zones[count.index]}",
+        "tags": {
+          "Name": "directory-service-${local.dns_subnet_availability_zones[count.index]}"
+        }
+      },
+      "tags": {
+        "Name": "directory-service-${local.dns_subnet_availability_zones[count.index]}"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "local.dns_subnet_availability_zones",
+        "var.vpc_id",
+        "var.dns_subnet_cidr_prefix"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 13,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_route_table_association.dns",
+      "type": "aws_route_table_association",
+      "name": "dns",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${length(aws_subnet.dns)}",
+        "route_table_id": "${var.private_route_table_id}",
+        "subnet_id": "${aws_subnet.dns[count.index].id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.private_route_table_id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 25,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_network_acl.dns",
+      "type": "aws_network_acl",
+      "name": "dns",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "vpc_id": "${var.vpc_id}",
+        "subnet_ids": "${aws_subnet.dns[*].id}",
+        "tags": {
+          "Name": "directory-service-acl"
+        }
+      },
+      "tags": {
+        "Name": "directory-service-acl"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.vpc_id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 32,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_network_acl_rule.ingress",
+      "type": "aws_network_acl_rule",
+      "name": "ingress",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "network_acl_id": "${aws_network_acl.dns.id}",
+        "egress": false,
+        "protocol": -1,
+        "rule_number": 100,
+        "rule_action": "allow",
+        "cidr_block": "${data.aws_vpc.main.cidr_block}",
+        "from_port": 0,
+        "to_port": 0
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_network_acl.dns.id",
+        "data.aws_vpc.main.cidr_block"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 41,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_network_acl_rule.egress",
+      "type": "aws_network_acl_rule",
+      "name": "egress",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "network_acl_id": "${aws_network_acl.dns.id}",
+        "egress": true,
+        "protocol": -1,
+        "rule_number": 100,
+        "rule_action": "allow",
+        "cidr_block": "0.0.0.0/0",
+        "from_port": 0,
+        "to_port": 0
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_network_acl.dns.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 53,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_directory_service_directory.dns",
+      "type": "aws_directory_service_directory",
+      "name": "dns",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "name": "${var.directory_name}",
+        "description": "internal directory for dns forwarding over vpns",
+        "type": "SimpleAD",
+        "size": "Small",
+        "password": "${var.directory_password}",
+        "vpc_settings": [
+          {
+            "vpc_id": "${var.vpc_id}",
+            "subnet_ids": "${aws_subnet.dns[*].id}"
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": [
+          {
+            "type": "password",
+            "reference": "var.directory_password",
+            "exposed": false
+          }
+        ]
+      },
+      "references": [
+        "var.directory_name",
+        "var.directory_password",
+        "var.vpc_id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 65,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_vpc.main",
+      "type": "aws_vpc",
+      "name": "main",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "cidr_block": "${var.cidr_block}",
+        "tags": {
+          "Name": "${var.vpc_name}"
+        }
+      },
+      "tags": {
+        "Name": "${var.vpc_name}"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.cidr_block",
+        "var.vpc_name"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_subnet.private",
+      "type": "aws_subnet",
+      "name": "private",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${var.subnet_count}",
+        "vpc_id": "${aws_vpc.main.id}",
+        "cidr_block": "${cidrsubnet(var.cidr_block, 4, count.index * 2 + 1)}",
+        "tags": {
+          "Name": "private-subnet-${count.index}"
+        }
+      },
+      "tags": {
+        "Name": "private-subnet-${count.index}"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.subnet_count",
+        "aws_vpc.main.id",
+        "var.cidr_block"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_subnet.public",
+      "type": "aws_subnet",
+      "name": "public",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${var.subnet_count}",
+        "vpc_id": "${aws_vpc.main.id}",
+        "cidr_block": "${cidrsubnet(var.cidr_block, 4, count.index * 2 + 2)}",
+        "tags": {
+          "Name": "public-subnet-${count.index}"
+        }
+      },
+      "tags": {
+        "Name": "public-subnet-${count.index}"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.subnet_count",
+        "aws_vpc.main.id",
+        "var.cidr_block"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 20,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_network_acl.public",
+      "type": "aws_network_acl",
+      "name": "public",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "vpc_id": "${aws_vpc.main.id}",
+        "subnet_ids": "${aws_subnet.public[*].id}",
+        "ingress": [
+          {
+            "protocol": "tcp",
+            "rule_no": 100,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 80,
+            "to_port": 80
+          },
+          {
+            "protocol": "tcp",
+            "rule_no": 200,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 443,
+            "to_port": 443
+          },
+          {
+            "protocol": "tcp",
+            "rule_no": 400,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 1024,
+            "to_port": 65535
+          },
+          {
+            "protocol": "udp",
+            "rule_no": 500,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 1024,
+            "to_port": 65535
+          },
+          {
+            "protocol": -1,
+            "rule_no": 1000,
+            "action": "allow",
+            "cidr_block": "${aws_vpc.main.cidr_block}",
+            "from_port": 0,
+            "to_port": 0
+          }
+        ],
+        "egress": [
+          {
+            "protocol": -1,
+            "rule_no": 100,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 0,
+            "to_port": 0
+          }
+        ],
+        "tags": {
+          "Name": "public-acl"
+        }
+      },
+      "tags": {
+        "Name": "public-acl"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 80,
+            "to_port": 80,
+            "sources": [],
+            "description": null
+          },
+          {
+            "protocol": "tcp",
+            "from_port": 443,
+            "to_port": 443,
+            "sources": [],
+            "description": null
+          },
+          {
+            "protocol": "tcp",
+            "from_port": 1024,
+            "to_port": 65535,
+            "sources": [],
+            "description": null
+          },
+          {
+            "protocol": "udp",
+            "from_port": 1024,
+            "to_port": 65535,
+            "sources": [],
+            "description": null
+          },
+          {
+            "protocol": -1,
+            "from_port": 0,
+            "to_port": 0,
+            "sources": [],
+            "description": null
+          }
+        ],
+        "egress_rules": [
+          {
+            "protocol": -1,
+            "from_port": 0,
+            "to_port": 0,
+            "destinations": [],
+            "description": null
+          }
+        ],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_vpc.main.id",
+        "aws_vpc.main.cidr_block"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 31,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_network_acl.private",
+      "type": "aws_network_acl",
+      "name": "private",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "vpc_id": "${aws_vpc.main.id}",
+        "subnet_ids": "${aws_subnet.private[*].id}",
+        "ingress": [
+          {
+            "protocol": "tcp",
+            "rule_no": 400,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 1024,
+            "to_port": 65535
+          },
+          {
+            "protocol": "udp",
+            "rule_no": 500,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 1024,
+            "to_port": 65535
+          },
+          {
+            "protocol": -1,
+            "rule_no": 1000,
+            "action": "allow",
+            "cidr_block": "${aws_vpc.main.cidr_block}",
+            "from_port": 0,
+            "to_port": 0
+          }
+        ],
+        "egress": [
+          {
+            "protocol": -1,
+            "rule_no": 100,
+            "action": "allow",
+            "cidr_block": "0.0.0.0/0",
+            "from_port": 0,
+            "to_port": 0
+          }
+        ],
+        "tags": {
+          "Name": "private-acl"
+        }
+      },
+      "tags": {
+        "Name": "private-acl"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 1024,
+            "to_port": 65535,
+            "sources": [],
+            "description": null
+          },
+          {
+            "protocol": "udp",
+            "from_port": 1024,
+            "to_port": 65535,
+            "sources": [],
+            "description": null
+          },
+          {
+            "protocol": -1,
+            "from_port": 0,
+            "to_port": 0,
+            "sources": [],
+            "description": null
+          }
+        ],
+        "egress_rules": [
+          {
+            "protocol": -1,
+            "from_port": 0,
+            "to_port": 0,
+            "destinations": [],
+            "description": null
+          }
+        ],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_vpc.main.id",
+        "aws_vpc.main.cidr_block"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 94,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_internet_gateway.gw",
+      "type": "aws_internet_gateway",
+      "name": "gw",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "vpc_id": "${aws_vpc.main.id}",
+        "tags": {
+          "Name": "${var.vpc_name}-internet-gateway"
+        }
+      },
+      "tags": {
+        "Name": "${var.vpc_name}-internet-gateway"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_vpc.main.id",
+        "var.vpc_name"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 141,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_eip.nat",
+      "type": "aws_eip",
+      "name": "nat",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "vpc": true,
+        "tags": {
+          "Name": "nat-elastic-ip"
+        }
+      },
+      "tags": {
+        "Name": "nat-elastic-ip"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [],
+      "depends_on": [
+        "aws_internet_gateway.gw"
+      ],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 149,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_nat_gateway.gw",
+      "type": "aws_nat_gateway",
+      "name": "gw",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "allocation_id": "${aws_eip.nat.id}",
+        "subnet_id": "${aws_subnet.public[0].id}",
+        "tags": {
+          "Name": "${var.vpc_name}-nat-gateway"
+        }
+      },
+      "tags": {
+        "Name": "${var.vpc_name}-nat-gateway"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_eip.nat.id",
+        "var.vpc_name"
+      ],
+      "depends_on": [
+        "aws_internet_gateway.gw"
+      ],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 159,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_route_table.public",
+      "type": "aws_route_table",
+      "name": "public",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "vpc_id": "${aws_vpc.main.id}",
+        "tags": {
+          "Name": "public-route-table"
+        }
+      },
+      "tags": {
+        "Name": "public-route-table"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_vpc.main.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 172,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_route.public_igw",
+      "type": "aws_route",
+      "name": "public_igw",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "route_table_id": "${aws_route_table.public.id}",
+        "destination_cidr_block": "0.0.0.0/0",
+        "gateway_id": "${aws_internet_gateway.gw.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_route_table.public.id",
+        "aws_internet_gateway.gw.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 180,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_route_table.private",
+      "type": "aws_route_table",
+      "name": "private",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "vpc_id": "${aws_vpc.main.id}",
+        "tags": {
+          "Name": "private-route-table"
+        }
+      },
+      "tags": {
+        "Name": "private-route-table"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_vpc.main.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 186,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_route.private_nat",
+      "type": "aws_route",
+      "name": "private_nat",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "route_table_id": "${aws_route_table.private.id}",
+        "destination_cidr_block": "0.0.0.0/0",
+        "nat_gateway_id": "${aws_nat_gateway.gw.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_route_table.private.id",
+        "aws_nat_gateway.gw.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 194,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_route_table_association.public",
+      "type": "aws_route_table_association",
+      "name": "public",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${var.subnet_count}",
+        "subnet_id": "${aws_subnet.public[count.index].id}",
+        "route_table_id": "${aws_route_table.public.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.subnet_count",
+        "aws_route_table.public.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 200,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_route_table_association.private",
+      "type": "aws_route_table_association",
+      "name": "private",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${var.subnet_count}",
+        "subnet_id": "${aws_subnet.private[count.index].id}",
+        "route_table_id": "${aws_route_table.private.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.subnet_count",
+        "aws_route_table.private.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 207,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_virtual_network.network",
+      "type": "azurerm_virtual_network",
+      "name": "network",
+      "provider": "azurerm",
+      "region": "${var.location}",
+      "attributes": {
+        "name": "${var.network_name}",
+        "location": "${var.location}",
+        "resource_group_name": "${var.resource_group_name}",
+        "address_space": [
+          "${var.cidr_block}"
+        ],
+        "dns_servers": "${var.dns_servers}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.network_name",
+        "var.location",
+        "var.resource_group_name",
+        "var.cidr_block",
+        "var.dns_servers"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_subnet.private",
+      "type": "azurerm_subnet",
+      "name": "private",
+      "provider": "azurerm",
+      "region": null,
+      "attributes": {
+        "count": "${var.subnet_count}",
+        "name": "private-${count.index}",
+        "resource_group_name": "${var.resource_group_name}",
+        "virtual_network_name": "${azurerm_virtual_network.network.name}",
+        "address_prefix": "${cidrsubnet(var.cidr_block, 4, count.index * 2 + 2)}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.subnet_count",
+        "var.resource_group_name",
+        "azurerm_virtual_network.network.name",
+        "var.cidr_block"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_subnet.public",
+      "type": "azurerm_subnet",
+      "name": "public",
+      "provider": "azurerm",
+      "region": null,
+      "attributes": {
+        "count": "${var.subnet_count}",
+        "name": "public-${count.index}",
+        "resource_group_name": "${var.resource_group_name}",
+        "virtual_network_name": "${azurerm_virtual_network.network.name}",
+        "address_prefix": "${cidrsubnet(var.cidr_block, 4, count.index * 2 + 1)}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.subnet_count",
+        "var.resource_group_name",
+        "azurerm_virtual_network.network.name",
+        "var.cidr_block"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 18,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_project_service.compute",
+      "type": "google_project_service",
+      "name": "compute",
+      "provider": "google",
+      "region": null,
+      "attributes": {
+        "project": "${var.project_id}",
+        "service": "compute.googleapis.com"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.project_id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_network.main",
+      "type": "google_compute_network",
+      "name": "main",
+      "provider": "google",
+      "region": null,
+      "attributes": {
+        "project": "${google_project_service.compute.project}",
+        "name": "${var.network_name}",
+        "routing_mode": "GLOBAL",
+        "auto_create_subnetworks": false
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "google_project_service.compute.project",
+        "var.network_name"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 6,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_subnetwork.private",
+      "type": "google_compute_subnetwork",
+      "name": "private",
+      "provider": "google",
+      "region": "${var.regions[count.index]}",
+      "attributes": {
+        "count": "${length(var.regions)}",
+        "project": "${google_project_service.compute.project}",
+        "name": "private-${var.regions[count.index]}",
+        "ip_cidr_range": "${cidrsubnet(var.cidr_block, 4, count.index)}",
+        "region": "${var.regions[count.index]}",
+        "network": "${google_compute_network.main.self_link}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.regions",
+        "google_project_service.compute.project",
+        "var.cidr_block",
+        "google_compute_network.main.self_link"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 15,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_router.nat",
+      "type": "google_compute_router",
+      "name": "nat",
+      "provider": "google",
+      "region": "${var.regions[count.index]}",
+      "attributes": {
+        "count": "${length(var.regions)}",
+        "project": "${google_project_service.compute.project}",
+        "name": "${var.regions[count.index]}-nat-router",
+        "region": "${var.regions[count.index]}",
+        "network": "${google_compute_network.main.self_link}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.regions",
+        "google_project_service.compute.project",
+        "google_compute_network.main.self_link"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 26,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_router_nat.nat",
+      "type": "google_compute_router_nat",
+      "name": "nat",
+      "provider": "google",
+      "region": "${var.regions[count.index]}",
+      "attributes": {
+        "count": "${length(var.regions)}",
+        "project": "${google_project_service.compute.project}",
+        "name": "${var.regions[count.index]}-nat",
+        "router": "${google_compute_router.nat[count.index].name}",
+        "region": "${var.regions[count.index]}",
+        "nat_ip_allocate_option": "AUTO_ONLY",
+        "source_subnetwork_ip_ranges_to_nat": "LIST_OF_SUBNETWORKS",
+        "subnetwork": [
+          {
+            "name": "${google_compute_subnetwork.private[count.index].self_link}",
+            "source_ip_ranges_to_nat": [
+              "ALL_IP_RANGES"
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.regions",
+        "google_project_service.compute.project"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 36,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_dns_managed_zone.aws",
+      "type": "google_dns_managed_zone",
+      "name": "aws",
+      "provider": "google",
+      "region": null,
+      "attributes": {
+        "provider": "google-beta",
+        "project": "${google_project_service.compute.project}",
+        "name": "aws",
+        "description": "private dns zone to enable resolving ec2 private domains",
+        "dns_name": "${var.aws_dns_suffix}.",
+        "visibility": "private",
+        "private_visibility_config": [
+          {
+            "networks": [
+              {
+                "network_url": "${google_compute_network.main.self_link}"
+              }
+            ]
+          }
+        ],
+        "forwarding_config": [
+          {
+            "target_name_servers": [
+              {
+                "ipv4_address": "${var.aws_dns_ip_addresses[0]}"
+              },
+              {
+                "ipv4_address": "${var.aws_dns_ip_addresses[1]}"
+              }
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "google_project_service.compute.project",
+        "var.aws_dns_suffix",
+        "google_compute_network.main.self_link",
+        "var.aws_dns_ip_addresses"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 55,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_vpn_gateway.main",
+      "type": "aws_vpn_gateway",
+      "name": "main",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "vpc_id": "${data.aws_vpc.main.id}",
+        "tags": {
+          "Name": "vpn-gateway"
+        }
+      },
+      "tags": {
+        "Name": "vpn-gateway"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "data.aws_vpc.main.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 5,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_vpn_gateway_route_propagation.main",
+      "type": "aws_vpn_gateway_route_propagation",
+      "name": "main",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${length(var.aws_route_table_ids)}",
+        "route_table_id": "${var.aws_route_table_ids[count.index]}",
+        "vpn_gateway_id": "${aws_vpn_gateway.main.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.aws_route_table_ids",
+        "aws_vpn_gateway.main.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 13,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_customer_gateway.google",
+      "type": "aws_customer_gateway",
+      "name": "google",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "bgp_asn": 65000,
+        "ip_address": "${google_compute_address.vpn.address}",
+        "type": "ipsec.1",
+        "tags": {
+          "Name": "google-vpn-customer-gateway"
+        }
+      },
+      "tags": {
+        "Name": "google-vpn-customer-gateway"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "google_compute_address.vpn.address"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 24,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_vpn_connection.google",
+      "type": "aws_vpn_connection",
+      "name": "google",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "vpn_gateway_id": "${aws_vpn_gateway.main.id}",
+        "customer_gateway_id": "${aws_customer_gateway.google.id}",
+        "type": "ipsec.1",
+        "static_routes_only": false,
+        "tags": {
+          "Name": "google-vpn-connection"
+        }
+      },
+      "tags": {
+        "Name": "google-vpn-connection"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_vpn_gateway.main.id",
+        "aws_customer_gateway.google.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 34,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_customer_gateway.azure",
+      "type": "aws_customer_gateway",
+      "name": "azure",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "bgp_asn": 65000,
+        "ip_address": "${azurerm_public_ip.gateway.ip_address}",
+        "type": "ipsec.1",
+        "tags": {
+          "Name": "azure-vpn-customer-gateway"
+        }
+      },
+      "tags": {
+        "Name": "azure-vpn-customer-gateway"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "azurerm_public_ip.gateway.ip_address"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 49,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_vpn_connection.azure",
+      "type": "aws_vpn_connection",
+      "name": "azure",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "vpn_gateway_id": "${aws_vpn_gateway.main.id}",
+        "customer_gateway_id": "${aws_customer_gateway.azure.id}",
+        "type": "ipsec.1",
+        "static_routes_only": true,
+        "tags": {
+          "Name": "azure-vpn-connection"
+        }
+      },
+      "tags": {
+        "Name": "azure-vpn-connection"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_vpn_gateway.main.id",
+        "aws_customer_gateway.azure.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 59,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_vpn_connection_route.azure",
+      "type": "aws_vpn_connection_route",
+      "name": "azure",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${length(var.azure_network_address_space)}",
+        "vpn_connection_id": "${aws_vpn_connection.azure.id}",
+        "destination_cidr_block": "${var.azure_network_address_space[count.index]}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.azure_network_address_space",
+        "aws_vpn_connection.azure.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 70,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_subnet.gateway",
+      "type": "azurerm_subnet",
+      "name": "gateway",
+      "provider": "azurerm",
+      "region": null,
+      "attributes": {
+        "name": "GatewaySubnet",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "virtual_network_name": "${var.azure_network_name}",
+        "address_prefix": "${var.azure_gateway_cidr}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.azure_resource_group_name",
+        "var.azure_network_name",
+        "var.azure_gateway_cidr"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_public_ip.gateway",
+      "type": "azurerm_public_ip",
+      "name": "gateway",
+      "provider": "azurerm",
+      "region": "${var.azure_location}",
+      "attributes": {
+        "name": "aws-vpn-gateway-ip",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "location": "${var.azure_location}",
+        "allocation_method": "Dynamic"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.azure_resource_group_name",
+        "var.azure_location"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_virtual_network_gateway.aws",
+      "type": "azurerm_virtual_network_gateway",
+      "name": "aws",
+      "provider": "azurerm",
+      "region": "${var.azure_location}",
+      "attributes": {
+        "name": "aws-vpn-gateway",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "location": "${var.azure_location}",
+        "type": "Vpn",
+        "vpn_type": "RouteBased",
+        "sku": "${var.azure_gateway_sku}",
+        "active_active": false,
+        "enable_bgp": false,
+        "ip_configuration": [
+          {
+            "subnet_id": "${azurerm_subnet.gateway.id}",
+            "public_ip_address_id": "${azurerm_public_ip.gateway.id}"
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.azure_resource_group_name",
+        "var.azure_location",
+        "var.azure_gateway_sku",
+        "azurerm_subnet.gateway.id",
+        "azurerm_public_ip.gateway.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 16,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_local_network_gateway.aws1",
+      "type": "azurerm_local_network_gateway",
+      "name": "aws1",
+      "provider": "azurerm",
+      "region": "${var.azure_location}",
+      "attributes": {
+        "name": "aws-gateway-1",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "location": "${var.azure_location}",
+        "gateway_address": "${aws_vpn_connection.azure.tunnel1_address}",
+        "address_space": [
+          "${data.aws_vpc.main.cidr_block}"
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.azure_resource_group_name",
+        "var.azure_location",
+        "aws_vpn_connection.azure.tunnel1_address",
+        "data.aws_vpc.main.cidr_block"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 38,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_virtual_network_gateway_connection.aws1",
+      "type": "azurerm_virtual_network_gateway_connection",
+      "name": "aws1",
+      "provider": "azurerm",
+      "region": "${var.azure_location}",
+      "attributes": {
+        "name": "aws-connection-1",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "location": "${var.azure_location}",
+        "type": "IPsec",
+        "virtual_network_gateway_id": "${azurerm_virtual_network_gateway.aws.id}",
+        "local_network_gateway_id": "${azurerm_local_network_gateway.aws1.id}",
+        "shared_key": "${aws_vpn_connection.azure.tunnel1_preshared_key}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.azure_resource_group_name",
+        "var.azure_location",
+        "azurerm_virtual_network_gateway.aws.id",
+        "azurerm_local_network_gateway.aws1.id",
+        "aws_vpn_connection.azure.tunnel1_preshared_key"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 47,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_local_network_gateway.aws2",
+      "type": "azurerm_local_network_gateway",
+      "name": "aws2",
+      "provider": "azurerm",
+      "region": "${var.azure_location}",
+      "attributes": {
+        "name": "aws-gateway-2",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "location": "${var.azure_location}",
+        "gateway_address": "${aws_vpn_connection.azure.tunnel2_address}",
+        "address_space": [
+          "${data.aws_vpc.main.cidr_block}"
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.azure_resource_group_name",
+        "var.azure_location",
+        "aws_vpn_connection.azure.tunnel2_address",
+        "data.aws_vpc.main.cidr_block"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 62,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_virtual_network_gateway_connection.aws2",
+      "type": "azurerm_virtual_network_gateway_connection",
+      "name": "aws2",
+      "provider": "azurerm",
+      "region": "${var.azure_location}",
+      "attributes": {
+        "name": "aws-connection-2",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "location": "${var.azure_location}",
+        "type": "IPsec",
+        "virtual_network_gateway_id": "${azurerm_virtual_network_gateway.aws.id}",
+        "local_network_gateway_id": "${azurerm_local_network_gateway.aws2.id}",
+        "shared_key": "${aws_vpn_connection.azure.tunnel2_preshared_key}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.azure_resource_group_name",
+        "var.azure_location",
+        "azurerm_virtual_network_gateway.aws.id",
+        "azurerm_local_network_gateway.aws2.id",
+        "aws_vpn_connection.azure.tunnel2_preshared_key"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 70,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_network_acl_rule.azure_dns_tcp_ingress",
+      "type": "aws_network_acl_rule",
+      "name": "azure_dns_tcp_ingress",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${length(var.azure_network_address_space)}",
+        "network_acl_id": "${var.dns_network_acl_id}",
+        "egress": false,
+        "protocol": "tcp",
+        "rule_number": "${400 + count.index}",
+        "rule_action": "allow",
+        "cidr_block": "${var.azure_network_address_space[count.index]}",
+        "from_port": "${local.dns_port}",
+        "to_port": "${local.dns_port}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.azure_network_address_space",
+        "var.dns_network_acl_id",
+        "local.dns_port"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 85,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_network_acl_rule.azure_dns_udp_ingress",
+      "type": "aws_network_acl_rule",
+      "name": "azure_dns_udp_ingress",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${length(var.azure_network_address_space)}",
+        "network_acl_id": "${var.dns_network_acl_id}",
+        "egress": false,
+        "protocol": "udp",
+        "rule_number": "${450 + count.index}",
+        "rule_action": "allow",
+        "cidr_block": "${var.azure_network_address_space[count.index]}",
+        "from_port": "${local.dns_port}",
+        "to_port": "${local.dns_port}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.azure_network_address_space",
+        "var.dns_network_acl_id",
+        "local.dns_port"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 99,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_address.vpn",
+      "type": "google_compute_address",
+      "name": "vpn",
+      "provider": "google",
+      "region": "${var.google_region}",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-ip",
+        "region": "${var.google_region}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.google_project_id",
+        "local.google_connection_name",
+        "var.google_region"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 20,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_vpn_gateway.aws",
+      "type": "google_compute_vpn_gateway",
+      "name": "aws",
+      "provider": "google",
+      "region": "${var.google_region}",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-gw-${var.google_region}",
+        "network": "${data.google_compute_network.main.self_link}",
+        "region": "${var.google_region}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.google_project_id",
+        "local.google_connection_name",
+        "var.google_region",
+        "data.google_compute_network.main.self_link"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 26,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_forwarding_rule.esp",
+      "type": "google_compute_forwarding_rule",
+      "name": "esp",
+      "provider": "google",
+      "region": null,
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "fr-esp",
+        "ip_protocol": "ESP",
+        "ip_address": "${google_compute_address.vpn.address}",
+        "target": "${google_compute_vpn_gateway.aws.self_link}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.google_project_id",
+        "google_compute_address.vpn.address",
+        "google_compute_vpn_gateway.aws.self_link"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 33,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_forwarding_rule.udp500",
+      "type": "google_compute_forwarding_rule",
+      "name": "udp500",
+      "provider": "google",
+      "region": null,
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "fr-udp500",
+        "ip_protocol": "UDP",
+        "port_range": "500-500",
+        "ip_address": "${google_compute_address.vpn.address}",
+        "target": "${google_compute_vpn_gateway.aws.self_link}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.google_project_id",
+        "google_compute_address.vpn.address",
+        "google_compute_vpn_gateway.aws.self_link"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 41,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_forwarding_rule.udp4500",
+      "type": "google_compute_forwarding_rule",
+      "name": "udp4500",
+      "provider": "google",
+      "region": null,
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "fr-udp4500",
+        "ip_protocol": "UDP",
+        "port_range": "4500-4500",
+        "ip_address": "${google_compute_address.vpn.address}",
+        "target": "${google_compute_vpn_gateway.aws.self_link}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.google_project_id",
+        "google_compute_address.vpn.address",
+        "google_compute_vpn_gateway.aws.self_link"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 50,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_vpn_tunnel.aws1",
+      "type": "google_compute_vpn_tunnel",
+      "name": "aws1",
+      "provider": "google",
+      "region": null,
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-tunnel1",
+        "peer_ip": "${aws_vpn_connection.google.tunnel1_address}",
+        "shared_secret": "${aws_vpn_connection.google.tunnel1_preshared_key}",
+        "ike_version": 1,
+        "target_vpn_gateway": "${google_compute_vpn_gateway.aws.self_link}",
+        "router": "${google_compute_router.aws1.self_link}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": [
+          {
+            "type": "shared_secret",
+            "reference": "aws_vpn_connection.google.tunnel1_preshared_key",
+            "exposed": false
+          }
+        ]
+      },
+      "references": [
+        "var.google_project_id",
+        "local.google_connection_name",
+        "aws_vpn_connection.google.tunnel1_address",
+        "aws_vpn_connection.google.tunnel1_preshared_key",
+        "google_compute_vpn_gateway.aws.self_link",
+        "google_compute_router.aws1.self_link"
+      ],
+      "depends_on": [
+        "google_compute_forwarding_rule.esp",
+        "google_compute_forwarding_rule.udp500",
+        "google_compute_forwarding_rule.udp4500"
+      ],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 63,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_router.aws1",
+      "type": "google_compute_router",
+      "name": "aws1",
+      "provider": "google",
+      "region": "${var.google_region}",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-router1",
+        "region": "${var.google_region}",
+        "network": "${data.google_compute_network.main.name}",
+        "bgp": [
+          {
+            "asn": "${aws_customer_gateway.google.bgp_asn}",
+            "advertise_mode": "CUSTOM",
+            "advertised_groups": [
+              "ALL_SUBNETS"
+            ],
+            "advertised_ip_ranges": [
+              {
+                "range": "${var.google_external_dns_cidr}"
+              }
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.google_project_id",
+        "local.google_connection_name",
+        "var.google_region",
+        "data.google_compute_network.main.name",
+        "aws_customer_gateway.google.bgp_asn",
+        "var.google_external_dns_cidr"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_router_peer.aws1",
+      "type": "google_compute_router_peer",
+      "name": "aws1",
+      "provider": "google",
+      "region": "${google_compute_router.aws1.region}",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-bgp1",
+        "router": "${google_compute_router.aws1.name}",
+        "region": "${google_compute_router.aws1.region}",
+        "peer_ip_address": "${aws_vpn_connection.google.tunnel1_vgw_inside_address}",
+        "peer_asn": "${aws_vpn_connection.google.tunnel1_bgp_asn}",
+        "interface": "${google_compute_router_interface.aws1.name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.google_project_id",
+        "local.google_connection_name",
+        "google_compute_router.aws1.name",
+        "google_compute_router.aws1.region",
+        "aws_vpn_connection.google.tunnel1_vgw_inside_address",
+        "aws_vpn_connection.google.tunnel1_bgp_asn",
+        "google_compute_router_interface.aws1.name"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 101,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_router_interface.aws1",
+      "type": "google_compute_router_interface",
+      "name": "aws1",
+      "provider": "google",
+      "region": "${google_compute_router.aws1.region}",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-interface1",
+        "router": "${google_compute_router.aws1.name}",
+        "region": "${google_compute_router.aws1.region}",
+        "ip_range": "${aws_vpn_connection.google.tunnel1_cgw_inside_address}/30",
+        "vpn_tunnel": "${google_compute_vpn_tunnel.aws1.name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.google_project_id",
+        "local.google_connection_name",
+        "google_compute_router.aws1.name",
+        "google_compute_router.aws1.region",
+        "aws_vpn_connection.google.tunnel1_cgw_inside_address",
+        "google_compute_vpn_tunnel.aws1.name"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 112,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_vpn_tunnel.aws2",
+      "type": "google_compute_vpn_tunnel",
+      "name": "aws2",
+      "provider": "google",
+      "region": null,
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-tunnel2",
+        "peer_ip": "${aws_vpn_connection.google.tunnel2_address}",
+        "shared_secret": "${aws_vpn_connection.google.tunnel2_preshared_key}",
+        "ike_version": 1,
+        "target_vpn_gateway": "${google_compute_vpn_gateway.aws.self_link}",
+        "router": "${google_compute_router.aws2.name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": [
+          {
+            "type": "shared_secret",
+            "reference": "aws_vpn_connection.google.tunnel2_preshared_key",
+            "exposed": false
+          }
+        ]
+      },
+      "references": [
+        "var.google_project_id",
+        "local.google_connection_name",
+        "aws_vpn_connection.google.tunnel2_address",
+        "aws_vpn_connection.google.tunnel2_preshared_key",
+        "google_compute_vpn_gateway.aws.self_link",
+        "google_compute_router.aws2.name"
+      ],
+      "depends_on": [
+        "google_compute_forwarding_rule.esp",
+        "google_compute_forwarding_rule.udp500",
+        "google_compute_forwarding_rule.udp4500"
+      ],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 126,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_router.aws2",
+      "type": "google_compute_router",
+      "name": "aws2",
+      "provider": "google",
+      "region": "${var.google_region}",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-router2",
+        "region": "${var.google_region}",
+        "network": "${data.google_compute_network.main.name}",
+        "bgp": [
+          {
+            "asn": "${aws_customer_gateway.google.bgp_asn}",
+            "advertise_mode": "CUSTOM",
+            "advertised_groups": [
+              "ALL_SUBNETS"
+            ],
+            "advertised_ip_ranges": [
+              {
+                "range": "${var.google_external_dns_cidr}"
+              }
+            ]
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.google_project_id",
+        "local.google_connection_name",
+        "var.google_region",
+        "data.google_compute_network.main.name",
+        "aws_customer_gateway.google.bgp_asn",
+        "var.google_external_dns_cidr"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 145,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_router_peer.aws2",
+      "type": "google_compute_router_peer",
+      "name": "aws2",
+      "provider": "google",
+      "region": "${google_compute_router.aws2.region}",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-bgp2",
+        "router": "${google_compute_router.aws2.name}",
+        "region": "${google_compute_router.aws2.region}",
+        "peer_ip_address": "${aws_vpn_connection.google.tunnel2_vgw_inside_address}",
+        "peer_asn": "${aws_vpn_connection.google.tunnel2_bgp_asn}",
+        "interface": "${google_compute_router_interface.aws2.name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.google_project_id",
+        "local.google_connection_name",
+        "google_compute_router.aws2.name",
+        "google_compute_router.aws2.region",
+        "aws_vpn_connection.google.tunnel2_vgw_inside_address",
+        "aws_vpn_connection.google.tunnel2_bgp_asn",
+        "google_compute_router_interface.aws2.name"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 164,
+        "column": 1
+      }
+    },
+    {
+      "id": "google_compute_router_interface.aws2",
+      "type": "google_compute_router_interface",
+      "name": "aws2",
+      "provider": "google",
+      "region": "${google_compute_router.aws2.region}",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${local.google_connection_name}-interface2",
+        "router": "${google_compute_router.aws2.name}",
+        "region": "${google_compute_router.aws2.region}",
+        "ip_range": "${aws_vpn_connection.google.tunnel2_cgw_inside_address}/30",
+        "vpn_tunnel": "${google_compute_vpn_tunnel.aws2.name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.google_project_id",
+        "local.google_connection_name",
+        "google_compute_router.aws2.name",
+        "google_compute_router.aws2.region",
+        "aws_vpn_connection.google.tunnel2_cgw_inside_address",
+        "google_compute_vpn_tunnel.aws2.name"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 175,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_network_acl_rule.google_internal_dns_tcp_ingress",
+      "type": "aws_network_acl_rule",
+      "name": "google_internal_dns_tcp_ingress",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${length(data.google_compute_subnetwork.subnet)}",
+        "network_acl_id": "${var.dns_network_acl_id}",
+        "egress": false,
+        "protocol": "tcp",
+        "rule_number": "${200 + count.index}",
+        "rule_action": "allow",
+        "cidr_block": "${data.google_compute_subnetwork.subnet[count.index].ip_cidr_range}",
+        "from_port": "${local.dns_port}",
+        "to_port": "${local.dns_port}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "data.google_compute_subnetwork.subnet",
+        "var.dns_network_acl_id",
+        "local.dns_port"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 189,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_network_acl_rule.google_internal_dns_udp_ingress",
+      "type": "aws_network_acl_rule",
+      "name": "google_internal_dns_udp_ingress",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${length(data.google_compute_subnetwork.subnet)}",
+        "network_acl_id": "${var.dns_network_acl_id}",
+        "egress": false,
+        "protocol": "udp",
+        "rule_number": "${250 + count.index}",
+        "rule_action": "allow",
+        "cidr_block": "${data.google_compute_subnetwork.subnet[count.index].ip_cidr_range}",
+        "from_port": "${local.dns_port}",
+        "to_port": "${local.dns_port}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "data.google_compute_subnetwork.subnet",
+        "var.dns_network_acl_id",
+        "local.dns_port"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 203,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_network_acl_rule.google_external_dns_tcp_ingress",
+      "type": "aws_network_acl_rule",
+      "name": "google_external_dns_tcp_ingress",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "network_acl_id": "${var.dns_network_acl_id}",
+        "egress": false,
+        "protocol": "tcp",
+        "rule_number": 300,
+        "rule_action": "allow",
+        "cidr_block": "${var.google_external_dns_cidr}",
+        "from_port": "${local.dns_port}",
+        "to_port": "${local.dns_port}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.dns_network_acl_id",
+        "var.google_external_dns_cidr",
+        "local.dns_port"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 217,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_network_acl_rule.google_external_dns_udp_ingress",
+      "type": "aws_network_acl_rule",
+      "name": "google_external_dns_udp_ingress",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "network_acl_id": "${var.dns_network_acl_id}",
+        "egress": false,
+        "protocol": "udp",
+        "rule_number": 301,
+        "rule_action": "allow",
+        "cidr_block": "${var.google_external_dns_cidr}",
+        "from_port": "${local.dns_port}",
+        "to_port": "${local.dns_port}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.dns_network_acl_id",
+        "var.google_external_dns_cidr",
+        "local.dns_port"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 229,
+        "column": 1
+      }
+    }
+  ],
+  "data_sources": [
+    {
+      "id": "aws_vpc.main",
+      "type": "aws_vpc",
+      "name": "main",
+      "provider": "aws",
+      "attributes": {
+        "id": "${var.vpc_id}"
+      },
+      "references": [
+        "var.vpc_id"
+      ]
+    },
+    {
+      "id": "aws_availability_zones.available",
+      "type": "aws_availability_zones",
+      "name": "available",
+      "provider": "aws",
+      "attributes": {
+        "state": "available"
+      },
+      "references": []
+    },
+    {
+      "id": "aws_vpc.main",
+      "type": "aws_vpc",
+      "name": "main",
+      "provider": "aws",
+      "attributes": {
+        "id": "${var.aws_vpc_id}"
+      },
+      "references": [
+        "var.aws_vpc_id"
+      ]
+    },
+    {
+      "id": "google_compute_network.main",
+      "type": "google_compute_network",
+      "name": "main",
+      "provider": "google",
+      "attributes": {
+        "project": "${var.google_project_id}",
+        "name": "${var.google_network_name}"
+      },
+      "references": [
+        "var.google_project_id",
+        "var.google_network_name"
+      ]
+    },
+    {
+      "id": "google_compute_subnetwork.subnet",
+      "type": "google_compute_subnetwork",
+      "name": "subnet",
+      "provider": "google",
+      "attributes": {
+        "count": "${length(var.google_subnet_self_links)}",
+        "self_link": "${var.google_subnet_self_links[count.index]}"
+      },
+      "references": [
+        "var.google_subnet_self_links"
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "name": "vpc_id",
+      "type": "string",
+      "default": null,
+      "description": "the id of the aws vpc",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "private_route_table_id",
+      "type": "string",
+      "default": null,
+      "description": "private route table id of the aws vpc",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "directory_name",
+      "type": "string",
+      "default": null,
+      "description": "the name for the directory",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "directory_password",
+      "type": "string",
+      "default": null,
+      "description": "the admin password for the directory",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "dns_subnet_cidr_prefix",
+      "type": "string",
+      "default": null,
+      "description": "the cidr prefix for aws dns server subnets",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "vpc_name",
+      "type": "string",
+      "default": null,
+      "description": "the name for the vpc",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "cidr_block",
+      "type": "string",
+      "default": null,
+      "description": "the cidr block to use for the vpc, required to end with /16",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "subnet_count",
+      "type": "number",
+      "default": null,
+      "description": "the number of private subnets to create",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "resource_group_name",
+      "type": "string",
+      "default": null,
+      "description": "the resource group to place this vnet in",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "location",
+      "type": "string",
+      "default": null,
+      "description": "location to create vnet in",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "network_name",
+      "type": "string",
+      "default": null,
+      "description": "the name for the network",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "dns_servers",
+      "type": "list(string)",
+      "default": null,
+      "description": "addresses of DNS servers to use for this vnet",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "project_id",
+      "type": "string",
+      "default": null,
+      "description": "the project to create the network in",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "regions",
+      "type": "list(string)",
+      "default": null,
+      "description": "which regions to create subnets for",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "aws_dns_suffix",
+      "type": "string",
+      "default": null,
+      "description": "DNS suffix that AWS uses for internal host names (e.g., ec2.internal, compute.internal)",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "aws_dns_ip_addresses",
+      "type": "list(string)",
+      "default": null,
+      "description": "addresses of DNS servers to forward AWS internal DNS requests to",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "aws_region",
+      "type": "string",
+      "default": null,
+      "description": "aws region to use",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "aws_directory_service_password",
+      "type": "string",
+      "default": null,
+      "description": "password to use for the aws directory service (enabling DNS)",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "google_region",
+      "type": "string",
+      "default": null,
+      "description": "the region to connect to in the google network",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "google_project_id",
+      "type": "string",
+      "default": null,
+      "description": "the google project id",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "azure_resource_group_name",
+      "type": "string",
+      "default": null,
+      "description": "name of the azure resource group to use",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "azure_location",
+      "type": "string",
+      "default": null,
+      "description": "name of the azure location to use",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "aws_vpc_id",
+      "type": "string",
+      "default": null,
+      "description": "the id of the aws vpc",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "aws_route_table_ids",
+      "type": "list(string)",
+      "default": null,
+      "description": "aws route tables to add vpn routes to",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "google_network_name",
+      "type": "string",
+      "default": null,
+      "description": "the name of the google network",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "google_subnet_self_links",
+      "type": "list(string)",
+      "default": null,
+      "description": "the self links of the subnets of the google network to give access to the vpn",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "google_external_dns_cidr",
+      "type": "string",
+      "default": "35.199.192.0/19",
+      "description": "the cidr block associated with google's dns servers",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "azure_network_name",
+      "type": "string",
+      "default": null,
+      "description": "name of the azure virtual network to use",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "azure_network_address_space",
+      "type": "list(string)",
+      "default": null,
+      "description": "azure cidr blocks to give access to the VPN",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "azure_gateway_cidr",
+      "type": "string",
+      "default": null,
+      "description": "cidr block of azure gateway subnet (recommended /27 or larger)",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "azure_gateway_sku",
+      "type": "string",
+      "default": "VpnGw1",
+      "description": "product sku of azure vpn gateway",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "dns_network_acl_id",
+      "type": "string",
+      "default": null,
+      "description": "network acl id of the dns subnet",
+      "sensitive": false,
+      "validation": {}
+    }
+  ],
+  "outputs": [
+    {
+      "name": "dns_ip_addresses",
+      "value": "${split(\",\", join(\",\", aws_directory_service_directory.dns.dns_ip_addresses))}",
+      "description": null,
+      "sensitive": false
+    },
+    {
+      "name": "dns_network_acl_id",
+      "value": "${aws_network_acl.dns.id}",
+      "description": null,
+      "sensitive": false
+    },
+    {
+      "name": "vpc_id",
+      "value": "${aws_vpc.main.id}",
+      "description": "the id of the vpc",
+      "sensitive": false
+    },
+    {
+      "name": "vpc_cidr_block",
+      "value": "${aws_vpc.main.cidr_block}",
+      "description": "the cidr block of the vpc",
+      "sensitive": false
+    },
+    {
+      "name": "private_route_table_id",
+      "value": "${aws_route_table.private.id}",
+      "description": "the private route table of the vpc",
+      "sensitive": false
+    },
+    {
+      "name": "public_route_table_id",
+      "value": "${aws_route_table.public.id}",
+      "description": "the public route table of the vpc",
+      "sensitive": false
+    },
+    {
+      "name": "network_name",
+      "value": "${azurerm_virtual_network.network.name}",
+      "description": null,
+      "sensitive": false
+    },
+    {
+      "name": "address_space",
+      "value": "${azurerm_virtual_network.network.address_space}",
+      "description": null,
+      "sensitive": false
+    },
+    {
+      "name": "network_name",
+      "value": "${google_compute_network.main.name}",
+      "description": "the name of the new network",
+      "sensitive": false
+    },
+    {
+      "name": "private_subnet_self_links",
+      "value": "${google_compute_subnetwork.private[*].self_link}",
+      "description": "the self links of the private subnets of the vpc",
+      "sensitive": false
+    }
+  ],
+  "modules": [
+    {
+      "name": "aws_vpc",
+      "source": "./aws/vpc",
+      "version": null,
+      "inputs": {
+        "source": "./aws/vpc",
+        "vpc_name": "aws-test",
+        "cidr_block": "10.0.0.0/16",
+        "subnet_count": 1
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "name": "dns",
+      "source": "./aws/dns",
+      "version": null,
+      "inputs": {
+        "source": "./aws/dns",
+        "vpc_id": "${module.aws_vpc.vpc_id}",
+        "directory_name": "test.internal",
+        "directory_password": "${var.aws_directory_service_password}",
+        "dns_subnet_cidr_prefix": "10.0.0.0/20",
+        "private_route_table_id": "${module.aws_vpc.private_route_table_id}"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "main.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "name": "google_network",
+      "source": "./google/network",
+      "version": null,
+      "inputs": {
+        "source": "./google/network",
+        "project_id": "${var.google_project_id}",
+        "network_name": "google-test",
+        "cidr_block": "10.1.0.0/16",
+        "regions": [
+          "${var.google_region}"
+        ],
+        "aws_dns_suffix": "${var.aws_dns_suffix}",
+        "aws_dns_ip_addresses": "${module.dns.dns_ip_addresses}"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "main.tf",
+        "line": 19,
+        "column": 1
+      }
+    },
+    {
+      "name": "azure_vnet",
+      "source": "./azure/vnet",
+      "version": null,
+      "inputs": {
+        "source": "./azure/vnet",
+        "resource_group_name": "${var.azure_resource_group_name}",
+        "location": "${var.azure_location}",
+        "network_name": "azure-test",
+        "cidr_block": "10.2.0.0/16",
+        "subnet_count": 1,
+        "dns_servers": "${module.dns.dns_ip_addresses}"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "main.tf",
+        "line": 31,
+        "column": 1
+      }
+    },
+    {
+      "name": "vpn",
+      "source": "./vpn",
+      "version": null,
+      "inputs": {
+        "source": "./vpn",
+        "aws_vpc_id": "${module.aws_vpc.vpc_id}",
+        "aws_route_table_ids": [
+          "${module.aws_vpc.private_route_table_id}",
+          "${module.aws_vpc.public_route_table_id}"
+        ],
+        "google_project_id": "${var.google_project_id}",
+        "google_region": "${var.google_region}",
+        "google_network_name": "${module.google_network.network_name}",
+        "google_subnet_self_links": "${module.google_network.private_subnet_self_links}",
+        "azure_resource_group_name": "${var.azure_resource_group_name}",
+        "azure_location": "${var.azure_location}",
+        "azure_network_name": "${module.azure_vnet.network_name}",
+        "azure_network_address_space": "${module.azure_vnet.address_space}",
+        "azure_gateway_cidr": "10.2.0.0/27",
+        "dns_network_acl_id": "${module.dns.dns_network_acl_id}"
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "main.tf",
+        "line": 42,
+        "column": 1
+      }
+    }
+  ],
+  "providers": [
+    {
+      "name": "aws",
+      "alias": null,
+      "version": "~> 2.39.0",
+      "configuration": {
+        "region": "${var.aws_region}"
+      }
+    },
+    {
+      "name": "google",
+      "alias": null,
+      "version": "~> 2.18.0",
+      "configuration": {
+        "credentials": "${file(pathexpand(\"~/.config/gcloud/${var.google_project_id}.json\"))}",
+        "region": "${var.google_region}",
+        "project": "${var.google_project_id}"
+      }
+    },
+    {
+      "name": "google-beta",
+      "alias": null,
+      "version": "~> 2.18.0",
+      "configuration": {
+        "credentials": "${file(pathexpand(\"~/.config/gcloud/${var.google_project_id}.json\"))}",
+        "region": "${var.google_region}",
+        "project": "${var.google_project_id}"
+      }
+    },
+    {
+      "name": "azurerm",
+      "alias": null,
+      "version": "~> 1.41.0",
+      "configuration": {}
+    }
+  ],
+  "relationships": [
+    {
+      "source": "aws_subnet.dns",
+      "target": "var.vpc_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.vpc_id"
+      },
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 13,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_subnet.dns",
+      "target": "var.dns_subnet_cidr_prefix",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.dns_subnet_cidr_prefix"
+      },
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 13,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table_association.dns",
+      "target": "var.private_route_table_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.private_route_table_id"
+      },
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 25,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl.dns",
+      "target": "var.vpc_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.vpc_id"
+      },
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 32,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.ingress",
+      "target": "aws_network_acl.dns",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_network_acl.dns.id"
+      },
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 41,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.ingress",
+      "target": "data.aws_vpc.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "attributes": {
+        "reference": "data.aws_vpc.main.cidr_block"
+      },
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 41,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.egress",
+      "target": "aws_network_acl.dns",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_network_acl.dns.id"
+      },
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 53,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_directory_service_directory.dns",
+      "target": "var.directory_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.directory_name"
+      },
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 65,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_directory_service_directory.dns",
+      "target": "var.directory_password",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.directory_password"
+      },
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 65,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_directory_service_directory.dns",
+      "target": "var.vpc_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.vpc_id"
+      },
+      "source_location": {
+        "file": "aws/dns/main.tf",
+        "line": 65,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_vpc.main",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.cidr_block"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_vpc.main",
+      "target": "var.vpc_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.vpc_name"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_subnet.private",
+      "target": "var.subnet_count",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.subnet_count"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_subnet.private",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpc.main.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_subnet.private",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.cidr_block"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_subnet.public",
+      "target": "var.subnet_count",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.subnet_count"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 20,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_subnet.public",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpc.main.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 20,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_subnet.public",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.cidr_block"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 20,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl.public",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpc.main.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 31,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl.private",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpc.main.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 94,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_internet_gateway.gw",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpc.main.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 141,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_internet_gateway.gw",
+      "target": "var.vpc_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.vpc_name"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 141,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_eip.nat",
+      "target": "aws_internet_gateway.gw",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 149,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_nat_gateway.gw",
+      "target": "aws_internet_gateway.gw",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 159,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_nat_gateway.gw",
+      "target": "aws_eip.nat",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_eip.nat.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 159,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_nat_gateway.gw",
+      "target": "var.vpc_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.vpc_name"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 159,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table.public",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpc.main.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 172,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route.public_igw",
+      "target": "aws_route_table.public",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_route_table.public.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 180,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route.public_igw",
+      "target": "aws_internet_gateway.gw",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_internet_gateway.gw.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 180,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table.private",
+      "target": "aws_vpc.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpc.main.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 186,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route.private_nat",
+      "target": "aws_route_table.private",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_route_table.private.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 194,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route.private_nat",
+      "target": "aws_nat_gateway.gw",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_nat_gateway.gw.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 194,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table_association.public",
+      "target": "var.subnet_count",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.subnet_count"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 200,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table_association.public",
+      "target": "aws_route_table.public",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_route_table.public.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 200,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table_association.private",
+      "target": "var.subnet_count",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.subnet_count"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 207,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table_association.private",
+      "target": "aws_route_table.private",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_route_table.private.id"
+      },
+      "source_location": {
+        "file": "aws/vpc/main.tf",
+        "line": 207,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network.network",
+      "target": "var.network_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.network_name"
+      },
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network.network",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.location"
+      },
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network.network",
+      "target": "var.resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.resource_group_name"
+      },
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network.network",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.cidr_block"
+      },
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network.network",
+      "target": "var.dns_servers",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.dns_servers"
+      },
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_subnet.private",
+      "target": "var.subnet_count",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.subnet_count"
+      },
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_subnet.private",
+      "target": "var.resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.resource_group_name"
+      },
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_subnet.private",
+      "target": "azurerm_virtual_network.network",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_virtual_network.network.name"
+      },
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_subnet.private",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.cidr_block"
+      },
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_subnet.public",
+      "target": "var.subnet_count",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.subnet_count"
+      },
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 18,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_subnet.public",
+      "target": "var.resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.resource_group_name"
+      },
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 18,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_subnet.public",
+      "target": "azurerm_virtual_network.network",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_virtual_network.network.name"
+      },
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 18,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_subnet.public",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.cidr_block"
+      },
+      "source_location": {
+        "file": "azure/vnet/main.tf",
+        "line": 18,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_project_service.compute",
+      "target": "var.project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.project_id"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_network.main",
+      "target": "google_project_service.compute",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_project_service.compute.project"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 6,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_network.main",
+      "target": "var.network_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.network_name"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 6,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_subnetwork.private",
+      "target": "var.regions",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.regions"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 15,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_subnetwork.private",
+      "target": "google_project_service.compute",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_project_service.compute.project"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 15,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_subnetwork.private",
+      "target": "var.cidr_block",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.cidr_block"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 15,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_subnetwork.private",
+      "target": "google_compute_network.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_network.main.self_link"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 15,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router.nat",
+      "target": "var.regions",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.regions"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 26,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router.nat",
+      "target": "google_project_service.compute",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_project_service.compute.project"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 26,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router.nat",
+      "target": "google_compute_network.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_network.main.self_link"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 26,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_nat.nat",
+      "target": "var.regions",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.regions"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 36,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_nat.nat",
+      "target": "google_project_service.compute",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_project_service.compute.project"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 36,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_dns_managed_zone.aws",
+      "target": "google_project_service.compute",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_project_service.compute.project"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 55,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_dns_managed_zone.aws",
+      "target": "var.aws_dns_suffix",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.aws_dns_suffix"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 55,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_dns_managed_zone.aws",
+      "target": "google_compute_network.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_network.main.self_link"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 55,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_dns_managed_zone.aws",
+      "target": "var.aws_dns_ip_addresses",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.aws_dns_ip_addresses"
+      },
+      "source_location": {
+        "file": "google/network/main.tf",
+        "line": 55,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_vpn_gateway.main",
+      "target": "data.aws_vpc.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "attributes": {
+        "reference": "data.aws_vpc.main.id"
+      },
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 5,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_vpn_gateway_route_propagation.main",
+      "target": "var.aws_route_table_ids",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.aws_route_table_ids"
+      },
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 13,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_vpn_gateway_route_propagation.main",
+      "target": "aws_vpn_gateway.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_gateway.main.id"
+      },
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 13,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_customer_gateway.google",
+      "target": "google_compute_address.vpn",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_address.vpn.address"
+      },
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 24,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_vpn_connection.google",
+      "target": "aws_vpn_gateway.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_gateway.main.id"
+      },
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 34,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_vpn_connection.google",
+      "target": "aws_customer_gateway.google",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_customer_gateway.google.id"
+      },
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 34,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_customer_gateway.azure",
+      "target": "azurerm_public_ip.gateway",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_public_ip.gateway.ip_address"
+      },
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 49,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_vpn_connection.azure",
+      "target": "aws_vpn_gateway.main",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_gateway.main.id"
+      },
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 59,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_vpn_connection.azure",
+      "target": "aws_customer_gateway.azure",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_customer_gateway.azure.id"
+      },
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 59,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_vpn_connection_route.azure",
+      "target": "var.azure_network_address_space",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_network_address_space"
+      },
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 70,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_vpn_connection_route.azure",
+      "target": "aws_vpn_connection.azure",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_connection.azure.id"
+      },
+      "source_location": {
+        "file": "vpn/aws.tf",
+        "line": 70,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_subnet.gateway",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_resource_group_name"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_subnet.gateway",
+      "target": "var.azure_network_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_network_name"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_subnet.gateway",
+      "target": "var.azure_gateway_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_gateway_cidr"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_public_ip.gateway",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_resource_group_name"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_public_ip.gateway",
+      "target": "var.azure_location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_location"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway.aws",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_resource_group_name"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 16,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway.aws",
+      "target": "var.azure_location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_location"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 16,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway.aws",
+      "target": "var.azure_gateway_sku",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_gateway_sku"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 16,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway.aws",
+      "target": "azurerm_subnet.gateway",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_subnet.gateway.id"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 16,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway.aws",
+      "target": "azurerm_public_ip.gateway",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_public_ip.gateway.id"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 16,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws1",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_resource_group_name"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 38,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws1",
+      "target": "var.azure_location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_location"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 38,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws1",
+      "target": "aws_vpn_connection.azure",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_connection.azure.tunnel1_address"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 38,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws1",
+      "target": "data.aws_vpc.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "attributes": {
+        "reference": "data.aws_vpc.main.cidr_block"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 38,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws1",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_resource_group_name"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 47,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws1",
+      "target": "var.azure_location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_location"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 47,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws1",
+      "target": "azurerm_virtual_network_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_virtual_network_gateway.aws.id"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 47,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws1",
+      "target": "azurerm_local_network_gateway.aws1",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_local_network_gateway.aws1.id"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 47,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws1",
+      "target": "aws_vpn_connection.azure",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_connection.azure.tunnel1_preshared_key"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 47,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws2",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_resource_group_name"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 62,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws2",
+      "target": "var.azure_location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_location"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 62,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws2",
+      "target": "aws_vpn_connection.azure",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_connection.azure.tunnel2_address"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 62,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_local_network_gateway.aws2",
+      "target": "data.aws_vpc.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "attributes": {
+        "reference": "data.aws_vpc.main.cidr_block"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 62,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws2",
+      "target": "var.azure_resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_resource_group_name"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 70,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws2",
+      "target": "var.azure_location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_location"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 70,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws2",
+      "target": "azurerm_virtual_network_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_virtual_network_gateway.aws.id"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 70,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws2",
+      "target": "azurerm_local_network_gateway.aws2",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_local_network_gateway.aws2.id"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 70,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_virtual_network_gateway_connection.aws2",
+      "target": "aws_vpn_connection.azure",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_connection.azure.tunnel2_preshared_key"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 70,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.azure_dns_tcp_ingress",
+      "target": "var.azure_network_address_space",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_network_address_space"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 85,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.azure_dns_tcp_ingress",
+      "target": "var.dns_network_acl_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.dns_network_acl_id"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 85,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.azure_dns_udp_ingress",
+      "target": "var.azure_network_address_space",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.azure_network_address_space"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 99,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.azure_dns_udp_ingress",
+      "target": "var.dns_network_acl_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.dns_network_acl_id"
+      },
+      "source_location": {
+        "file": "vpn/azure.tf",
+        "line": 99,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_address.vpn",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 20,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_address.vpn",
+      "target": "var.google_region",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_region"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 20,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_gateway.aws",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 26,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_gateway.aws",
+      "target": "var.google_region",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_region"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 26,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_gateway.aws",
+      "target": "data.google_compute_network.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "attributes": {
+        "reference": "data.google_compute_network.main.self_link"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 26,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_forwarding_rule.esp",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 33,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_forwarding_rule.esp",
+      "target": "google_compute_address.vpn",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_address.vpn.address"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 33,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_forwarding_rule.esp",
+      "target": "google_compute_vpn_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_vpn_gateway.aws.self_link"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 33,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_forwarding_rule.udp500",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 41,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_forwarding_rule.udp500",
+      "target": "google_compute_address.vpn",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_address.vpn.address"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 41,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_forwarding_rule.udp500",
+      "target": "google_compute_vpn_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_vpn_gateway.aws.self_link"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 41,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_forwarding_rule.udp4500",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 50,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_forwarding_rule.udp4500",
+      "target": "google_compute_address.vpn",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_address.vpn.address"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 50,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_forwarding_rule.udp4500",
+      "target": "google_compute_vpn_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_vpn_gateway.aws.self_link"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 50,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "google_compute_forwarding_rule.esp",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 63,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "google_compute_forwarding_rule.udp500",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 63,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "google_compute_forwarding_rule.udp4500",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 63,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 63,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "aws_vpn_connection.google",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_connection.google.tunnel1_address"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 63,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "google_compute_vpn_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_vpn_gateway.aws.self_link"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 63,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws1",
+      "target": "google_compute_router.aws1",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_router.aws1.self_link"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 63,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router.aws1",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router.aws1",
+      "target": "var.google_region",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_region"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router.aws1",
+      "target": "data.google_compute_network.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "attributes": {
+        "reference": "data.google_compute_network.main.name"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router.aws1",
+      "target": "aws_customer_gateway.google",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_customer_gateway.google.bgp_asn"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router.aws1",
+      "target": "var.google_external_dns_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_external_dns_cidr"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 82,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_peer.aws1",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 101,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_peer.aws1",
+      "target": "google_compute_router.aws1",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_router.aws1.name"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 101,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_peer.aws1",
+      "target": "aws_vpn_connection.google",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_connection.google.tunnel1_vgw_inside_address"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 101,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_peer.aws1",
+      "target": "google_compute_router_interface.aws1",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_router_interface.aws1.name"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 101,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_interface.aws1",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 112,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_interface.aws1",
+      "target": "google_compute_router.aws1",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_router.aws1.name"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 112,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_interface.aws1",
+      "target": "aws_vpn_connection.google",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_connection.google.tunnel1_cgw_inside_address"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 112,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_interface.aws1",
+      "target": "google_compute_vpn_tunnel.aws1",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_vpn_tunnel.aws1.name"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 112,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "google_compute_forwarding_rule.esp",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 126,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "google_compute_forwarding_rule.udp500",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 126,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "google_compute_forwarding_rule.udp4500",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 126,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 126,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "aws_vpn_connection.google",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_connection.google.tunnel2_address"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 126,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "google_compute_vpn_gateway.aws",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_vpn_gateway.aws.self_link"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 126,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_vpn_tunnel.aws2",
+      "target": "google_compute_router.aws2",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_router.aws2.name"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 126,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router.aws2",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 145,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router.aws2",
+      "target": "var.google_region",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_region"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 145,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router.aws2",
+      "target": "data.google_compute_network.main",
+      "type": "REFERENCES_DATA_SOURCE",
+      "attributes": {
+        "reference": "data.google_compute_network.main.name"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 145,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router.aws2",
+      "target": "aws_customer_gateway.google",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_customer_gateway.google.bgp_asn"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 145,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router.aws2",
+      "target": "var.google_external_dns_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_external_dns_cidr"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 145,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_peer.aws2",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 164,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_peer.aws2",
+      "target": "google_compute_router.aws2",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_router.aws2.name"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 164,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_peer.aws2",
+      "target": "aws_vpn_connection.google",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_connection.google.tunnel2_vgw_inside_address"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 164,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_peer.aws2",
+      "target": "google_compute_router_interface.aws2",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_router_interface.aws2.name"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 164,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_interface.aws2",
+      "target": "var.google_project_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 175,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_interface.aws2",
+      "target": "google_compute_router.aws2",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_router.aws2.name"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 175,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_interface.aws2",
+      "target": "aws_vpn_connection.google",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpn_connection.google.tunnel2_cgw_inside_address"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 175,
+        "column": 1
+      }
+    },
+    {
+      "source": "google_compute_router_interface.aws2",
+      "target": "google_compute_vpn_tunnel.aws2",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "google_compute_vpn_tunnel.aws2.name"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 175,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.google_internal_dns_tcp_ingress",
+      "target": "data.google_compute_subnetwork.subnet",
+      "type": "REFERENCES_DATA_SOURCE",
+      "attributes": {
+        "reference": "data.google_compute_subnetwork.subnet"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 189,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.google_internal_dns_tcp_ingress",
+      "target": "var.dns_network_acl_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.dns_network_acl_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 189,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.google_internal_dns_udp_ingress",
+      "target": "data.google_compute_subnetwork.subnet",
+      "type": "REFERENCES_DATA_SOURCE",
+      "attributes": {
+        "reference": "data.google_compute_subnetwork.subnet"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 203,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.google_internal_dns_udp_ingress",
+      "target": "var.dns_network_acl_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.dns_network_acl_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 203,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.google_external_dns_tcp_ingress",
+      "target": "var.dns_network_acl_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.dns_network_acl_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 217,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.google_external_dns_tcp_ingress",
+      "target": "var.google_external_dns_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_external_dns_cidr"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 217,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.google_external_dns_udp_ingress",
+      "target": "var.dns_network_acl_id",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.dns_network_acl_id"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 229,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_network_acl_rule.google_external_dns_udp_ingress",
+      "target": "var.google_external_dns_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.google_external_dns_cidr"
+      },
+      "source_location": {
+        "file": "vpn/google.tf",
+        "line": 229,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.dns",
+      "target": "module.aws_vpc",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.aws_vpc.vpc_id"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.dns",
+      "target": "var.aws_directory_service_password",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.aws_directory_service_password"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.google_network",
+      "target": "var.google_project_id",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 19,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.google_network",
+      "target": "var.google_region",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.google_region"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 19,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.google_network",
+      "target": "var.aws_dns_suffix",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.aws_dns_suffix"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 19,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.google_network",
+      "target": "module.dns",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.dns.dns_ip_addresses"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 19,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.azure_vnet",
+      "target": "var.azure_resource_group_name",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.azure_resource_group_name"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 31,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.azure_vnet",
+      "target": "var.azure_location",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.azure_location"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 31,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.azure_vnet",
+      "target": "module.dns",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.dns.dns_ip_addresses"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 31,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.vpn",
+      "target": "module.aws_vpc",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.aws_vpc.vpc_id"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 42,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.vpn",
+      "target": "var.google_project_id",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.google_project_id"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 42,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.vpn",
+      "target": "var.google_region",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.google_region"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 42,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.vpn",
+      "target": "module.google_network",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.google_network.network_name"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 42,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.vpn",
+      "target": "var.azure_resource_group_name",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.azure_resource_group_name"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 42,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.vpn",
+      "target": "var.azure_location",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.azure_location"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 42,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.vpn",
+      "target": "module.azure_vnet",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.azure_vnet.network_name"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 42,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.vpn",
+      "target": "module.dns",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "module.dns.dns_network_acl_id"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 42,
+        "column": 1
+      }
+    }
+  ],
+  "security_findings": []
+}

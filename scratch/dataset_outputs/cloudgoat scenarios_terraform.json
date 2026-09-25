@@ -1,0 +1,1043 @@
+{
+  "metadata": {
+    "project_name": "cloudgoat scenarios",
+    "terraform_version": ">= 1.5",
+    "cloud_provider": null,
+    "region": null,
+    "generated_at": "2026-09-24T20:59:46.781491+00:00"
+  },
+  "resources": [
+    {
+      "id": "azurerm_resource_group.poc",
+      "type": "azurerm_resource_group",
+      "name": "poc",
+      "provider": "azurerm",
+      "region": "westus",
+      "attributes": {
+        "name": "${var.resource_group}",
+        "location": "${var.location}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.resource_group",
+        "var.location"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "id": "random_string.suffix",
+      "type": "random_string",
+      "name": "suffix",
+      "provider": "random",
+      "region": null,
+      "attributes": {
+        "length": 6,
+        "special": false,
+        "upper": false
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [],
+      "depends_on": [],
+      "source_location": {
+        "file": "test.tf",
+        "line": 93,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_resource_group.test",
+      "type": "azurerm_resource_group",
+      "name": "test",
+      "provider": "azurerm",
+      "region": "westus",
+      "attributes": {
+        "name": "${var.resource_group_name}-${random_string.suffix.result}",
+        "location": "${var.location}",
+        "tags": {
+          "environment": "test",
+          "purpose": "security-analysis"
+        }
+      },
+      "tags": {
+        "environment": "test",
+        "purpose": "security-analysis"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.resource_group_name",
+        "random_string.suffix.result",
+        "var.location"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "test.tf",
+        "line": 103,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_network_security_group.test",
+      "type": "azurerm_network_security_group",
+      "name": "test",
+      "provider": "azurerm",
+      "region": "westus",
+      "attributes": {
+        "name": "test-nsg",
+        "location": "${var.location}",
+        "resource_group_name": "${azurerm_resource_group.test.name}",
+        "security_rule": [
+          {
+            "name": "AllowSSH",
+            "priority": 100,
+            "direction": "Inbound",
+            "access": "Allow",
+            "protocol": "Tcp",
+            "source_port_range": "*",
+            "destination_port_range": "22",
+            "source_address_prefix": "${var.allowed_ip}",
+            "destination_address_prefix": "*",
+            "description": "SSH access"
+          },
+          {
+            "name": "AllowHTTP",
+            "priority": 110,
+            "direction": "Inbound",
+            "access": "Allow",
+            "protocol": "Tcp",
+            "source_port_range": "*",
+            "destination_port_range": "80",
+            "source_address_prefix": "0.0.0.0/0",
+            "destination_address_prefix": "*",
+            "description": "HTTP access"
+          },
+          {
+            "name": "AllowHTTPS",
+            "priority": 120,
+            "direction": "Inbound",
+            "access": "Allow",
+            "protocol": "Tcp",
+            "source_port_range": "*",
+            "destination_port_range": "443",
+            "source_address_prefix": "0.0.0.0/0",
+            "destination_address_prefix": "*",
+            "description": "HTTPS access"
+          }
+        ]
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": true,
+        "public_access": true,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [
+          {
+            "protocol": "Tcp",
+            "from_port": "*",
+            "to_port": "22",
+            "sources": [
+              "${var.allowed_ip}"
+            ],
+            "description": "SSH access"
+          },
+          {
+            "protocol": "Tcp",
+            "from_port": "*",
+            "to_port": "80",
+            "sources": [
+              "0.0.0.0/0"
+            ],
+            "description": "HTTP access"
+          },
+          {
+            "protocol": "Tcp",
+            "from_port": "*",
+            "to_port": "443",
+            "sources": [
+              "0.0.0.0/0"
+            ],
+            "description": "HTTPS access"
+          }
+        ],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.location",
+        "azurerm_resource_group.test.name",
+        "var.allowed_ip"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "test.tf",
+        "line": 117,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_storage_account.test",
+      "type": "azurerm_storage_account",
+      "name": "test",
+      "provider": "azurerm",
+      "region": "${azurerm_resource_group.test.location}",
+      "attributes": {
+        "name": "securitytest${random_string.suffix.result}",
+        "resource_group_name": "${azurerm_resource_group.test.name}",
+        "location": "${azurerm_resource_group.test.location}",
+        "account_tier": "Standard",
+        "account_replication_type": "LRS",
+        "public_network_access_enabled": true,
+        "min_tls_version": "TLS1_2",
+        "blob_properties": [
+          {
+            "versioning_enabled": true
+          }
+        ],
+        "tags": {
+          "environment": "test"
+        }
+      },
+      "tags": {
+        "environment": "test"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "random_string.suffix.result",
+        "azurerm_resource_group.test.name",
+        "azurerm_resource_group.test.location"
+      ],
+      "depends_on": [
+        "azurerm_network_security_group.test"
+      ],
+      "source_location": {
+        "file": "test.tf",
+        "line": 166,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_key_vault.test",
+      "type": "azurerm_key_vault",
+      "name": "test",
+      "provider": "azurerm",
+      "region": "westus",
+      "attributes": {
+        "name": "security-test-kv-${random_string.suffix.result}",
+        "location": "${var.location}",
+        "resource_group_name": "${azurerm_resource_group.test.name}",
+        "tenant_id": "00000000-0000-0000-0000-000000000000",
+        "sku_name": "standard",
+        "public_network_access_enabled": true,
+        "soft_delete_retention_days": 7,
+        "purge_protection_enabled": false,
+        "tags": {
+          "environment": "test"
+        }
+      },
+      "tags": {
+        "environment": "test"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": false,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "random_string.suffix.result",
+        "var.location",
+        "azurerm_resource_group.test.name"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "test.tf",
+        "line": 194,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_key_vault_secret.admin_password",
+      "type": "azurerm_key_vault_secret",
+      "name": "admin_password",
+      "provider": "azurerm",
+      "region": null,
+      "attributes": {
+        "name": "admin-password",
+        "value": "${var.admin_password}",
+        "key_vault_id": "${azurerm_key_vault.test.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": [
+          {
+            "type": "password",
+            "reference": "var.admin_password",
+            "exposed": false
+          },
+          {
+            "type": "secret_manager",
+            "reference": "admin-password",
+            "exposed": false
+          }
+        ]
+      },
+      "references": [
+        "var.admin_password",
+        "azurerm_key_vault.test.id"
+      ],
+      "depends_on": [
+        "azurerm_key_vault.test"
+      ],
+      "source_location": {
+        "file": "test.tf",
+        "line": 217,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_storage_account.encrypted",
+      "type": "azurerm_storage_account",
+      "name": "encrypted",
+      "provider": "azurerm",
+      "region": "westus",
+      "attributes": {
+        "name": "encrypted${random_string.suffix.result}",
+        "resource_group_name": "${azurerm_resource_group.test.name}",
+        "location": "${var.location}",
+        "account_tier": "Standard",
+        "account_replication_type": "GRS",
+        "public_network_access_enabled": false,
+        "min_tls_version": "TLS1_2",
+        "infrastructure_encryption_enabled": true,
+        "tags": {
+          "encrypted": "true",
+          "environment": "test"
+        }
+      },
+      "tags": {
+        "encrypted": "true",
+        "environment": "test"
+      },
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": true,
+        "encryption_type": "infrastructure",
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "random_string.suffix.result",
+        "azurerm_resource_group.test.name",
+        "var.location"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "test.tf",
+        "line": 231,
+        "column": 1
+      }
+    },
+    {
+      "id": "azurerm_resource_group.secondary",
+      "type": "azurerm_resource_group",
+      "name": "secondary",
+      "provider": "azurerm",
+      "region": "westus",
+      "attributes": {
+        "provider": "${azurerm.secondary}",
+        "name": "secondary-test-rg",
+        "location": "${var.location}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.location"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "test.tf",
+        "line": 254,
+        "column": 1
+      }
+    }
+  ],
+  "data_sources": [
+    {
+      "id": "azurerm_resource_group.existing",
+      "type": "azurerm_resource_group",
+      "name": "existing",
+      "provider": "azurerm",
+      "attributes": {
+        "name": "${var.resource_group_name}"
+      },
+      "references": [
+        "var.resource_group_name"
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "name": "subscription_id",
+      "type": "string",
+      "default": null,
+      "description": "The Azure Subscription ID to use when deploying resources",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "location",
+      "type": "string",
+      "default": "westus",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "resource_group_name",
+      "type": "string",
+      "default": "security-test-rg",
+      "description": "Resource group name",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "allowed_ip",
+      "type": "string",
+      "default": "0.0.0.0/0",
+      "description": "Allowed source IP",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "admin_password",
+      "type": "string",
+      "default": null,
+      "description": "Administrator password",
+      "sensitive": true,
+      "validation": {}
+    },
+    {
+      "name": "allowed_ports",
+      "type": "list(number)",
+      "default": [
+        22,
+        80,
+        443
+      ],
+      "description": "Allowed inbound ports",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "cgid",
+      "type": "string",
+      "default": null,
+      "description": "CGID variable for unique naming between scenarios",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "cg_whitelist",
+      "type": "list(string)",
+      "default": null,
+      "description": "User's public IP address(es)",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "resource_group",
+      "type": null,
+      "default": "poc_resource_group",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    }
+  ],
+  "outputs": [
+    {
+      "name": "resource_group_id",
+      "value": "${azurerm_resource_group.test.id}",
+      "description": "Test resource group ID",
+      "sensitive": false
+    },
+    {
+      "name": "storage_account_name",
+      "value": "${azurerm_storage_account.test.name}",
+      "description": "Test storage account name",
+      "sensitive": false
+    },
+    {
+      "name": "secret_reference",
+      "value": "${azurerm_key_vault_secret.admin_password.id}",
+      "description": null,
+      "sensitive": true
+    },
+    {
+      "name": "existing_resource_group",
+      "value": "${data.azurerm_resource_group.existing.id}",
+      "description": null,
+      "sensitive": false
+    }
+  ],
+  "modules": [
+    {
+      "name": "test_module",
+      "source": "Azure/storage/azurerm",
+      "version": "1.0.0",
+      "inputs": {
+        "source": "Azure/storage/azurerm",
+        "version": "1.0.0",
+        "resource_group_name": "${azurerm_resource_group.test.name}",
+        "location": "${var.location}",
+        "depends_on": [
+          "${azurerm_resource_group.test}"
+        ]
+      },
+      "outputs": {},
+      "source_location": {
+        "file": "test.tf",
+        "line": 265,
+        "column": 1
+      }
+    }
+  ],
+  "providers": [
+    {
+      "name": "azurerm",
+      "alias": null,
+      "version": "~> 3.116.0",
+      "configuration": {
+        "features": [
+          {
+            "resource_group": [
+              {
+                "prevent_deletion_if_contains_resources": false
+              }
+            ]
+          }
+        ],
+        "subscription_id": "${var.subscription_id}"
+      }
+    },
+    {
+      "name": "azurerm",
+      "alias": null,
+      "version": "~> 3.116.0",
+      "configuration": {
+        "features": [
+          {}
+        ],
+        "subscription_id": "${var.subscription_id}"
+      }
+    },
+    {
+      "name": "azurerm",
+      "alias": "secondary",
+      "version": "~> 3.116.0",
+      "configuration": {
+        "alias": "secondary",
+        "subscription_id": "${var.subscription_id}",
+        "features": [
+          {}
+        ]
+      }
+    },
+    {
+      "name": "random",
+      "alias": null,
+      "version": "~> 3.1.0",
+      "configuration": {}
+    }
+  ],
+  "relationships": [
+    {
+      "source": "azurerm_resource_group.poc",
+      "target": "var.resource_group",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.resource_group"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_resource_group.poc",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.location"
+      },
+      "source_location": {
+        "file": "main.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_resource_group.test",
+      "target": "var.resource_group_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.resource_group_name"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 103,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_resource_group.test",
+      "target": "random_string.suffix",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "random_string.suffix.result"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 103,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_resource_group.test",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.location"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 103,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_network_security_group.test",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.location"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 117,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_network_security_group.test",
+      "target": "azurerm_resource_group.test",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_resource_group.test.name"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 117,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_network_security_group.test",
+      "target": "var.allowed_ip",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.allowed_ip"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 117,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_storage_account.test",
+      "target": "azurerm_network_security_group.test",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "test.tf",
+        "line": 166,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_storage_account.test",
+      "target": "random_string.suffix",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "random_string.suffix.result"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 166,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_storage_account.test",
+      "target": "azurerm_resource_group.test",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_resource_group.test.name"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 166,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_key_vault.test",
+      "target": "random_string.suffix",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "random_string.suffix.result"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 194,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_key_vault.test",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.location"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 194,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_key_vault.test",
+      "target": "azurerm_resource_group.test",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_resource_group.test.name"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 194,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_key_vault_secret.admin_password",
+      "target": "azurerm_key_vault.test",
+      "type": "DEPENDS_ON",
+      "attributes": {},
+      "source_location": {
+        "file": "test.tf",
+        "line": 217,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_key_vault_secret.admin_password",
+      "target": "var.admin_password",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.admin_password"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 217,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_key_vault_secret.admin_password",
+      "target": "azurerm_key_vault.test",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_key_vault.test.id"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 217,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_storage_account.encrypted",
+      "target": "random_string.suffix",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "random_string.suffix.result"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 231,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_storage_account.encrypted",
+      "target": "azurerm_resource_group.test",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "azurerm_resource_group.test.name"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 231,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_storage_account.encrypted",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.location"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 231,
+        "column": 1
+      }
+    },
+    {
+      "source": "azurerm_resource_group.secondary",
+      "target": "var.location",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.location"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 254,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.test_module",
+      "target": "azurerm_resource_group.test",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "azurerm_resource_group.test.name"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 265,
+        "column": 1
+      }
+    },
+    {
+      "source": "module.test_module",
+      "target": "var.location",
+      "type": "MODULE_INPUT",
+      "attributes": {
+        "reference": "var.location"
+      },
+      "source_location": {
+        "file": "test.tf",
+        "line": 265,
+        "column": 1
+      }
+    }
+  ],
+  "security_findings": [
+    {
+      "id": "PUBLIC_INGRESS_azurerm_network_security_group.test_1",
+      "severity": "HIGH",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "azurerm_network_security_group.test",
+      "title": "Inbound traffic is exposed to the internet",
+      "description": "Inbound traffic on port 80 is permitted from open internet sources.",
+      "evidence": {
+        "protocol": "Tcp",
+        "from_port": "*",
+        "to_port": "80",
+        "sources": [
+          "0.0.0.0/0"
+        ]
+      },
+      "attack_vector": "An attacker on the internet can attempt connections to port 80.",
+      "recommendation": "Restrict inbound access to approved CIDR ranges.",
+      "remediation": "Modify security group or firewall ingress rules to remove wildcard sources."
+    },
+    {
+      "id": "PUBLIC_INGRESS_azurerm_network_security_group.test_2",
+      "severity": "HIGH",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "azurerm_network_security_group.test",
+      "title": "Inbound traffic is exposed to the internet",
+      "description": "Inbound traffic on port 443 is permitted from open internet sources.",
+      "evidence": {
+        "protocol": "Tcp",
+        "from_port": "*",
+        "to_port": "443",
+        "sources": [
+          "0.0.0.0/0"
+        ]
+      },
+      "attack_vector": "An attacker on the internet can attempt connections to port 443.",
+      "recommendation": "Restrict inbound access to approved CIDR ranges.",
+      "remediation": "Modify security group or firewall ingress rules to remove wildcard sources."
+    },
+    {
+      "id": "INTERNET_EXPOSED_azurerm_network_security_group.test",
+      "severity": "HIGH",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "azurerm_network_security_group.test",
+      "title": "Resource is exposed to the internet",
+      "description": "The resource configuration permits public network exposure.",
+      "evidence": {
+        "public_access": true,
+        "internet_exposed": true
+      },
+      "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
+      "recommendation": "Disable public network access unless explicitly required for public services.",
+      "remediation": "Set public network access to false or restrict inbound access."
+    }
+  ]
+}
