@@ -920,12 +920,12 @@
   ],
   "choke_points": [
     {
-      "resource_id": "aws_db_instance.main",
+      "resource_id": "aws_security_group.web",
       "path_count": 3,
       "path_percentage": 100.0
     },
     {
-      "resource_id": "aws_security_group.web",
+      "resource_id": "aws_db_instance.main",
       "path_count": 3,
       "path_percentage": 100.0
     },
@@ -1126,5 +1126,105 @@
         "var.environment"
       ]
     }
-  }
+  },
+  "findings": [
+    {
+      "id": "INTERNET_EXPOSED_aws_lb.web",
+      "severity": "HIGH",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "aws_lb.web",
+      "title": "Resource is exposed to the internet",
+      "description": "The resource configuration permits public network exposure.",
+      "evidence": {
+        "public_access": true,
+        "internet_exposed": true
+      },
+      "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
+      "recommendation": "Disable public network access unless explicitly required for public services.",
+      "remediation": "Set public network access to false or restrict inbound access."
+    },
+    {
+      "id": "INTERNET_EXPOSED_aws_subnet.public",
+      "severity": "HIGH",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "aws_subnet.public",
+      "title": "Resource is exposed to the internet",
+      "description": "The resource configuration permits public network exposure.",
+      "evidence": {
+        "public_access": null,
+        "internet_exposed": true
+      },
+      "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
+      "recommendation": "Disable public network access unless explicitly required for public services.",
+      "remediation": "Set public network access to false or restrict inbound access."
+    },
+    {
+      "id": "PUBLIC_INGRESS_aws_security_group.web_0",
+      "severity": "HIGH",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "aws_security_group.web",
+      "title": "Inbound traffic is exposed to the internet",
+      "description": "Inbound traffic on port 22 is permitted from open internet sources.",
+      "evidence": {
+        "protocol": "tcp",
+        "from_port": 22,
+        "to_port": 22,
+        "sources": [
+          "0.0.0.0/0"
+        ]
+      },
+      "attack_vector": "An attacker on the internet can attempt connections to port 22.",
+      "recommendation": "Restrict inbound access to approved CIDR ranges.",
+      "remediation": "Modify security group or firewall ingress rules to remove wildcard sources."
+    },
+    {
+      "id": "PUBLIC_INGRESS_aws_security_group.web_1",
+      "severity": "HIGH",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "aws_security_group.web",
+      "title": "Inbound traffic is exposed to the internet",
+      "description": "Inbound traffic on port 80 is permitted from open internet sources.",
+      "evidence": {
+        "protocol": "tcp",
+        "from_port": 80,
+        "to_port": 80,
+        "sources": [
+          "0.0.0.0/0"
+        ]
+      },
+      "attack_vector": "An attacker on the internet can attempt connections to port 80.",
+      "recommendation": "Restrict inbound access to approved CIDR ranges.",
+      "remediation": "Modify security group or firewall ingress rules to remove wildcard sources."
+    },
+    {
+      "id": "INTERNET_EXPOSED_aws_security_group.web",
+      "severity": "HIGH",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "aws_security_group.web",
+      "title": "Resource is exposed to the internet",
+      "description": "The resource configuration permits public network exposure.",
+      "evidence": {
+        "public_access": true,
+        "internet_exposed": true
+      },
+      "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
+      "recommendation": "Disable public network access unless explicitly required for public services.",
+      "remediation": "Set public network access to false or restrict inbound access."
+    },
+    {
+      "id": "INTERNET_EXPOSED_aws_instance.web",
+      "severity": "HIGH",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "aws_instance.web",
+      "title": "Resource is exposed to the internet",
+      "description": "The resource configuration permits public network exposure.",
+      "evidence": {
+        "public_access": null,
+        "internet_exposed": true
+      },
+      "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
+      "recommendation": "Disable public network access unless explicitly required for public services.",
+      "remediation": "Set public network access to false or restrict inbound access."
+    }
+  ]
 }

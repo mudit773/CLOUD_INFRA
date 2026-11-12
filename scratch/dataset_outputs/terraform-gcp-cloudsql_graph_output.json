@@ -370,5 +370,20 @@
       "blast_radius_count": 0,
       "blast_radius": []
     }
-  }
+  },
+  "findings": [
+    {
+      "rule_id": "SEC-SECRET-001",
+      "severity": "CRITICAL",
+      "title": "Potential Hardcoded Secret Detected",
+      "description": "Potential secret material was detected in resource 'google_sql_user.users'.",
+      "resource_id": "google_sql_user.users",
+      "resource_type": "google_sql_user",
+      "source_location": "main.tf:33",
+      "evidence": {
+        "secret_count": 1
+      },
+      "recommendation": "Remove secrets from Terraform configuration and use AWS Secrets Manager, SSM Parameter Store, or another secure secret-management solution."
+    }
+  ]
 }

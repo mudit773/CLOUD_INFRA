@@ -1,1 +1,8 @@
-python-hcl2
+fastapi>=0.110.0,<1.0
+uvicorn[standard]>=0.23.0
+pydantic>=2.0.0,<3.0
+python-multipart>=0.0.9
+requests>=2.28.0
+networkx>=3.0,<4.0
+python-hcl2>=4.3.0
+pytest>=7.0.0

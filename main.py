@@ -146,11 +146,34 @@ def main(args=None):
     if not parsed_args.skip_graph:
         try:
             print("[INFO] Running security & attack graph analysis...")
-            run_pipeline(
+            exported_data, graph = run_pipeline(
                 input_path=Path(output_path),
                 output_path=Path(graph_output_path)
             )
             print(f"Successfully generated attack graph JSON at: {graph_output_path}")
+
+            # Sync discovered findings back to normalized output if it had 0 findings
+            pipeline_findings = exported_data.get("findings", [])
+            if not converted_data.get("security_findings") and pipeline_findings:
+                normalized_findings = []
+                for f in pipeline_findings:
+                    res_id = f.get("resource_id", "unknown")
+                    rule_id = f.get("rule_id", "FINDING")
+                    clean_res = res_id.replace(".", "_")
+                    normalized_findings.append({
+                        "id": f"{rule_id}_{clean_res}",
+                        "severity": f.get("severity", "MEDIUM"),
+                        "category": "NETWORK_EXPOSURE",
+                        "resource": res_id,
+                        "title": f.get("title", "Security Finding"),
+                        "description": f.get("description", ""),
+                        "evidence": f.get("evidence", {}) or {},
+                        "attack_vector": f.get("description", "Exposed network path."),
+                        "recommendation": f.get("recommendation", "Apply least-privilege rules."),
+                        "remediation": f.get("recommendation", "Modify security rules to restrict traffic.")
+                    })
+                converted_data["security_findings"] = normalized_findings
+                save_json(converted_data, output_path)
         except Exception as e:
             print(f"Error generating security attack graph: {e}", file=sys.stderr)
             return 1

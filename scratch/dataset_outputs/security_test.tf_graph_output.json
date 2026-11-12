@@ -105,5 +105,6 @@
       "blast_radius_count": 0,
       "blast_radius": []
     }
-  }
+  },
+  "findings": []
 }

@@ -4,7 +4,7 @@
     "terraform_version": null,
     "cloud_provider": "google",
     "region": "us-central1",
-    "generated_at": "2026-09-24T20:59:49.108741+00:00"
+    "generated_at": "2026-11-10T15:29:53.088906+00:00"
   },
   "resources": [
     {
@@ -353,5 +353,20 @@
       }
     }
   ],
-  "security_findings": []
+  "security_findings": [
+    {
+      "id": "SEC-SECRET-001_google_sql_user_users",
+      "severity": "CRITICAL",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "google_sql_user.users",
+      "title": "Potential Hardcoded Secret Detected",
+      "description": "Potential secret material was detected in resource 'google_sql_user.users'.",
+      "evidence": {
+        "secret_count": 1
+      },
+      "attack_vector": "Potential secret material was detected in resource 'google_sql_user.users'.",
+      "recommendation": "Remove secrets from Terraform configuration and use AWS Secrets Manager, SSM Parameter Store, or another secure secret-management solution.",
+      "remediation": "Remove secrets from Terraform configuration and use AWS Secrets Manager, SSM Parameter Store, or another secure secret-management solution."
+    }
+  ]
 }

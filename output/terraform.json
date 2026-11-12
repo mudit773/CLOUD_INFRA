@@ -1,48 +1,26 @@
 {
   "metadata": {
-    "project_name": "validation_tes",
-    "terraform_version": ">= 1.5",
+    "project_name": "aws_vpc_msk",
+    "terraform_version": null,
     "cloud_provider": "aws",
-    "region": null,
-    "generated_at": "2026-09-25T08:04:42.564988+00:00"
+    "region": "us-east-1",
+    "generated_at": "2026-11-12T10:03:14.555799+00:00"
   },
   "resources": [
     {
-      "id": "aws_db_instance.main",
-      "type": "aws_db_instance",
-      "name": "main",
-      "provider": "aws",
+      "id": "random_uuid.randuuid",
+      "type": "random_uuid",
+      "name": "randuuid",
+      "provider": "random",
       "region": null,
-      "attributes": {
-        "identifier": "terraform-validation-db",
-        "engine": "postgres",
-        "engine_version": "16",
-        "instance_class": "db.t3.micro",
-        "allocated_storage": 20,
-        "username": "admin",
-        "password": "${var.db_password}",
-        "db_name": "testdb",
-        "storage_encrypted": true,
-        "publicly_accessible": false,
-        "skip_final_snapshot": true,
-        "vpc_security_group_ids": [
-          "${aws_security_group.web.id}"
-        ],
-        "tags": {
-          "Name": "test-database",
-          "Environment": "${var.environment}"
-        }
-      },
-      "tags": {
-        "Name": "test-database",
-        "Environment": "${var.environment}"
-      },
+      "attributes": {},
+      "tags": {},
       "security": {
         "internet_exposed": null,
-        "public_access": false,
+        "public_access": null,
         "public_ip": null,
-        "encryption_enabled": true,
-        "encryption_type": "at_rest",
+        "encryption_enabled": null,
+        "encryption_type": null,
         "logging_enabled": null,
         "authentication_required": null,
         "authorization_enabled": null,
@@ -53,90 +31,25 @@
         "ingress_rules": [],
         "egress_rules": [],
         "iam_permissions": [],
-        "secrets": [
-          {
-            "type": "password",
-            "reference": "var.db_password",
-            "exposed": false
-          }
-        ]
-      },
-      "references": [
-        "var.db_password",
-        "aws_security_group.web.id",
-        "var.environment"
-      ],
-      "depends_on": [],
-      "source_location": {
-        "file": "database.tf",
-        "line": 1,
-        "column": 1
-      }
-    },
-    {
-      "id": "aws_iam_role.web_role",
-      "type": "aws_iam_role",
-      "name": "web_role",
-      "provider": "aws",
-      "region": null,
-      "attributes": {
-        "name": "test-web-role",
-        "assume_role_policy": "${jsonencode({Version = \"2012-10-17\", Statement = [{Effect = \"Allow\", Principal = {Service = \"ec2.amazonaws.com\"}, Action = \"sts:AssumeRole\"}]})}",
-        "tags": {
-          "Name": "test-web-role"
-        }
-      },
-      "tags": {
-        "Name": "test-web-role"
-      },
-      "security": {
-        "internet_exposed": null,
-        "public_access": null,
-        "public_ip": null,
-        "encryption_enabled": null,
-        "encryption_type": null,
-        "logging_enabled": null,
-        "authentication_required": true,
-        "authorization_enabled": true,
-        "least_privilege": true,
-        "versioning_enabled": null,
-        "backup_enabled": null,
-        "deletion_protection": null,
-        "ingress_rules": [],
-        "egress_rules": [],
-        "iam_permissions": [
-          {
-            "effect": "Allow",
-            "actions": [
-              "sts:AssumeRole"
-            ],
-            "resources": [],
-            "principals": [
-              "ec2.amazonaws.com"
-            ],
-            "conditions": {}
-          }
-        ],
         "secrets": []
       },
       "references": [],
       "depends_on": [],
       "source_location": {
-        "file": "iam.tf",
-        "line": 1,
+        "file": "common-tags-data.tf",
+        "line": 14,
         "column": 1
       }
     },
     {
-      "id": "aws_iam_role_policy.web_policy",
-      "type": "aws_iam_role_policy",
-      "name": "web_policy",
+      "id": "aws_key_pair.MSK-Keypair-ec2-keypair",
+      "type": "aws_key_pair",
+      "name": "MSK-Keypair-ec2-keypair",
       "provider": "aws",
       "region": null,
       "attributes": {
-        "name": "test-web-policy",
-        "role": "${aws_iam_role.web_role.id}",
-        "policy": "${jsonencode({Version = \"2012-10-17\", Statement = [{Effect = \"Allow\", Action = [\"s3:GetObject\"], Resource = \"*\"}]})}"
+        "key_name": "${var.key_name}",
+        "public_key": "${data.local_file.msk-keypair-public.content}"
       },
       "tags": {},
       "security": {
@@ -147,69 +60,6 @@
         "encryption_type": null,
         "logging_enabled": null,
         "authentication_required": null,
-        "authorization_enabled": true,
-        "least_privilege": false,
-        "versioning_enabled": null,
-        "backup_enabled": null,
-        "deletion_protection": null,
-        "ingress_rules": [],
-        "egress_rules": [],
-        "iam_permissions": [
-          {
-            "effect": "Allow",
-            "actions": [
-              "s3:GetObject"
-            ],
-            "resources": [
-              "*"
-            ],
-            "principals": [],
-            "conditions": {}
-          }
-        ],
-        "secrets": []
-      },
-      "references": [
-        "aws_iam_role.web_role.id"
-      ],
-      "depends_on": [],
-      "source_location": {
-        "file": "iam.tf",
-        "line": 25,
-        "column": 1
-      }
-    },
-    {
-      "id": "aws_lb.web",
-      "type": "aws_lb",
-      "name": "web",
-      "provider": "aws",
-      "region": null,
-      "attributes": {
-        "name": "test-alb",
-        "internal": false,
-        "load_balancer_type": "application",
-        "subnets": [
-          "${aws_subnet.public.id}"
-        ],
-        "security_groups": [
-          "${aws_security_group.web.id}"
-        ],
-        "tags": {
-          "Name": "test-alb"
-        }
-      },
-      "tags": {
-        "Name": "test-alb"
-      },
-      "security": {
-        "internet_exposed": true,
-        "public_access": true,
-        "public_ip": null,
-        "encryption_enabled": null,
-        "encryption_type": null,
-        "logging_enabled": null,
-        "authentication_required": null,
         "authorization_enabled": null,
         "least_privilege": null,
         "versioning_enabled": null,
@@ -221,35 +71,28 @@
         "secrets": []
       },
       "references": [
-        "aws_subnet.public.id",
-        "aws_security_group.web.id"
+        "var.key_name",
+        "data.local_file.msk-keypair-public.content"
       ],
       "depends_on": [],
       "source_location": {
-        "file": "load_balancer.tf",
-        "line": 1,
+        "file": "keypair.tf",
+        "line": 5,
         "column": 1
       }
     },
     {
-      "id": "aws_vpc.main",
-      "type": "aws_vpc",
-      "name": "main",
+      "id": "aws_kms_key.pca-kms",
+      "type": "aws_kms_key",
+      "name": "pca-kms",
       "provider": "aws",
       "region": null,
       "attributes": {
-        "cidr_block": "10.0.0.0/16",
-        "enable_dns_support": true,
-        "enable_dns_hostnames": true,
-        "tags": {
-          "Name": "test-vpc",
-          "Environment": "${var.environment}"
-        }
+        "description": "KMS Key for encrypting the PCA s3 bucket",
+        "enable_key_rotation": "true",
+        "policy": "<<EOF\n{\n    \"Version\": \"2012-10-17\",\n    \"Id\": \"key-policy-with-replication\",\n    \"Statement\": [\n          {\n            \"Sid\": \"Account usage of KMS Key\",\n            \"Effect\": \"Allow\",\n            \"Principal\": {\n                \"AWS\": \"arn:aws:iam::${data.aws_caller_identity.current.account_id}:root\"\n            },\n            \"Action\": \"kms:*\",\n            \"Resource\": \"*\"\n        }\n      ]\n}\nEOF"
       },
-      "tags": {
-        "Name": "test-vpc",
-        "Environment": "${var.environment}"
-      },
+      "tags": {},
       "security": {
         "internet_exposed": null,
         "public_access": null,
@@ -269,37 +112,30 @@
         "secrets": []
       },
       "references": [
-        "var.environment"
+        "data.aws_caller_identity.current.account_id"
       ],
       "depends_on": [],
       "source_location": {
-        "file": "main.tf",
-        "line": 21,
+        "file": "kms.tf",
+        "line": 1,
         "column": 1
       }
     },
     {
-      "id": "aws_subnet.public",
-      "type": "aws_subnet",
-      "name": "public",
+      "id": "aws_kms_alias.pca-kims-alias",
+      "type": "aws_kms_alias",
+      "name": "pca-kims-alias",
       "provider": "aws",
       "region": null,
       "attributes": {
-        "vpc_id": "${aws_vpc.main.id}",
-        "cidr_block": "10.0.1.0/24",
-        "availability_zone": "ap-south-1a",
-        "map_public_ip_on_launch": true,
-        "tags": {
-          "Name": "public-subnet"
-        }
+        "name": "alias/pca-kims-alias",
+        "target_key_id": "${aws_kms_key.pca-kms.key_id}"
       },
-      "tags": {
-        "Name": "public-subnet"
-      },
+      "tags": {},
       "security": {
-        "internet_exposed": true,
+        "internet_exposed": null,
         "public_access": null,
-        "public_ip": true,
+        "public_ip": null,
         "encryption_enabled": null,
         "encryption_type": null,
         "logging_enabled": null,
@@ -315,67 +151,872 @@
         "secrets": []
       },
       "references": [
-        "aws_vpc.main.id"
+        "aws_kms_key.pca-kms.key_id"
       ],
-      "depends_on": [
-        "aws_vpc.main"
-      ],
+      "depends_on": [],
       "source_location": {
-        "file": "main.tf",
-        "line": 32,
+        "file": "kms.tf",
+        "line": 23,
         "column": 1
       }
     },
     {
-      "id": "aws_security_group.web",
-      "type": "aws_security_group",
-      "name": "web",
+      "id": "random_id.kms",
+      "type": "random_id",
+      "name": "kms",
+      "provider": "random",
+      "region": null,
+      "attributes": {
+        "byte_length": 2
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [],
+      "depends_on": [],
+      "source_location": {
+        "file": "kms.tf",
+        "line": 28,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_kms_key.msk-kms-key",
+      "type": "aws_kms_key",
+      "name": "msk-kms-key",
       "provider": "aws",
       "region": null,
       "attributes": {
-        "name": "test-web-sg",
-        "description": "Web security group",
-        "vpc_id": "${aws_vpc.main.id}",
+        "description": "KMS Key for encrypting the EBS volumes",
+        "enable_key_rotation": "true",
+        "policy": "<<EOF\n{\n    \"Version\": \"2012-10-17\",\n    \"Id\": \"key-policy-with-replication\",\n    \"Statement\": [\n          {\n            \"Sid\": \"Account usage of KMS Key\",\n            \"Effect\": \"Allow\",\n            \"Principal\": {\n                \"AWS\": \"arn:aws:iam::${data.aws_caller_identity.current.account_id}:root\"\n            },\n            \"Action\": \"kms:*\",\n            \"Resource\": \"*\"\n        }\n      ]\n}\nEOF"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "data.aws_caller_identity.current.account_id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "kms.tf",
+        "line": 31,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_kms_alias.msk-kms-alias",
+      "type": "aws_kms_alias",
+      "name": "msk-kms-alias",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "name": "alias/msk-kms-alias-${random_id.kms.hex}",
+        "target_key_id": "${aws_kms_key.msk-kms-key.key_id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "random_id.kms.hex",
+        "aws_kms_key.msk-kms-key.key_id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "kms.tf",
+        "line": 53,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_iam_instance_profile.KafkaClientIAM_Profile",
+      "type": "aws_iam_instance_profile",
+      "name": "KafkaClientIAM_Profile",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "name": "KafkaClientIAM_profile",
+        "role": "${aws_iam_role.KafkaClientIAM_Role.name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_iam_role.KafkaClientIAM_Role.name"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "msk-client.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_iam_role.KafkaClientIAM_Role",
+      "type": "aws_iam_role",
+      "name": "KafkaClientIAM_Role",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "name": "KafkaClientIAM_Role",
+        "path": "/",
+        "assume_role_policy": "<<EOF\n{\n    \"Version\": \"2012-10-17\",\n    \"Statement\": [\n        {\n            \"Action\": \"sts:AssumeRole\",\n            \"Principal\": {\n               \"Service\": \"ec2.amazonaws.com\"\n            },\n            \"Effect\": \"Allow\",\n            \"Sid\": \"\"\n        }\n    ]\n}\nEOF"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": true,
+        "authorization_enabled": true,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [],
+      "depends_on": [],
+      "source_location": {
+        "file": "msk-client.tf",
+        "line": 6,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_iam_role_policy_attachment.Kafka-Client-IAM-role-att1",
+      "type": "aws_iam_role_policy_attachment",
+      "name": "Kafka-Client-IAM-role-att1",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "policy_arn": "arn:aws:iam::aws:policy/AmazonMSKFullAccess",
+        "role": "${aws_iam_role.KafkaClientIAM_Role.name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_iam_role.KafkaClientIAM_Role.name"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "msk-client.tf",
+        "line": 28,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_iam_role_policy_attachment.Kafka-Client-IAM-role-att2",
+      "type": "aws_iam_role_policy_attachment",
+      "name": "Kafka-Client-IAM-role-att2",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "policy_arn": "arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess",
+        "role": "${aws_iam_role.KafkaClientIAM_Role.name}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_iam_role.KafkaClientIAM_Role.name"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "msk-client.tf",
+        "line": 33,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_instance.Kafka-Client-EC2-Instance",
+      "type": "aws_instance",
+      "name": "Kafka-Client-EC2-Instance",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "ami": "${var.msk_ami}",
+        "instance_type": "${var.msk_instance_type}",
+        "key_name": "${var.key_name}",
+        "vpc_security_group_ids": [
+          "${aws_security_group.KafkaClientInstanceSG.id}"
+        ],
+        "user_data": "${file(\"./kafka-client-msk.sh\")}",
+        "subnet_id": "${aws_subnet.private_subnet[1].id}",
+        "iam_instance_profile": "${aws_iam_instance_profile.KafkaClientIAM_Profile.name}",
+        "ebs_block_device": [
+          {
+            "device_name": "/dev/xvda",
+            "volume_size": 100,
+            "volume_type": "gp2",
+            "delete_on_termination": true,
+            "encrypted": true,
+            "kms_key_id": "${aws_kms_key.msk-kms-key.arn}"
+          }
+        ],
+        "tags": "${merge(local.common-tags, map(\"Name\", \"Kafka-Client-EC2-Instance\"))}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.msk_ami",
+        "var.msk_instance_type",
+        "var.key_name",
+        "aws_security_group.KafkaClientInstanceSG.id",
+        "aws_iam_instance_profile.KafkaClientIAM_Profile.name",
+        "aws_kms_key.msk-kms-key.arn",
+        "local.common-tags"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "msk-client.tf",
+        "line": 38,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_cloudwatch_log_group.cloudwatch_log_group",
+      "type": "aws_cloudwatch_log_group",
+      "name": "cloudwatch_log_group",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "name": "msk_cluster_cloudwatch_group-${random_uuid.randuuid.result}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "random_uuid.randuuid.result"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_msk_configuration.msk_cluster_config",
+      "type": "aws_msk_configuration",
+      "name": "msk_cluster_config",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "kafka_versions": [
+          "${var.msk_cluster_version}"
+        ],
+        "name": "msk-${lower(var.environment)}-cluster-cfg-${random_uuid.randuuid.result}",
+        "server_properties": "<<PROPERTIES\nauto.create.topics.enable = true\ndelete.topic.enable = true\nPROPERTIES"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.msk_cluster_version",
+        "var.environment",
+        "random_uuid.randuuid.result"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 5,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_msk_cluster.msk_cluster",
+      "type": "aws_msk_cluster",
+      "name": "msk_cluster",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${length(var.private_subnet_cidrs)}",
+        "cluster_name": "msk-${lower(var.environment)}-cluster-${random_uuid.randuuid.result}",
+        "kafka_version": "${var.msk_cluster_version}",
+        "number_of_broker_nodes": "${var.broker_nodes}",
+        "broker_node_group_info": [
+          {
+            "instance_type": "${var.msk_cluster_instance_type}",
+            "ebs_volume_size": "${var.msk_ebs_volume_size}",
+            "client_subnets": [
+              "${aws_subnet.private_subnet.0.id}",
+              "${aws_subnet.private_subnet.1.id}",
+              "${aws_subnet.private_subnet.2.id}"
+            ],
+            "security_groups": [
+              "${aws_security_group.KafkaClusterSG.id}"
+            ]
+          }
+        ],
+        "configuration_info": [
+          {
+            "arn": "${aws_msk_configuration.msk_cluster_config.arn}",
+            "revision": 1
+          }
+        ],
+        "encryption_info": [
+          {
+            "encryption_in_transit": [
+              {
+                "client_broker": "${var.encryption_type}"
+              }
+            ]
+          }
+        ],
+        "enhanced_monitoring": "${var.monitoring_type}",
+        "logging_info": [
+          {
+            "broker_logs": [
+              {
+                "cloudwatch_logs": [
+                  {
+                    "enabled": true,
+                    "log_group": "${aws_cloudwatch_log_group.cloudwatch_log_group.name}"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "tags": "${merge(local.common-tags, map(\"Name\", \"msk-${lower(var.environment)}-cluster\"))}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.private_subnet_cidrs",
+        "var.environment",
+        "random_uuid.randuuid.result",
+        "var.msk_cluster_version",
+        "var.broker_nodes",
+        "var.msk_cluster_instance_type",
+        "var.msk_ebs_volume_size",
+        "aws_security_group.KafkaClusterSG.id",
+        "aws_msk_configuration.msk_cluster_config.arn",
+        "var.encryption_type",
+        "var.monitoring_type",
+        "aws_cloudwatch_log_group.cloudwatch_log_group.name",
+        "local.common-tags"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_internet_gateway.main-igw",
+      "type": "aws_internet_gateway",
+      "name": "main-igw",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "vpc_id": "${aws_vpc.msk_vpc.id}",
+        "tags": "${merge(local.common-tags, map(\"Name\", \"MSK-IGW\", \"Description\", \"Internet Gateway\"))}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_vpc.msk_vpc.id",
+        "local.common-tags"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 2,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_eip.nat",
+      "type": "aws_eip",
+      "name": "nat",
+      "provider": "aws",
+      "region": null,
+      "attributes": {},
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [],
+      "depends_on": [],
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_nat_gateway.main-natgw",
+      "type": "aws_nat_gateway",
+      "name": "main-natgw",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "allocation_id": "${aws_eip.nat.id}",
+        "subnet_id": "${aws_subnet.public_subnet[0].id}",
+        "tags": "${merge(local.common-tags, map(\"Name\", \"MSK-NatGateway\", \"Description\", \"NAT Gateway\"))}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_eip.nat.id",
+        "local.common-tags"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 17,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_route_table.PublicRouteTable",
+      "type": "aws_route_table",
+      "name": "PublicRouteTable",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "vpc_id": "${aws_vpc.msk_vpc.id}",
+        "route": [
+          {
+            "cidr_block": "0.0.0.0/0",
+            "gateway_id": "${aws_internet_gateway.main-igw.id}"
+          }
+        ],
+        "tags": "${merge(local.common-tags, map(\"Name\", \"MSK-Public-Routetable\", \"Description\", \"Public-Routetable\"))}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_vpc.msk_vpc.id",
+        "aws_internet_gateway.main-igw.id",
+        "local.common-tags"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 31,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_route_table.PrivateRouteTable",
+      "type": "aws_route_table",
+      "name": "PrivateRouteTable",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "vpc_id": "${aws_vpc.msk_vpc.id}",
+        "route": [
+          {
+            "cidr_block": "0.0.0.0/0",
+            "nat_gateway_id": "${aws_nat_gateway.main-natgw.id}"
+          }
+        ],
+        "tags": "${merge(local.common-tags, map(\"Name\", \"MSK-Private-Routetable\", \"Description\", \"Private-Routetable\"))}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "aws_vpc.msk_vpc.id",
+        "aws_nat_gateway.main-natgw.id",
+        "local.common-tags"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 48,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_route_table_association.route_Publicsubnet",
+      "type": "aws_route_table_association",
+      "name": "route_Publicsubnet",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "subnet_id": "${element(aws_subnet.public_subnet.*.id, count.index)}",
+        "count": "${length(var.public_subnet_cidrs)}",
+        "route_table_id": "${aws_route_table.PublicRouteTable.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.public_subnet_cidrs",
+        "aws_route_table.PublicRouteTable.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 65,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_route_table_association.route_Privatesubnet",
+      "type": "aws_route_table_association",
+      "name": "route_Privatesubnet",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "subnet_id": "${element(aws_subnet.private_subnet.*.id, count.index)}",
+        "count": "${length(var.private_subnet_cidrs)}",
+        "route_table_id": "${aws_route_table.PrivateRouteTable.id}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.private_subnet_cidrs",
+        "aws_route_table.PrivateRouteTable.id"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 71,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_security_group.KafkaClusterSG",
+      "type": "aws_security_group",
+      "name": "KafkaClusterSG",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "name": "msk-${lower(var.environment)}-sg-${random_uuid.randuuid.result}",
+        "description": "Allow TLS inbound traffic",
+        "vpc_id": "${aws_vpc.msk_vpc.id}",
         "ingress": [
           {
-            "description": "SSH from internet",
+            "from_port": 2181,
+            "to_port": 2181,
             "protocol": "tcp",
-            "from_port": 22,
-            "to_port": 22,
             "cidr_blocks": [
-              "0.0.0.0/0"
+              "${var.vpc_cidr}"
             ]
           },
           {
-            "description": "HTTP from internet",
+            "from_port": 9094,
+            "to_port": 9094,
             "protocol": "tcp",
-            "from_port": 80,
-            "to_port": 80,
             "cidr_blocks": [
-              "0.0.0.0/0"
+              "${var.vpc_cidr}"
+            ]
+          },
+          {
+            "from_port": 9092,
+            "to_port": 9092,
+            "protocol": "tcp",
+            "cidr_blocks": [
+              "${var.vpc_cidr}"
             ]
           }
         ],
         "egress": [
           {
-            "protocol": "-1",
             "from_port": 0,
             "to_port": 0,
+            "protocol": "-1",
             "cidr_blocks": [
               "0.0.0.0/0"
             ]
           }
         ],
-        "tags": {
-          "Name": "web-sg"
-        }
+        "tags": "${merge(local.common-tags, map(\"Name\", \"msk-${lower(var.environment)}-sg-${random_uuid.randuuid.result}\"))}"
       },
-      "tags": {
-        "Name": "web-sg"
-      },
+      "tags": {},
       "security": {
-        "internet_exposed": true,
-        "public_access": true,
+        "internet_exposed": null,
+        "public_access": null,
         "public_ip": null,
         "encryption_enabled": null,
         "encryption_type": null,
@@ -389,21 +1030,30 @@
         "ingress_rules": [
           {
             "protocol": "tcp",
-            "from_port": 22,
-            "to_port": 22,
+            "from_port": 2181,
+            "to_port": 2181,
             "sources": [
-              "0.0.0.0/0"
+              "${var.vpc_cidr}"
             ],
-            "description": "SSH from internet"
+            "description": null
           },
           {
             "protocol": "tcp",
-            "from_port": 80,
-            "to_port": 80,
+            "from_port": 9094,
+            "to_port": 9094,
             "sources": [
-              "0.0.0.0/0"
+              "${var.vpc_cidr}"
             ],
-            "description": "HTTP from internet"
+            "description": null
+          },
+          {
+            "protocol": "tcp",
+            "from_port": 9092,
+            "to_port": 9092,
+            "sources": [
+              "${var.vpc_cidr}"
+            ],
+            "description": null
           }
         ],
         "egress_rules": [
@@ -421,131 +1071,51 @@
         "secrets": []
       },
       "references": [
-        "aws_vpc.main.id"
+        "var.environment",
+        "random_uuid.randuuid.result",
+        "aws_vpc.msk_vpc.id",
+        "var.vpc_cidr",
+        "local.common-tags"
       ],
       "depends_on": [],
       "source_location": {
-        "file": "main.tf",
-        "line": 47,
-        "column": 1
-      }
-    },
-    {
-      "id": "aws_instance.web",
-      "type": "aws_instance",
-      "name": "web",
-      "provider": "aws",
-      "region": null,
-      "attributes": {
-        "ami": "${var.ami_id}",
-        "instance_type": "${var.instance_type}",
-        "subnet_id": "${aws_subnet.public.id}",
-        "vpc_security_group_ids": [
-          "${aws_security_group.web.id}"
-        ],
-        "associate_public_ip_address": true,
-        "tags": {
-          "Name": "test-web-server",
-          "Environment": "${var.environment}"
-        }
-      },
-      "tags": {
-        "Name": "test-web-server",
-        "Environment": "${var.environment}"
-      },
-      "security": {
-        "internet_exposed": true,
-        "public_access": null,
-        "public_ip": true,
-        "encryption_enabled": null,
-        "encryption_type": null,
-        "logging_enabled": null,
-        "authentication_required": null,
-        "authorization_enabled": null,
-        "least_privilege": null,
-        "versioning_enabled": null,
-        "backup_enabled": null,
-        "deletion_protection": null,
-        "ingress_rules": [],
-        "egress_rules": [],
-        "iam_permissions": [],
-        "secrets": []
-      },
-      "references": [
-        "var.ami_id",
-        "var.instance_type",
-        "aws_subnet.public.id",
-        "aws_security_group.web.id",
-        "var.environment"
-      ],
-      "depends_on": [
-        "aws_subnet.public",
-        "aws_security_group.web"
-      ],
-      "source_location": {
-        "file": "main.tf",
-        "line": 80,
-        "column": 1
-      }
-    },
-    {
-      "id": "aws_s3_bucket.data",
-      "type": "aws_s3_bucket",
-      "name": "data",
-      "provider": "aws",
-      "region": null,
-      "attributes": {
-        "bucket": "terraform-validation-test-bucket-12345",
-        "tags": {
-          "Name": "test-data-bucket",
-          "Environment": "${var.environment}"
-        }
-      },
-      "tags": {
-        "Name": "test-data-bucket",
-        "Environment": "${var.environment}"
-      },
-      "security": {
-        "internet_exposed": null,
-        "public_access": null,
-        "public_ip": null,
-        "encryption_enabled": null,
-        "encryption_type": null,
-        "logging_enabled": null,
-        "authentication_required": null,
-        "authorization_enabled": null,
-        "least_privilege": null,
-        "versioning_enabled": null,
-        "backup_enabled": null,
-        "deletion_protection": null,
-        "ingress_rules": [],
-        "egress_rules": [],
-        "iam_permissions": [],
-        "secrets": []
-      },
-      "references": [
-        "var.environment"
-      ],
-      "depends_on": [],
-      "source_location": {
-        "file": "storage.tf",
+        "file": "security_group.tf",
         "line": 1,
         "column": 1
       }
     },
     {
-      "id": "aws_s3_bucket_versioning.data",
-      "type": "aws_s3_bucket_versioning",
-      "name": "data",
+      "id": "aws_security_group.KafkaClientInstanceSG",
+      "type": "aws_security_group",
+      "name": "KafkaClientInstanceSG",
       "provider": "aws",
       "region": null,
       "attributes": {
-        "bucket": "${aws_s3_bucket.data.id}",
-        "versioning_configuration": [
+        "name": "KafkaClientInstanceSG",
+        "description": "Allow TLS inbound traffic",
+        "vpc_id": "${aws_vpc.msk_vpc.id}",
+        "ingress": [
           {
-            "status": "Enabled"
+            "description": "SSH port",
+            "from_port": 22,
+            "to_port": 22,
+            "protocol": "tcp",
+            "cidr_blocks": [
+              "${var.vpc_cidr}"
+            ]
           }
-        ]
+        ],
+        "egress": [
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "protocol": "-1",
+            "cidr_blocks": [
+              "0.0.0.0/0"
+            ]
+          }
+        ],
+        "tags": "${merge(local.common-tags, map(\"Name\", \"KafkaClientInstanceSG\"))}"
       },
       "tags": {},
       "security": {
@@ -558,36 +1128,58 @@
         "authentication_required": null,
         "authorization_enabled": null,
         "least_privilege": null,
-        "versioning_enabled": true,
+        "versioning_enabled": null,
         "backup_enabled": null,
         "deletion_protection": null,
-        "ingress_rules": [],
-        "egress_rules": [],
+        "ingress_rules": [
+          {
+            "protocol": "tcp",
+            "from_port": 22,
+            "to_port": 22,
+            "sources": [
+              "${var.vpc_cidr}"
+            ],
+            "description": "SSH port"
+          }
+        ],
+        "egress_rules": [
+          {
+            "protocol": "-1",
+            "from_port": 0,
+            "to_port": 0,
+            "destinations": [
+              "0.0.0.0/0"
+            ],
+            "description": null
+          }
+        ],
         "iam_permissions": [],
         "secrets": []
       },
       "references": [
-        "aws_s3_bucket.data.id"
+        "aws_vpc.msk_vpc.id",
+        "var.vpc_cidr",
+        "local.common-tags"
       ],
       "depends_on": [],
       "source_location": {
-        "file": "storage.tf",
-        "line": 10,
+        "file": "security_group.tf",
+        "line": 42,
         "column": 1
       }
     },
     {
-      "id": "aws_s3_bucket_public_access_block.data",
-      "type": "aws_s3_bucket_public_access_block",
-      "name": "data",
+      "id": "aws_subnet.private_subnet",
+      "type": "aws_subnet",
+      "name": "private_subnet",
       "provider": "aws",
       "region": null,
       "attributes": {
-        "bucket": "${aws_s3_bucket.data.id}",
-        "block_public_acls": false,
-        "block_public_policy": false,
-        "ignore_public_acls": false,
-        "restrict_public_buckets": false
+        "count": "${length(var.private_subnet_cidrs)}",
+        "vpc_id": "${aws_vpc.msk_vpc.id}",
+        "cidr_block": "${element(split(\",\", join(\",\", var.private_subnet_cidrs)), count.index)}",
+        "availability_zone": "${data.aws_availability_zones.available.names[count.index]}",
+        "tags": "${merge(local.common-tags, map(\"Name\", \"MSK-${lower(var.environment)}-private-subnet-${count.index + 1}\", \"Description\", \"${lower(var.environment)} private subnet - ${count.index + 1}\"))}"
       },
       "tags": {},
       "security": {
@@ -609,12 +1201,103 @@
         "secrets": []
       },
       "references": [
-        "aws_s3_bucket.data.id"
+        "var.private_subnet_cidrs",
+        "aws_vpc.msk_vpc.id",
+        "data.aws_availability_zones.available.names",
+        "local.common-tags",
+        "var.environment"
       ],
       "depends_on": [],
       "source_location": {
-        "file": "storage.tf",
-        "line": 18,
+        "file": "subnets.tf",
+        "line": 3,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_subnet.public_subnet",
+      "type": "aws_subnet",
+      "name": "public_subnet",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "count": "${length(var.public_subnet_cidrs)}",
+        "vpc_id": "${aws_vpc.msk_vpc.id}",
+        "cidr_block": "${element(split(\",\", join(\",\", var.public_subnet_cidrs)), count.index)}",
+        "availability_zone": "${data.aws_availability_zones.available.names[count.index]}",
+        "tags": "${merge(local.common-tags, map(\"Name\", \"msk-${lower(var.environment)}-public-subnet-${count.index + 1}\", \"Description\", \"${lower(var.environment)} private subnet - ${count.index + 1}\"))}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.public_subnet_cidrs",
+        "aws_vpc.msk_vpc.id",
+        "data.aws_availability_zones.available.names",
+        "local.common-tags",
+        "var.environment"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "subnets.tf",
+        "line": 21,
+        "column": 1
+      }
+    },
+    {
+      "id": "aws_vpc.msk_vpc",
+      "type": "aws_vpc",
+      "name": "msk_vpc",
+      "provider": "aws",
+      "region": null,
+      "attributes": {
+        "cidr_block": "${var.vpc_cidr}",
+        "tags": "${merge(local.common-tags, map(\"Name\", \"msk-${lower(var.environment)}-vpc\", \"Description\", \"VPC for creating MSK resources\"))}"
+      },
+      "tags": {},
+      "security": {
+        "internet_exposed": null,
+        "public_access": null,
+        "public_ip": null,
+        "encryption_enabled": null,
+        "encryption_type": null,
+        "logging_enabled": null,
+        "authentication_required": null,
+        "authorization_enabled": null,
+        "least_privilege": null,
+        "versioning_enabled": null,
+        "backup_enabled": null,
+        "deletion_protection": null,
+        "ingress_rules": [],
+        "egress_rules": [],
+        "iam_permissions": [],
+        "secrets": []
+      },
+      "references": [
+        "var.vpc_cidr",
+        "local.common-tags",
+        "var.environment"
+      ],
+      "depends_on": [],
+      "source_location": {
+        "file": "vpc.tf",
+        "line": 1,
         "column": 1
       }
     }
@@ -629,9 +1312,19 @@
       "references": []
     },
     {
-      "id": "aws_region.current",
-      "type": "aws_region",
-      "name": "current",
+      "id": "local_file.msk-keypair-public",
+      "type": "local_file",
+      "name": "msk-keypair-public",
+      "provider": "local",
+      "attributes": {
+        "filename": "${path.module}/keys/MSK-Keypair.pub"
+      },
+      "references": []
+    },
+    {
+      "id": "aws_availability_zones.available",
+      "type": "aws_availability_zones",
+      "name": "available",
       "provider": "aws",
       "attributes": {},
       "references": []
@@ -639,378 +1332,929 @@
   ],
   "variables": [
     {
-      "name": "environment",
+      "name": "aws_region",
       "type": "string",
-      "default": "test",
-      "description": "Deployment environment",
+      "default": "us-east-1",
+      "description": null,
       "sensitive": false,
       "validation": {}
     },
     {
-      "name": "region",
-      "type": "string",
-      "default": "ap-south-1",
-      "description": "AWS deployment region",
-      "sensitive": false,
-      "validation": {}
-    },
-    {
-      "name": "ami_id",
-      "type": "string",
-      "default": "ami-0123456789abcdef0",
-      "description": "AMI ID for the web server",
-      "sensitive": false,
-      "validation": {}
-    },
-    {
-      "name": "instance_type",
-      "type": "string",
-      "default": "t3.micro",
-      "description": "EC2 instance type",
-      "sensitive": false,
-      "validation": {}
-    },
-    {
-      "name": "db_password",
+      "name": "aws-profile",
       "type": "string",
       "default": null,
-      "description": "Database password",
-      "sensitive": true,
+      "description": "Local AWS Profile Name ",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "environment",
+      "type": "string",
+      "default": null,
+      "description": "AWS Environment",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "application",
+      "type": "string",
+      "default": "acm",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "vpc_cidr",
+      "type": "string",
+      "default": null,
+      "description": "VPC CIDR",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "private_subnet_cidrs",
+      "type": "list",
+      "default": null,
+      "description": "Private subnet  - CIDR",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "public_subnet_cidrs",
+      "type": "list",
+      "default": null,
+      "description": "Private subnet  - CIDR",
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "msk_cluster_version",
+      "type": "string",
+      "default": "2.4.1.1",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "broker_nodes",
+      "type": null,
+      "default": 3,
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "msk_cluster_instance_type",
+      "type": "string",
+      "default": "kafka.m5.large",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "msk_ebs_volume_size",
+      "type": null,
+      "default": 100,
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "encryption_type",
+      "type": "string",
+      "default": "TLS_PLAINTEXT",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "monitoring_type",
+      "type": "string",
+      "default": "PER_BROKER",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "key_name",
+      "type": "string",
+      "default": "MSK-Keypair",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "msk_instance_type",
+      "type": "string",
+      "default": "m5.large",
+      "description": null,
+      "sensitive": false,
+      "validation": {}
+    },
+    {
+      "name": "msk_ami",
+      "type": "string",
+      "default": "ami-04d29b6f966df1537",
+      "description": null,
+      "sensitive": false,
       "validation": {}
     }
   ],
   "outputs": [
     {
-      "name": "environment",
-      "value": "${var.environment}",
+      "name": "msk-user-keypair",
+      "value": "${aws_key_pair.MSK-Keypair-ec2-keypair.key_name}",
       "description": null,
       "sensitive": false
     },
     {
-      "name": "vpc_id",
-      "value": "${aws_vpc.main.id}",
-      "description": "ID of the test VPC",
+      "name": "IP",
+      "value": "${aws_instance.Kafka-Client-EC2-Instance.private_ip}",
+      "description": "The private IP address of the Kafka-Client-EC2-Instance instance.",
       "sensitive": false
     },
     {
-      "name": "web_instance_id",
-      "value": "${aws_instance.web.id}",
-      "description": "ID of the web EC2 instance",
+      "name": "zookeeper_connect_string",
+      "value": "${aws_msk_cluster.msk_cluster.*.zookeeper_connect_string}",
+      "description": null,
       "sensitive": false
     },
     {
-      "name": "account_id",
-      "value": "${data.aws_caller_identity.current.account_id}",
-      "description": "AWS account ID",
+      "name": "bootstrap_brokers",
+      "value": "${aws_msk_cluster.msk_cluster.*.bootstrap_brokers}",
+      "description": "Plaintext connection host:port pairs",
       "sensitive": false
     },
     {
-      "name": "db_endpoint",
-      "value": "${aws_db_instance.main.endpoint}",
-      "description": "Database endpoint",
-      "sensitive": true
+      "name": "bootstrap_brokers_tls",
+      "value": "${aws_msk_cluster.msk_cluster.*.bootstrap_brokers_tls}",
+      "description": "TLS connection host:port pairs",
+      "sensitive": false
     }
   ],
-  "modules": [
-    {
-      "name": "example",
-      "source": "./modules/example",
-      "version": null,
-      "inputs": {
-        "source": "./modules/example",
-        "environment": "${var.environment}"
-      },
-      "outputs": {},
-      "source_location": {
-        "file": "module.tf",
-        "line": 1,
-        "column": 1
-      }
-    }
-  ],
+  "modules": [],
   "providers": [
     {
       "name": "aws",
       "alias": null,
-      "version": "~> 5.0",
+      "version": null,
       "configuration": {
-        "region": "${var.region}"
-      }
-    },
-    {
-      "name": "aws",
-      "alias": "secondary",
-      "version": "~> 5.0",
-      "configuration": {
-        "alias": "secondary",
-        "region": "us-east-1"
+        "profile": "${var.aws-profile}",
+        "region": "${var.aws_region}"
       }
     }
   ],
   "relationships": [
     {
-      "source": "aws_db_instance.main",
-      "target": "var.db_password",
+      "source": "aws_key_pair.MSK-Keypair-ec2-keypair",
+      "target": "var.key_name",
       "type": "REFERENCES_VARIABLE",
       "attributes": {
-        "reference": "var.db_password"
+        "reference": "var.key_name"
       },
       "source_location": {
-        "file": "database.tf",
+        "file": "keypair.tf",
+        "line": 5,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_key_pair.MSK-Keypair-ec2-keypair",
+      "target": "data.local_file.msk-keypair-public",
+      "type": "REFERENCES_DATA_SOURCE",
+      "attributes": {
+        "reference": "data.local_file.msk-keypair-public.content"
+      },
+      "source_location": {
+        "file": "keypair.tf",
+        "line": 5,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_kms_key.pca-kms",
+      "target": "data.aws_caller_identity.current",
+      "type": "REFERENCES_DATA_SOURCE",
+      "attributes": {
+        "reference": "data.aws_caller_identity.current.account_id"
+      },
+      "source_location": {
+        "file": "kms.tf",
         "line": 1,
         "column": 1
       }
     },
     {
-      "source": "aws_db_instance.main",
-      "target": "aws_security_group.web",
+      "source": "aws_kms_alias.pca-kims-alias",
+      "target": "aws_kms_key.pca-kms",
       "type": "REFERENCES_RESOURCE",
       "attributes": {
-        "reference": "aws_security_group.web.id"
+        "reference": "aws_kms_key.pca-kms.key_id"
       },
       "source_location": {
-        "file": "database.tf",
+        "file": "kms.tf",
+        "line": 23,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_kms_key.msk-kms-key",
+      "target": "data.aws_caller_identity.current",
+      "type": "REFERENCES_DATA_SOURCE",
+      "attributes": {
+        "reference": "data.aws_caller_identity.current.account_id"
+      },
+      "source_location": {
+        "file": "kms.tf",
+        "line": 31,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_kms_alias.msk-kms-alias",
+      "target": "random_id.kms",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "random_id.kms.hex"
+      },
+      "source_location": {
+        "file": "kms.tf",
+        "line": 53,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_kms_alias.msk-kms-alias",
+      "target": "aws_kms_key.msk-kms-key",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_kms_key.msk-kms-key.key_id"
+      },
+      "source_location": {
+        "file": "kms.tf",
+        "line": 53,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_iam_instance_profile.KafkaClientIAM_Profile",
+      "target": "aws_iam_role.KafkaClientIAM_Role",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_iam_role.KafkaClientIAM_Role.name"
+      },
+      "source_location": {
+        "file": "msk-client.tf",
         "line": 1,
         "column": 1
       }
     },
     {
-      "source": "aws_db_instance.main",
+      "source": "aws_iam_role_policy_attachment.Kafka-Client-IAM-role-att1",
+      "target": "aws_iam_role.KafkaClientIAM_Role",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_iam_role.KafkaClientIAM_Role.name"
+      },
+      "source_location": {
+        "file": "msk-client.tf",
+        "line": 28,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_iam_role_policy_attachment.Kafka-Client-IAM-role-att2",
+      "target": "aws_iam_role.KafkaClientIAM_Role",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_iam_role.KafkaClientIAM_Role.name"
+      },
+      "source_location": {
+        "file": "msk-client.tf",
+        "line": 33,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_instance.Kafka-Client-EC2-Instance",
+      "target": "var.msk_ami",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.msk_ami"
+      },
+      "source_location": {
+        "file": "msk-client.tf",
+        "line": 38,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_instance.Kafka-Client-EC2-Instance",
+      "target": "var.msk_instance_type",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.msk_instance_type"
+      },
+      "source_location": {
+        "file": "msk-client.tf",
+        "line": 38,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_instance.Kafka-Client-EC2-Instance",
+      "target": "var.key_name",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.key_name"
+      },
+      "source_location": {
+        "file": "msk-client.tf",
+        "line": 38,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_instance.Kafka-Client-EC2-Instance",
+      "target": "aws_security_group.KafkaClientInstanceSG",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_security_group.KafkaClientInstanceSG.id"
+      },
+      "source_location": {
+        "file": "msk-client.tf",
+        "line": 38,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_instance.Kafka-Client-EC2-Instance",
+      "target": "aws_iam_instance_profile.KafkaClientIAM_Profile",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_iam_instance_profile.KafkaClientIAM_Profile.name"
+      },
+      "source_location": {
+        "file": "msk-client.tf",
+        "line": 38,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_instance.Kafka-Client-EC2-Instance",
+      "target": "aws_kms_key.msk-kms-key",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_kms_key.msk-kms-key.arn"
+      },
+      "source_location": {
+        "file": "msk-client.tf",
+        "line": 38,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_cloudwatch_log_group.cloudwatch_log_group",
+      "target": "random_uuid.randuuid",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "random_uuid.randuuid.result"
+      },
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_msk_configuration.msk_cluster_config",
+      "target": "var.msk_cluster_version",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.msk_cluster_version"
+      },
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 5,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_msk_configuration.msk_cluster_config",
       "target": "var.environment",
       "type": "REFERENCES_VARIABLE",
       "attributes": {
         "reference": "var.environment"
       },
       "source_location": {
-        "file": "database.tf",
-        "line": 1,
+        "file": "msk-cluster.tf",
+        "line": 5,
         "column": 1
       }
     },
     {
-      "source": "aws_iam_role_policy.web_policy",
-      "target": "aws_iam_role.web_role",
+      "source": "aws_msk_configuration.msk_cluster_config",
+      "target": "random_uuid.randuuid",
       "type": "REFERENCES_RESOURCE",
       "attributes": {
-        "reference": "aws_iam_role.web_role.id"
+        "reference": "random_uuid.randuuid.result"
       },
       "source_location": {
-        "file": "iam.tf",
-        "line": 25,
+        "file": "msk-cluster.tf",
+        "line": 5,
         "column": 1
       }
     },
     {
-      "source": "aws_lb.web",
-      "target": "aws_subnet.public",
-      "type": "REFERENCES_RESOURCE",
+      "source": "aws_msk_cluster.msk_cluster",
+      "target": "var.private_subnet_cidrs",
+      "type": "REFERENCES_VARIABLE",
       "attributes": {
-        "reference": "aws_subnet.public.id"
+        "reference": "var.private_subnet_cidrs"
       },
       "source_location": {
-        "file": "load_balancer.tf",
-        "line": 1,
+        "file": "msk-cluster.tf",
+        "line": 14,
         "column": 1
       }
     },
     {
-      "source": "aws_lb.web",
-      "target": "aws_security_group.web",
-      "type": "REFERENCES_RESOURCE",
-      "attributes": {
-        "reference": "aws_security_group.web.id"
-      },
-      "source_location": {
-        "file": "load_balancer.tf",
-        "line": 1,
-        "column": 1
-      }
-    },
-    {
-      "source": "aws_vpc.main",
+      "source": "aws_msk_cluster.msk_cluster",
       "target": "var.environment",
       "type": "REFERENCES_VARIABLE",
       "attributes": {
         "reference": "var.environment"
       },
       "source_location": {
-        "file": "main.tf",
+        "file": "msk-cluster.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_msk_cluster.msk_cluster",
+      "target": "random_uuid.randuuid",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "random_uuid.randuuid.result"
+      },
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_msk_cluster.msk_cluster",
+      "target": "var.msk_cluster_version",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.msk_cluster_version"
+      },
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_msk_cluster.msk_cluster",
+      "target": "var.broker_nodes",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.broker_nodes"
+      },
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_msk_cluster.msk_cluster",
+      "target": "var.msk_cluster_instance_type",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.msk_cluster_instance_type"
+      },
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_msk_cluster.msk_cluster",
+      "target": "var.msk_ebs_volume_size",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.msk_ebs_volume_size"
+      },
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_msk_cluster.msk_cluster",
+      "target": "aws_security_group.KafkaClusterSG",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_security_group.KafkaClusterSG.id"
+      },
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_msk_cluster.msk_cluster",
+      "target": "aws_msk_configuration.msk_cluster_config",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_msk_configuration.msk_cluster_config.arn"
+      },
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_msk_cluster.msk_cluster",
+      "target": "var.encryption_type",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.encryption_type"
+      },
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_msk_cluster.msk_cluster",
+      "target": "var.monitoring_type",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.monitoring_type"
+      },
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_msk_cluster.msk_cluster",
+      "target": "aws_cloudwatch_log_group.cloudwatch_log_group",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_cloudwatch_log_group.cloudwatch_log_group.name"
+      },
+      "source_location": {
+        "file": "msk-cluster.tf",
+        "line": 14,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_internet_gateway.main-igw",
+      "target": "aws_vpc.msk_vpc",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpc.msk_vpc.id"
+      },
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 2,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_nat_gateway.main-natgw",
+      "target": "aws_eip.nat",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_eip.nat.id"
+      },
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 17,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table.PublicRouteTable",
+      "target": "aws_vpc.msk_vpc",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpc.msk_vpc.id"
+      },
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 31,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table.PublicRouteTable",
+      "target": "aws_internet_gateway.main-igw",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_internet_gateway.main-igw.id"
+      },
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 31,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table.PrivateRouteTable",
+      "target": "aws_vpc.msk_vpc",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpc.msk_vpc.id"
+      },
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 48,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table.PrivateRouteTable",
+      "target": "aws_nat_gateway.main-natgw",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_nat_gateway.main-natgw.id"
+      },
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 48,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table_association.route_Publicsubnet",
+      "target": "var.public_subnet_cidrs",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.public_subnet_cidrs"
+      },
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 65,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table_association.route_Publicsubnet",
+      "target": "aws_route_table.PublicRouteTable",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_route_table.PublicRouteTable.id"
+      },
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 65,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table_association.route_Privatesubnet",
+      "target": "var.private_subnet_cidrs",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.private_subnet_cidrs"
+      },
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 71,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_route_table_association.route_Privatesubnet",
+      "target": "aws_route_table.PrivateRouteTable",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_route_table.PrivateRouteTable.id"
+      },
+      "source_location": {
+        "file": "network-routing.tf",
+        "line": 71,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_security_group.KafkaClusterSG",
+      "target": "var.environment",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.environment"
+      },
+      "source_location": {
+        "file": "security_group.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_security_group.KafkaClusterSG",
+      "target": "random_uuid.randuuid",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "random_uuid.randuuid.result"
+      },
+      "source_location": {
+        "file": "security_group.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_security_group.KafkaClusterSG",
+      "target": "aws_vpc.msk_vpc",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpc.msk_vpc.id"
+      },
+      "source_location": {
+        "file": "security_group.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_security_group.KafkaClusterSG",
+      "target": "var.vpc_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.vpc_cidr"
+      },
+      "source_location": {
+        "file": "security_group.tf",
+        "line": 1,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_security_group.KafkaClientInstanceSG",
+      "target": "aws_vpc.msk_vpc",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpc.msk_vpc.id"
+      },
+      "source_location": {
+        "file": "security_group.tf",
+        "line": 42,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_security_group.KafkaClientInstanceSG",
+      "target": "var.vpc_cidr",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.vpc_cidr"
+      },
+      "source_location": {
+        "file": "security_group.tf",
+        "line": 42,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_subnet.private_subnet",
+      "target": "var.private_subnet_cidrs",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.private_subnet_cidrs"
+      },
+      "source_location": {
+        "file": "subnets.tf",
+        "line": 3,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_subnet.private_subnet",
+      "target": "aws_vpc.msk_vpc",
+      "type": "REFERENCES_RESOURCE",
+      "attributes": {
+        "reference": "aws_vpc.msk_vpc.id"
+      },
+      "source_location": {
+        "file": "subnets.tf",
+        "line": 3,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_subnet.private_subnet",
+      "target": "data.aws_availability_zones.available",
+      "type": "REFERENCES_DATA_SOURCE",
+      "attributes": {
+        "reference": "data.aws_availability_zones.available.names"
+      },
+      "source_location": {
+        "file": "subnets.tf",
+        "line": 3,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_subnet.private_subnet",
+      "target": "var.environment",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.environment"
+      },
+      "source_location": {
+        "file": "subnets.tf",
+        "line": 3,
+        "column": 1
+      }
+    },
+    {
+      "source": "aws_subnet.public_subnet",
+      "target": "var.public_subnet_cidrs",
+      "type": "REFERENCES_VARIABLE",
+      "attributes": {
+        "reference": "var.public_subnet_cidrs"
+      },
+      "source_location": {
+        "file": "subnets.tf",
         "line": 21,
         "column": 1
       }
     },
     {
-      "source": "aws_subnet.public",
-      "target": "aws_vpc.main",
-      "type": "DEPENDS_ON",
-      "attributes": {},
-      "source_location": {
-        "file": "main.tf",
-        "line": 32,
-        "column": 1
-      }
-    },
-    {
-      "source": "aws_subnet.public",
-      "target": "aws_vpc.main",
+      "source": "aws_subnet.public_subnet",
+      "target": "aws_vpc.msk_vpc",
       "type": "REFERENCES_RESOURCE",
       "attributes": {
-        "reference": "aws_vpc.main.id"
+        "reference": "aws_vpc.msk_vpc.id"
       },
       "source_location": {
-        "file": "main.tf",
-        "line": 32,
+        "file": "subnets.tf",
+        "line": 21,
         "column": 1
       }
     },
     {
-      "source": "aws_security_group.web",
-      "target": "aws_vpc.main",
-      "type": "REFERENCES_RESOURCE",
+      "source": "aws_subnet.public_subnet",
+      "target": "data.aws_availability_zones.available",
+      "type": "REFERENCES_DATA_SOURCE",
       "attributes": {
-        "reference": "aws_vpc.main.id"
+        "reference": "data.aws_availability_zones.available.names"
       },
       "source_location": {
-        "file": "main.tf",
-        "line": 47,
+        "file": "subnets.tf",
+        "line": 21,
         "column": 1
       }
     },
     {
-      "source": "aws_instance.web",
-      "target": "aws_subnet.public",
-      "type": "DEPENDS_ON",
-      "attributes": {},
-      "source_location": {
-        "file": "main.tf",
-        "line": 80,
-        "column": 1
-      }
-    },
-    {
-      "source": "aws_instance.web",
-      "target": "aws_security_group.web",
-      "type": "DEPENDS_ON",
-      "attributes": {},
-      "source_location": {
-        "file": "main.tf",
-        "line": 80,
-        "column": 1
-      }
-    },
-    {
-      "source": "aws_instance.web",
-      "target": "var.ami_id",
-      "type": "REFERENCES_VARIABLE",
-      "attributes": {
-        "reference": "var.ami_id"
-      },
-      "source_location": {
-        "file": "main.tf",
-        "line": 80,
-        "column": 1
-      }
-    },
-    {
-      "source": "aws_instance.web",
-      "target": "var.instance_type",
-      "type": "REFERENCES_VARIABLE",
-      "attributes": {
-        "reference": "var.instance_type"
-      },
-      "source_location": {
-        "file": "main.tf",
-        "line": 80,
-        "column": 1
-      }
-    },
-    {
-      "source": "aws_instance.web",
-      "target": "aws_subnet.public",
-      "type": "REFERENCES_RESOURCE",
-      "attributes": {
-        "reference": "aws_subnet.public.id"
-      },
-      "source_location": {
-        "file": "main.tf",
-        "line": 80,
-        "column": 1
-      }
-    },
-    {
-      "source": "aws_instance.web",
-      "target": "aws_security_group.web",
-      "type": "REFERENCES_RESOURCE",
-      "attributes": {
-        "reference": "aws_security_group.web.id"
-      },
-      "source_location": {
-        "file": "main.tf",
-        "line": 80,
-        "column": 1
-      }
-    },
-    {
-      "source": "aws_instance.web",
+      "source": "aws_subnet.public_subnet",
       "target": "var.environment",
       "type": "REFERENCES_VARIABLE",
       "attributes": {
         "reference": "var.environment"
       },
       "source_location": {
-        "file": "main.tf",
-        "line": 80,
+        "file": "subnets.tf",
+        "line": 21,
         "column": 1
       }
     },
     {
-      "source": "aws_s3_bucket.data",
-      "target": "var.environment",
+      "source": "aws_vpc.msk_vpc",
+      "target": "var.vpc_cidr",
       "type": "REFERENCES_VARIABLE",
       "attributes": {
-        "reference": "var.environment"
+        "reference": "var.vpc_cidr"
       },
       "source_location": {
-        "file": "storage.tf",
+        "file": "vpc.tf",
         "line": 1,
         "column": 1
       }
     },
     {
-      "source": "aws_s3_bucket_versioning.data",
-      "target": "aws_s3_bucket.data",
-      "type": "REFERENCES_RESOURCE",
-      "attributes": {
-        "reference": "aws_s3_bucket.data.id"
-      },
-      "source_location": {
-        "file": "storage.tf",
-        "line": 10,
-        "column": 1
-      }
-    },
-    {
-      "source": "aws_s3_bucket_public_access_block.data",
-      "target": "aws_s3_bucket.data",
-      "type": "REFERENCES_RESOURCE",
-      "attributes": {
-        "reference": "aws_s3_bucket.data.id"
-      },
-      "source_location": {
-        "file": "storage.tf",
-        "line": 18,
-        "column": 1
-      }
-    },
-    {
-      "source": "module.example",
+      "source": "aws_vpc.msk_vpc",
       "target": "var.environment",
-      "type": "MODULE_INPUT",
+      "type": "REFERENCES_VARIABLE",
       "attributes": {
         "reference": "var.environment"
       },
       "source_location": {
-        "file": "module.tf",
+        "file": "vpc.tf",
         "line": 1,
         "column": 1
       }
@@ -1018,102 +2262,38 @@
   ],
   "security_findings": [
     {
-      "id": "INTERNET_EXPOSED_aws_lb.web",
-      "severity": "HIGH",
+      "id": "NET-EGRESS-001_aws_security_group_KafkaClientInstanceSG",
+      "severity": "MEDIUM",
       "category": "NETWORK_EXPOSURE",
-      "resource": "aws_lb.web",
-      "title": "Resource is exposed to the internet",
-      "description": "The resource configuration permits public network exposure.",
+      "resource": "aws_security_group.KafkaClientInstanceSG",
+      "title": "Unrestricted Outbound Network Traffic",
+      "description": "Resource 'aws_security_group.KafkaClientInstanceSG' allows unrestricted outbound traffic to the internet.",
       "evidence": {
-        "public_access": true,
-        "internet_exposed": true
-      },
-      "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
-      "recommendation": "Disable public network access unless explicitly required for public services.",
-      "remediation": "Set public network access to false or restrict inbound access."
-    },
-    {
-      "id": "INTERNET_EXPOSED_aws_subnet.public",
-      "severity": "HIGH",
-      "category": "NETWORK_EXPOSURE",
-      "resource": "aws_subnet.public",
-      "title": "Resource is exposed to the internet",
-      "description": "The resource configuration permits public network exposure.",
-      "evidence": {
-        "public_access": null,
-        "internet_exposed": true
-      },
-      "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
-      "recommendation": "Disable public network access unless explicitly required for public services.",
-      "remediation": "Set public network access to false or restrict inbound access."
-    },
-    {
-      "id": "PUBLIC_INGRESS_aws_security_group.web_0",
-      "severity": "HIGH",
-      "category": "NETWORK_EXPOSURE",
-      "resource": "aws_security_group.web",
-      "title": "Inbound traffic is exposed to the internet",
-      "description": "Inbound traffic on port 22 is permitted from open internet sources.",
-      "evidence": {
-        "protocol": "tcp",
-        "from_port": 22,
-        "to_port": 22,
-        "sources": [
+        "protocol": "-1",
+        "destinations": [
           "0.0.0.0/0"
         ]
       },
-      "attack_vector": "An attacker on the internet can attempt connections to port 22.",
-      "recommendation": "Restrict inbound access to approved CIDR ranges.",
-      "remediation": "Modify security group or firewall ingress rules to remove wildcard sources."
+      "attack_vector": "Resource 'aws_security_group.KafkaClientInstanceSG' allows unrestricted outbound traffic to the internet.",
+      "recommendation": "Restrict outbound traffic to only the destinations and protocols required by the workload.",
+      "remediation": "Restrict outbound traffic to only the destinations and protocols required by the workload."
     },
     {
-      "id": "PUBLIC_INGRESS_aws_security_group.web_1",
-      "severity": "HIGH",
+      "id": "NET-EGRESS-001_aws_security_group_KafkaClusterSG",
+      "severity": "MEDIUM",
       "category": "NETWORK_EXPOSURE",
-      "resource": "aws_security_group.web",
-      "title": "Inbound traffic is exposed to the internet",
-      "description": "Inbound traffic on port 80 is permitted from open internet sources.",
+      "resource": "aws_security_group.KafkaClusterSG",
+      "title": "Unrestricted Outbound Network Traffic",
+      "description": "Resource 'aws_security_group.KafkaClusterSG' allows unrestricted outbound traffic to the internet.",
       "evidence": {
-        "protocol": "tcp",
-        "from_port": 80,
-        "to_port": 80,
-        "sources": [
+        "protocol": "-1",
+        "destinations": [
           "0.0.0.0/0"
         ]
       },
-      "attack_vector": "An attacker on the internet can attempt connections to port 80.",
-      "recommendation": "Restrict inbound access to approved CIDR ranges.",
-      "remediation": "Modify security group or firewall ingress rules to remove wildcard sources."
-    },
-    {
-      "id": "INTERNET_EXPOSED_aws_security_group.web",
-      "severity": "HIGH",
-      "category": "NETWORK_EXPOSURE",
-      "resource": "aws_security_group.web",
-      "title": "Resource is exposed to the internet",
-      "description": "The resource configuration permits public network exposure.",
-      "evidence": {
-        "public_access": true,
-        "internet_exposed": true
-      },
-      "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
-      "recommendation": "Disable public network access unless explicitly required for public services.",
-      "remediation": "Set public network access to false or restrict inbound access."
-    },
-    {
-      "id": "INTERNET_EXPOSED_aws_instance.web",
-      "severity": "HIGH",
-      "category": "NETWORK_EXPOSURE",
-      "resource": "aws_instance.web",
-      "title": "Resource is exposed to the internet",
-      "description": "The resource configuration permits public network exposure.",
-      "evidence": {
-        "public_access": null,
-        "internet_exposed": true
-      },
-      "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
-      "recommendation": "Disable public network access unless explicitly required for public services.",
-      "remediation": "Set public network access to false or restrict inbound access."
+      "attack_vector": "Resource 'aws_security_group.KafkaClusterSG' allows unrestricted outbound traffic to the internet.",
+      "recommendation": "Restrict outbound traffic to only the destinations and protocols required by the workload.",
+      "remediation": "Restrict outbound traffic to only the destinations and protocols required by the workload."
     }
   ]
 }
