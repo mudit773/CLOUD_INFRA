@@ -845,5 +845,60 @@
         "var.resource_group_name"
       ]
     }
-  }
+  },
+  "findings": [
+    {
+      "id": "PUBLIC_INGRESS_azurerm_network_security_group.test_1",
+      "severity": "HIGH",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "azurerm_network_security_group.test",
+      "title": "Inbound traffic is exposed to the internet",
+      "description": "Inbound traffic on port 80 is permitted from open internet sources.",
+      "evidence": {
+        "protocol": "Tcp",
+        "from_port": "*",
+        "to_port": "80",
+        "sources": [
+          "0.0.0.0/0"
+        ]
+      },
+      "attack_vector": "An attacker on the internet can attempt connections to port 80.",
+      "recommendation": "Restrict inbound access to approved CIDR ranges.",
+      "remediation": "Modify security group or firewall ingress rules to remove wildcard sources."
+    },
+    {
+      "id": "PUBLIC_INGRESS_azurerm_network_security_group.test_2",
+      "severity": "HIGH",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "azurerm_network_security_group.test",
+      "title": "Inbound traffic is exposed to the internet",
+      "description": "Inbound traffic on port 443 is permitted from open internet sources.",
+      "evidence": {
+        "protocol": "Tcp",
+        "from_port": "*",
+        "to_port": "443",
+        "sources": [
+          "0.0.0.0/0"
+        ]
+      },
+      "attack_vector": "An attacker on the internet can attempt connections to port 443.",
+      "recommendation": "Restrict inbound access to approved CIDR ranges.",
+      "remediation": "Modify security group or firewall ingress rules to remove wildcard sources."
+    },
+    {
+      "id": "INTERNET_EXPOSED_azurerm_network_security_group.test",
+      "severity": "HIGH",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "azurerm_network_security_group.test",
+      "title": "Resource is exposed to the internet",
+      "description": "The resource configuration permits public network exposure.",
+      "evidence": {
+        "public_access": true,
+        "internet_exposed": true
+      },
+      "attack_vector": "Publicly accessible resources increase attack surface for remote exploitation.",
+      "recommendation": "Disable public network access unless explicitly required for public services.",
+      "remediation": "Set public network access to false or restrict inbound access."
+    }
+  ]
 }

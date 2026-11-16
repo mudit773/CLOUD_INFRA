@@ -4,7 +4,7 @@
     "terraform_version": null,
     "cloud_provider": "aws",
     "region": "us-east-1",
-    "generated_at": "2026-09-24T20:59:46.719662+00:00"
+    "generated_at": "2026-11-10T15:29:52.622796+00:00"
   },
   "resources": [
     {
@@ -2260,5 +2260,40 @@
       }
     }
   ],
-  "security_findings": []
+  "security_findings": [
+    {
+      "id": "NET-EGRESS-001_aws_security_group_KafkaClientInstanceSG",
+      "severity": "MEDIUM",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "aws_security_group.KafkaClientInstanceSG",
+      "title": "Unrestricted Outbound Network Traffic",
+      "description": "Resource 'aws_security_group.KafkaClientInstanceSG' allows unrestricted outbound traffic to the internet.",
+      "evidence": {
+        "protocol": "-1",
+        "destinations": [
+          "0.0.0.0/0"
+        ]
+      },
+      "attack_vector": "Resource 'aws_security_group.KafkaClientInstanceSG' allows unrestricted outbound traffic to the internet.",
+      "recommendation": "Restrict outbound traffic to only the destinations and protocols required by the workload.",
+      "remediation": "Restrict outbound traffic to only the destinations and protocols required by the workload."
+    },
+    {
+      "id": "NET-EGRESS-001_aws_security_group_KafkaClusterSG",
+      "severity": "MEDIUM",
+      "category": "NETWORK_EXPOSURE",
+      "resource": "aws_security_group.KafkaClusterSG",
+      "title": "Unrestricted Outbound Network Traffic",
+      "description": "Resource 'aws_security_group.KafkaClusterSG' allows unrestricted outbound traffic to the internet.",
+      "evidence": {
+        "protocol": "-1",
+        "destinations": [
+          "0.0.0.0/0"
+        ]
+      },
+      "attack_vector": "Resource 'aws_security_group.KafkaClusterSG' allows unrestricted outbound traffic to the internet.",
+      "recommendation": "Restrict outbound traffic to only the destinations and protocols required by the workload.",
+      "remediation": "Restrict outbound traffic to only the destinations and protocols required by the workload."
+    }
+  ]
 }

@@ -212,6 +212,7 @@ def run_pipeline(
 
     exported_data["risk"] = overall_risk
     exported_data["risk_scores"] = risk_scores
+    exported_data["findings"] = parsed_data.get("findings", [])
 
     # Save graph JSON
     save_graph_json(

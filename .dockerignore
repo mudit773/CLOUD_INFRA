@@ -1,0 +1,17 @@
+.git
+.pytest_cache
+.trunk
+__pycache__
+*.py[cod]
+.venv
+venv
+frontend
+tests
+scratch
+input/uploads
+output
+*.tfstate
+*.tfstate.*
+.env
+.env.*
+!.env.example
