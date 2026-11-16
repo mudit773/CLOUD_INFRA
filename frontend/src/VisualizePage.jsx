@@ -8,6 +8,43 @@ import {
 } from "lucide-react";
 import "./App.css";
 
+const cardWidth = 195;
+const cardHeight = 56;
+
+function getInitialNodePositions(activeNodes) {
+  const columns = {
+    ingress: [],
+    network: [],
+    compute: [],
+    storage: [],
+  };
+  const columnX = { ingress: 120, network: 450, compute: 780, storage: 1110 };
+
+  activeNodes.forEach((node) => {
+    const type = (node.type || "").toLowerCase();
+    const id = (node.id || "").toLowerCase();
+    if (id === "internet" || type.includes("gateway") || type.includes("security_group")) {
+      columns.ingress.push(node);
+    } else if (type.includes("vpc") || type.includes("subnet") || type.includes("route") || id.includes("subnet") || id.includes("routing")) {
+      columns.network.push(node);
+    } else if (type.includes("instance") || type.includes("cluster") || type.includes("msk") || type.includes("server")) {
+      columns.compute.push(node);
+    } else {
+      columns.storage.push(node);
+    }
+  });
+
+  return Object.entries(columns).reduce((positions, [column, items]) => {
+    items.forEach((node, index) => {
+      positions[node.id] = {
+        x: columnX[column] - cardWidth / 2,
+        y: 80 + index * 105 - cardHeight / 2,
+      };
+    });
+    return positions;
+  }, {});
+}
+
 function ConnectedNetworkGraphCanvas({
   nodes,
   edges,
@@ -17,6 +54,7 @@ function ConnectedNetworkGraphCanvas({
 }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
+  const worldTransformRef = useRef(null);
 
   // Grouped vs Expanded view toggle (default is MINIMIZED/GROUPED for clutter reduction)
   const [isGroupedView, setIsGroupedView] = useState(true);
@@ -27,9 +65,54 @@ function ConnectedNetworkGraphCanvas({
   const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [draggedNodeId, setDraggedNodeId] = useState(null);
+  const draggedNodeOffset = useRef({ x: 0, y: 0 });
+  const dragPointerStartRef = useRef({ x: 0, y: 0 });
+  const draggingNodeRef = useRef(false);
+  const draggedNodeRef = useRef(null);
+  const hasDraggedRef = useRef(false);
 
-  // Layout node positions stored in state
-  const [nodePositions, setNodePositions] = useState({});
+  const [customPositions, setCustomPositions] = useState({});
+  const previousGraphRef = useRef({ nodes, edges });
+
+  const screenToWorld = useCallback((clientX, clientY, rect) => {
+    const canvas = canvasRef.current;
+    if (
+      !canvas ||
+      !worldTransformRef.current ||
+      !Number.isFinite(clientX) ||
+      !Number.isFinite(clientY) ||
+      !Number.isFinite(rect?.left) ||
+      !Number.isFinite(rect?.top) ||
+      !Number.isFinite(rect?.width) ||
+      !Number.isFinite(rect?.height) ||
+      rect.width <= 0 ||
+      rect.height <= 0 ||
+      !Number.isFinite(canvas.width) ||
+      !Number.isFinite(canvas.height) ||
+      canvas.width <= 0 ||
+      canvas.height <= 0 ||
+      !Number.isFinite(zoom) ||
+      zoom <= 0 ||
+      !Number.isFinite(offset.x) ||
+      !Number.isFinite(offset.y)
+    ) {
+      return null;
+    }
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const canvasX = (clientX - rect.left) * scaleX;
+    const canvasY = (clientY - rect.top) * scaleY;
+    if (!Number.isFinite(scaleX) || !Number.isFinite(scaleY) || !Number.isFinite(canvasX) || !Number.isFinite(canvasY)) {
+      return null;
+    }
+    try {
+      const inverseTransform = new DOMMatrix(worldTransformRef.current).invertSelf();
+      const point = inverseTransform.transformPoint(new DOMPoint(canvasX, canvasY));
+      return Number.isFinite(point.x) && Number.isFinite(point.y) ? point : null;
+    } catch {
+      return null;
+    }
+  }, [offset.x, offset.y, zoom]);
 
   // 1. Grouping Algorithm: Group tightly related auxiliary child resources
   const { processedNodes, processedEdges } = useMemo(() => {
@@ -48,8 +131,7 @@ function ConnectedNetworkGraphCanvas({
       const isCritical =
         n.in_attack_path ||
         n.is_choke_point ||
-        n.is_crown_jewel ||
-        (selectedNode && selectedNode.id === n.id);
+        n.is_crown_jewel;
 
       if (isCritical) {
         coreNodes.push(n);
@@ -157,7 +239,7 @@ function ConnectedNetworkGraphCanvas({
     });
 
     return { processedNodes: finalNodes, processedEdges: finalEdges };
-  }, [nodes, edges, isGroupedView, filter, selectedNode]);
+  }, [nodes, edges, isGroupedView, filter]);
 
   // Filter nodes based on user selection
   const activeNodes = useMemo(() => {
@@ -171,6 +253,27 @@ function ConnectedNetworkGraphCanvas({
   const activeEdges = useMemo(() => {
     return processedEdges.filter((e) => activeNodeIds.has(e.source) && activeNodeIds.has(e.target));
   }, [processedEdges, activeNodeIds]);
+  const initialNodePositions = useMemo(() => getInitialNodePositions(activeNodes), [activeNodes]);
+  const resolvedNodePositions = useMemo(() => {
+    const positions = { ...initialNodePositions };
+    Object.entries(customPositions).forEach(([id, position]) => {
+      if (Number.isFinite(position?.x) && Number.isFinite(position?.y)) {
+        positions[id] = position;
+      }
+    });
+    return positions;
+  }, [initialNodePositions, customPositions]);
+  const canvasSize = useMemo(() => {
+    let width = 2500;
+    let height = 1800;
+    activeNodes.forEach((node) => {
+      const position = resolvedNodePositions[node.id];
+      if (!position || !Number.isFinite(position.x) || !Number.isFinite(position.y)) return;
+      width = Math.max(width, position.x + cardWidth + 80);
+      height = Math.max(height, position.y + cardHeight + 80);
+    });
+    return { width, height };
+  }, [activeNodes, resolvedNodePositions]);
 
   // Selected node connections
   const connectedEdgeSet = useMemo(() => {
@@ -194,76 +297,45 @@ function ConnectedNetworkGraphCanvas({
     return set;
   }, [selectedNode, activeEdges]);
 
-  // Clean, generous layout spacing algorithm
   useEffect(() => {
-    if (!activeNodes || activeNodes.length === 0) return;
+    if (previousGraphRef.current.nodes !== nodes || previousGraphRef.current.edges !== edges) {
+      previousGraphRef.current = { nodes, edges };
+      setCustomPositions({});
+    }
+  }, [nodes, edges]);
 
-    // Preserve existing positions (e.g., after dragging) and only compute defaults for new nodes
-    setNodePositions(prev => {
-      const newPositions = { ...prev };
-      const cols = {
-        ingress: [], // X: 110
-        network: [], // X: 450
-        compute: [], // X: 790
-        storage: [], // X: 1130
-      };
-
-      // Categorize nodes
-      activeNodes.forEach((n) => {
-        const t = (n.type || "").toLowerCase();
-        const id = (n.id || "").toLowerCase();
-        if (id === "internet" || t.includes("gateway") || t.includes("security_group")) {
-          cols.ingress.push(n);
-        } else if (t.includes("vpc") || t.includes("subnet") || t.includes("route") || id.includes("subnet") || id.includes("routing")) {
-          cols.network.push(n);
-        } else if (t.includes("instance") || t.includes("cluster") || t.includes("msk") || t.includes("server")) {
-          cols.compute.push(n);
-        } else {
-          cols.storage.push(n);
-        }
-      });
-
-      const colXMap = {
-        ingress: 120,
-        network: 450,
-        compute: 780,
-        storage: 1110,
-      };
-
-      // Assign positions only for nodes that don't already have a saved position
-      Object.keys(cols).forEach((colKey) => {
-        const items = cols[colKey];
-        const startX = colXMap[colKey];
-        items.forEach((item, idx) => {
-          if (!newPositions[item.id]) {
-            const y = 80 + idx * 105;
-            newPositions[item.id] = { x: startX, y };
-          }
-        });
-      });
-
-      return newPositions;
-    });
-  }, [activeNodes]);
 // Center or focus on selected node when clicked
 useEffect(() => {
-if (selectedNode && nodePositions[selectedNode.id]) {
-  const pos = nodePositions[selectedNode.id];
+if (!draggingNodeRef.current && selectedNode && resolvedNodePositions[selectedNode.id]) {
+  const pos = resolvedNodePositions[selectedNode.id];
   const canvas = canvasRef.current;
-  if (canvas) {
-    const rect = canvas.getBoundingClientRect();
-    setOffset({
-      x: Math.round(rect.width / 2 - pos.x * zoom),
-      y: Math.round(rect.height / 2 - pos.y * zoom),
-    });
+  const container = containerRef.current;
+  if (
+    canvas &&
+    container &&
+    Number.isFinite(pos.x) &&
+    Number.isFinite(pos.y) &&
+    Number.isFinite(zoom) &&
+    zoom > 0
+  ) {
+    const nextOffset = {
+      x: Math.round(container.scrollLeft + container.clientWidth / 2 - canvas.offsetLeft - pos.x * zoom),
+      y: Math.round(container.scrollTop + container.clientHeight / 2 - canvas.offsetTop - pos.y * zoom),
+    };
+    if (Number.isFinite(nextOffset.x) && Number.isFinite(nextOffset.y)) setOffset(nextOffset);
   }
 }
-  }, [selectedNode]);
+  }, [selectedNode, resolvedNodePositions, zoom]);
 
 const fitToView = useCallback(() => {
+  setCustomPositions({});
   setZoom(0.85);
   setOffset({ x: 30, y: 30 });
 }, []);
+
+const changeGroupedView = (nextValue) => {
+  setIsGroupedView(nextValue);
+};
 
 const focusAttackChain = useCallback(() => {
   const attackNodeObjs = activeNodes.filter((n) => n.in_attack_path);
@@ -273,15 +345,58 @@ const focusAttackChain = useCallback(() => {
   }
 }, [activeNodes, onSelectNode]);
 
+const zoomAtPoint = useCallback((newZoom, focalScreenX, focalScreenY) => {
+  if (
+    !Number.isFinite(newZoom) ||
+    newZoom <= 0 ||
+    !Number.isFinite(focalScreenX) ||
+    !Number.isFinite(focalScreenY) ||
+    !Number.isFinite(zoom) ||
+    zoom <= 0 ||
+    !Number.isFinite(offset.x) ||
+    !Number.isFinite(offset.y)
+  ) return;
+  const worldX = (focalScreenX - offset.x) / zoom;
+  const worldY = (focalScreenY - offset.y) / zoom;
+  const nextOffset = {
+    x: focalScreenX - worldX * newZoom,
+    y: focalScreenY - worldY * newZoom,
+  };
+  if (!Number.isFinite(nextOffset.x) || !Number.isFinite(nextOffset.y)) return;
+  setOffset(nextOffset);
+  setZoom(newZoom);
+}, [offset, zoom]);
+
+const zoomBy = (factor) => {
+  const canvas = canvasRef.current;
+  if (!canvas || !Number.isFinite(zoom) || zoom <= 0 || !Number.isFinite(factor)) return;
+  const rect = canvas.getBoundingClientRect();
+  const position = selectedNode
+    ? resolvedNodePositions[selectedNode.id]
+    : null;
+  const focalX = position
+    ? (position.x + cardWidth / 2) * zoom + offset.x
+    : rect.width / 2;
+  const focalY = position
+    ? (position.y + cardHeight / 2) * zoom + offset.y
+    : rect.height / 2;
+  if (!Number.isFinite(focalX) || !Number.isFinite(focalY)) return;
+  zoomAtPoint(Math.min(Math.max(zoom * factor, 0.35), 2.5), focalX, focalY);
+};
+
 // Render loop on canvas
 useEffect(() => {
 const canvas = canvasRef.current;
 if (!canvas) return;
+if (!Number.isFinite(zoom) || zoom <= 0 || !Number.isFinite(offset.x) || !Number.isFinite(offset.y)) return;
 const ctx = canvas.getContext("2d");
 if (!ctx) return;
 
-const dpr = window.devicePixelRatio || 1;
+const dpr = Number.isFinite(window.devicePixelRatio) && window.devicePixelRatio > 0
+  ? window.devicePixelRatio
+  : 1;
 const rect = canvas.getBoundingClientRect();
+if (!Number.isFinite(rect.width) || !Number.isFinite(rect.height) || rect.width <= 0 || rect.height <= 0) return;
 canvas.width = rect.width * dpr;
 canvas.height = rect.height * dpr;
 ctx.scale(dpr, dpr);
@@ -291,6 +406,7 @@ ctx.clearRect(0, 0, rect.width, rect.height);
 ctx.save();
 ctx.translate(offset.x, offset.y);
 ctx.scale(zoom, zoom);
+worldTransformRef.current = ctx.getTransform();
 
 // Subtle background grid
 ctx.fillStyle = "rgba(148, 163, 184, 0.22)";
@@ -305,8 +421,6 @@ for (let x = Math.floor(startX / gridSize) * gridSize; x < endX; x += gridSize) 
   }
 }
 
-const nodeW = 195;
-const nodeH = 56;
 const radius = 8;
 
 // Draw directed arrow
@@ -317,17 +431,19 @@ function drawDirectedEdge(sourcePos, targetPos, edge) {
 
   ctx.save();
 
-  const dx = targetPos.x - sourcePos.x;
-  const dy = targetPos.y - sourcePos.y;
+  const sourceCenter = { x: sourcePos.x + cardWidth / 2, y: sourcePos.y + cardHeight / 2 };
+  const targetCenter = { x: targetPos.x + cardWidth / 2, y: targetPos.y + cardHeight / 2 };
+  const dx = targetCenter.x - sourceCenter.x;
+  const dy = targetCenter.y - sourceCenter.y;
   const dist = Math.hypot(dx, dy) || 1;
 
-  const targetEdgeDist = nodeW / 2 + 2;
-  const endX = targetPos.x - (dx / dist) * targetEdgeDist;
-  const endY = targetPos.y - (dy / dist) * (nodeH / 2);
+  const targetEdgeDist = cardWidth / 2 + 2;
+  const endX = targetCenter.x - (dx / dist) * targetEdgeDist;
+  const endY = targetCenter.y - (dy / dist) * (cardHeight / 2);
 
-  const startEdgeDist = nodeW / 2;
-  const startX = sourcePos.x + (dx / dist) * startEdgeDist;
-  const startY = sourcePos.y + (dy / dist) * (nodeH / 2);
+  const startEdgeDist = cardWidth / 2;
+  const startX = sourceCenter.x + (dx / dist) * startEdgeDist;
+  const startY = sourceCenter.y + (dy / dist) * (cardHeight / 2);
 
   ctx.beginPath();
   ctx.moveTo(startX, startY);
@@ -389,17 +505,24 @@ function drawDirectedEdge(sourcePos, targetPos, edge) {
 
 // 1. Draw all edges
 activeEdges.forEach((edge) => {
-  const sPos = nodePositions[edge.source];
-  const tPos = nodePositions[edge.target];
-  if (sPos && tPos) {
+  const sPos = resolvedNodePositions[edge.source];
+  const tPos = resolvedNodePositions[edge.target];
+  if (
+    sPos &&
+    tPos &&
+    Number.isFinite(sPos.x) &&
+    Number.isFinite(sPos.y) &&
+    Number.isFinite(tPos.x) &&
+    Number.isFinite(tPos.y)
+  ) {
     drawDirectedEdge(sPos, tPos, edge);
   }
 });
 
 // 2. Draw nodes
 activeNodes.forEach((node) => {
-  const pos = nodePositions[node.id];
-  if (!pos) return;
+  const pos = resolvedNodePositions[node.id];
+  if (!pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
 
   const isSelected = selectedNode?.id === node.id;
   const isNeighbor = connectedNeighborIds.has(node.id);
@@ -416,11 +539,11 @@ activeNodes.forEach((node) => {
     ctx.globalAlpha = 0.28;
   }
 
-  const x = pos.x - nodeW / 2;
-  const y = pos.y - nodeH / 2;
+  const x = pos.x;
+  const y = pos.y;
 
   ctx.beginPath();
-  ctx.roundRect(x, y, nodeW, nodeH, radius);
+  ctx.roundRect(x, y, cardWidth, cardHeight, radius);
 
   if (isSelected) {
     ctx.fillStyle = "#ffffff";
@@ -478,7 +601,7 @@ activeNodes.forEach((node) => {
           : isEntryPoint
             ? "#0284c7"
             : "#10b981";
-  ctx.fillRect(x + 2, y + 4, 3.5, nodeH - 8);
+  ctx.fillRect(x + 2, y + 4, 3.5, cardHeight - 8);
 
   // Node Name Text
   ctx.textAlign = "left";
@@ -526,7 +649,7 @@ ctx.restore();
   }, [
   activeNodes,
   activeEdges,
-  nodePositions,
+  resolvedNodePositions,
   zoom,
   offset,
   selectedNode,
@@ -539,67 +662,126 @@ const handleMouseDown = (e) => {
   const canvas = canvasRef.current;
   if (!canvas) return;
   const rect = canvas.getBoundingClientRect();
-  const mouseX = (e.clientX - rect.left - offset.x) / zoom;
-  const mouseY = (e.clientY - rect.top - offset.y) / zoom;
-
-  const nodeW = 195;
-  const nodeH = 56;
+  const mousePosition = screenToWorld(e.clientX, e.clientY, rect);
+  if (!mousePosition) return;
+  const { x: mouseX, y: mouseY } = mousePosition;
 
   for (let i = activeNodes.length - 1; i >= 0; i--) {
     const node = activeNodes[i];
-    const pos = nodePositions[node.id];
+    const pos = resolvedNodePositions[node.id];
     if (
       pos &&
-      mouseX >= pos.x - nodeW / 2 &&
-      mouseX <= pos.x + nodeW / 2 &&
-      mouseY >= pos.y - nodeH / 2 &&
-      mouseY <= pos.y + nodeH / 2
+      mouseX >= pos.x &&
+      mouseX <= pos.x + cardWidth &&
+      mouseY >= pos.y &&
+      mouseY <= pos.y + cardHeight
     ) {
-      if (node.is_group) {
-        // If clicked a grouped master node, expand the full view to reveal child items
-        setIsGroupedView(false);
-        const firstChildId = node.child_ids?.[0];
-        const childObj = nodes.find((n) => n.id === firstChildId);
-        if (childObj) onSelectNode(childObj);
-      } else {
-        onSelectNode(node);
-      }
+      const nodeOffset = { x: mouseX - pos.x, y: mouseY - pos.y };
+      if (!Number.isFinite(nodeOffset.x) || !Number.isFinite(nodeOffset.y)) return;
+      if (!Number.isFinite(e.clientX) || !Number.isFinite(e.clientY)) return;
+      e.stopPropagation();
+      setIsDraggingCanvas(false);
+      e.preventDefault();
+      draggedNodeOffset.current = nodeOffset;
+      dragPointerStartRef.current = { x: e.clientX, y: e.clientY };
+      draggedNodeRef.current = node;
+      hasDraggedRef.current = false;
+      draggingNodeRef.current = true;
       setDraggedNodeId(node.id);
       return;
     }
   }
 
+  const nextDragStart = { x: e.clientX - offset.x, y: e.clientY - offset.y };
+  if (!Number.isFinite(nextDragStart.x) || !Number.isFinite(nextDragStart.y)) return;
   setIsDraggingCanvas(true);
-  setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+  setDragStart(nextDragStart);
 };
 
-const handleMouseMove = (e) => {
+const handleMouseMove = useCallback((e) => {
   if (draggedNodeId) {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const pointerDeltaX = e.clientX - dragPointerStartRef.current.x;
+    const pointerDeltaY = e.clientY - dragPointerStartRef.current.y;
+    if (
+      !Number.isFinite(pointerDeltaX) ||
+      !Number.isFinite(pointerDeltaY) ||
+      Math.hypot(pointerDeltaX, pointerDeltaY) <= 4
+    ) return;
     const rect = canvas.getBoundingClientRect();
-    const newX = (e.clientX - rect.left - offset.x) / zoom;
-    const newY = (e.clientY - rect.top - offset.y) / zoom;
+    const worldPosition = screenToWorld(e.clientX, e.clientY, rect);
+    if (!worldPosition) return;
+    const { x, y } = worldPosition;
+    const rawX = x - draggedNodeOffset.current.x;
+    const rawY = y - draggedNodeOffset.current.y;
+    const maxX = Math.max(0, canvas.clientWidth - cardWidth);
+    const maxY = Math.max(0, canvas.clientHeight - cardHeight);
+    if (
+      !Number.isFinite(rawX) ||
+      !Number.isFinite(rawY) ||
+      !Number.isFinite(maxX) ||
+      !Number.isFinite(maxY)
+    ) return;
+    const newX = Math.max(0, Math.min(maxX, rawX));
+    const newY = Math.max(0, Math.min(maxY, rawY));
+    if (!Number.isFinite(newX) || !Number.isFinite(newY)) return;
+    hasDraggedRef.current = true;
 
-    setNodePositions((prev) => ({
+    setCustomPositions((prev) => ({
       ...prev,
-      [draggedNodeId]: { x: Math.round(newX), y: Math.round(newY) },
+      [draggedNodeId]: { x: newX, y: newY },
     }));
     return;
   }
 
   if (isDraggingCanvas) {
-    setOffset({
+    const nextOffset = {
       x: e.clientX - dragStart.x,
       y: e.clientY - dragStart.y,
-    });
+    };
+    if (Number.isFinite(nextOffset.x) && Number.isFinite(nextOffset.y)) setOffset(nextOffset);
   }
-};
+}, [draggedNodeId, isDraggingCanvas, dragStart, screenToWorld]);
 
-const handleMouseUp = () => {
+const handleMouseUp = useCallback(() => {
+  const clickedNode = draggedNodeRef.current;
+  if (clickedNode && !hasDraggedRef.current) {
+    if (clickedNode.is_group) {
+      setIsGroupedView(false);
+      const firstChildId = clickedNode.child_ids?.[0];
+      const childObj = nodes.find((node) => node.id === firstChildId);
+      if (childObj) onSelectNode(childObj);
+    } else {
+      onSelectNode(clickedNode);
+    }
+  }
   setIsDraggingCanvas(false);
+  draggingNodeRef.current = false;
   setDraggedNodeId(null);
-};
+  draggedNodeRef.current = null;
+  hasDraggedRef.current = false;
+}, [nodes, onSelectNode]);
+
+const handleWindowMouseMove = useCallback((e) => {
+  if (canvasRef.current?.contains(e.target)) return;
+  handleMouseMove(e);
+}, [handleMouseMove]);
+
+const handleWindowMouseUp = useCallback((e) => {
+  if (canvasRef.current?.contains(e.target)) return;
+  handleMouseUp(e);
+}, [handleMouseUp]);
+
+useEffect(() => {
+  if (!draggedNodeId && !isDraggingCanvas) return;
+  window.addEventListener("mousemove", handleWindowMouseMove);
+  window.addEventListener("mouseup", handleWindowMouseUp);
+  return () => {
+    window.removeEventListener("mousemove", handleWindowMouseMove);
+    window.removeEventListener("mouseup", handleWindowMouseUp);
+  };
+}, [draggedNodeId, isDraggingCanvas, handleWindowMouseMove, handleWindowMouseUp]);
 
 useEffect(() => {
   const container = containerRef.current;
@@ -609,15 +791,19 @@ useEffect(() => {
     event.preventDefault();
     event.stopPropagation();
     const delta = event.deltaY < 0 ? 1.08 : 0.92;
-    setZoom((prev) => Math.min(Math.max(prev * delta, 0.35), 2.5));
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const nextZoom = Math.min(Math.max(zoom * delta, 0.35), 2.5);
+    zoomAtPoint(nextZoom, event.clientX - rect.left, event.clientY - rect.top);
   };
 
   container.addEventListener("wheel", handleWheel, { passive: false });
   return () => container.removeEventListener("wheel", handleWheel);
-}, []);
+}, [zoom, zoomAtPoint]);
 
 return (
-  <div className="network-graph-canvas-container" ref={containerRef}>
+  <div className="network-graph-canvas-container" ref={containerRef} style={{ maxWidth: "100%", overflowX: "scroll", overflowY: "scroll" }}>
     {/* CANVAS TOOLBAR */}
     <div className="graph-canvas-toolbar">
       <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
@@ -625,7 +811,7 @@ return (
         <button
           type="button"
           className={`canvas-tool-btn ${isGroupedView ? "active" : ""}`}
-          onClick={() => setIsGroupedView((v) => !v)}
+          onClick={() => changeGroupedView(!isGroupedView)}
           title="Toggle Clutter Reduction & Node Grouping"
         >
           <Layers size={13} />
@@ -635,7 +821,7 @@ return (
         <button
           type="button"
           className="canvas-tool-btn"
-          onClick={() => setZoom((z) => Math.min(z * 1.2, 2.5))}
+          onClick={() => zoomBy(1.2)}
           title="Zoom In"
         >
           <ZoomIn size={14} />
@@ -644,7 +830,7 @@ return (
         <button
           type="button"
           className="canvas-tool-btn"
-          onClick={() => setZoom((z) => Math.max(z * 0.8, 0.35))}
+          onClick={() => zoomBy(0.8)}
           title="Zoom Out"
         >
           <ZoomOut size={14} />
@@ -682,6 +868,7 @@ return (
 <canvas
   ref={canvasRef}
   className="connected-network-canvas"
+  style={{ width: `${canvasSize.width}px`, height: `${canvasSize.height}px`, maxWidth: "none", cursor: draggedNodeId ? "grabbing" : "grab" }}
   onMouseDown={handleMouseDown}
   onMouseMove={handleMouseMove}
   onMouseUp={handleMouseUp}

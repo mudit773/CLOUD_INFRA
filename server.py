@@ -33,7 +33,8 @@ from llm_service import (
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_OUTPUT_FILE = PROJECT_ROOT / "output" / "terraform.json"
 DEFAULT_GRAPH_OUTPUT_FILE = PROJECT_ROOT / "output" / "graph_output.json"
-UPLOADS_BASE_DIR = PROJECT_ROOT / "input" / "uploads"
+UPLOADS_BASE_DIR = Path("/tmp/infrascope_uploads")
+os.makedirs(UPLOADS_BASE_DIR, exist_ok=True)
 
 app = FastAPI(
     title="InfraScope API Bridge",
@@ -400,12 +401,27 @@ def trigger_scan(request: ScanRequest):
     if not request.input_path:
         raise HTTPException(status_code=400, detail="input_path is required for scanning.")
 
-    input_path = PROJECT_ROOT / request.input_path
-    if not input_path.exists():
-        # Check absolute path
-        input_path = Path(request.input_path)
+    if request.input_path.startswith(("http://", "https://")):
+        upload_id = f"repo_{uuid.uuid4().hex[:8]}"
+        input_path = UPLOADS_BASE_DIR / upload_id
+        os.makedirs(UPLOADS_BASE_DIR, exist_ok=True)
+        try:
+            subprocess.run(
+                ["git", "clone", "--depth", "1", request.input_path, str(input_path)],
+                check=True,
+                capture_output=True,
+                text=True,
+                cwd=str(PROJECT_ROOT),
+            )
+        except subprocess.CalledProcessError as exc:
+            shutil.rmtree(input_path, ignore_errors=True)
+            raise HTTPException(status_code=400, detail=f"Git clone failed: {exc.stderr or exc.stdout}")
+    else:
+        input_path = PROJECT_ROOT / request.input_path
         if not input_path.exists():
-            raise HTTPException(status_code=400, detail=f"Input path not found: {request.input_path}")
+            input_path = Path(request.input_path)
+            if not input_path.exists():
+                raise HTTPException(status_code=400, detail=f"Input path not found: {request.input_path}")
 
     output_path = PROJECT_ROOT / (request.output_path or "output/terraform.json")
     graph_data = execute_pipeline(input_path, output_path)
@@ -464,11 +480,9 @@ async def upload_and_scan(
         )
 
     # Create isolated session directory for this upload
-    session_id = f"upload_{uuid.uuid4().hex[:8]}"
-    session_dir = UPLOADS_BASE_DIR / session_id
-    session_dir.mkdir(parents=True, exist_ok=True)
-
-    scan_target = session_dir
+    upload_id = f"upload_{uuid.uuid4().hex[:8]}"
+    session_dir = UPLOADS_BASE_DIR / upload_id
+    os.makedirs(session_dir, exist_ok=True)
 
     for upload_item in upload_list:
         if not upload_item.filename:
@@ -476,34 +490,30 @@ async def upload_and_scan(
         dest_file = session_dir / upload_item.filename
         dest_file.parent.mkdir(parents=True, exist_ok=True)
         with dest_file.open("wb") as buffer:
+            upload_item.file.seek(0)
             shutil.copyfileobj(upload_item.file, buffer)
+            buffer.flush()
 
         # Unpack if zip
         if upload_item.filename.lower().endswith(".zip"):
-            extract_dir = session_dir / Path(upload_item.filename).stem
-            extract_dir.mkdir(parents=True, exist_ok=True)
             with zipfile.ZipFile(dest_file, "r") as zip_ref:
-                zip_ref.extractall(extract_dir)
-            scan_target = extract_dir
+                zip_ref.extractall(session_dir)
 
     # Check that at least one .tf file exists
-    tf_files = list(scan_target.glob("**/*.tf"))
+    tf_files = list(session_dir.glob("**/*.tf"))
     if not tf_files:
         raise HTTPException(
             status_code=400,
-            detail="No Terraform (.tf) files found in the uploaded file(s) or archive."
+            detail="No valid .tf files received in upload."
         )
 
-    # Run user-initiated scan
-    graph_data = execute_pipeline(scan_target, DEFAULT_OUTPUT_FILE)
-
-    primary_name = upload_list[0].filename if upload_list else session_id
+    primary_name = upload_list[0].filename if upload_list else upload_id
     return {
         "status": "success",
-        "message": f"Successfully analyzed {len(tf_files)} Terraform file(s)",
+        "message": f"Uploaded {len(tf_files)} Terraform file(s)",
         "source_type": "upload",
         "source_name": primary_name,
-        "data": graph_data
+        "upload_path": str(session_dir)
     }
 
 

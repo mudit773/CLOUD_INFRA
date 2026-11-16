@@ -2,6 +2,18 @@ import os
 import re
 import hcl2
 
+def normalize_legacy_terraform(source):
+    source = re.sub(
+        r'(?m)^([ \t]*[A-Za-z_][\w-]*[ \t]*=[ \t]*.*),([ \t]*(?:(?:#|//).*)?)$',
+        r'\1\2',
+        source,
+    )
+    return re.sub(
+        r'(?m)^([ \t]*)provider([ \t]+"(?:remote-exec|local-exec|file)"[ \t]*\{)',
+        r'\1provisioner\2',
+        source,
+    )
+
 def clean_value(value):
     """
     Recursively clean values produced by the HCL parser.
@@ -89,7 +101,7 @@ def parse_terraform_directory(input_path):
             raise ValueError(f"Input file is not a .tf file: {input_path}")
         file_key = os.path.basename(input_path)
         with open(input_path, "r", encoding="utf-8") as f:
-            parsed_files[file_key] = hcl2.load(f)
+            parsed_files[file_key] = hcl2.loads(normalize_legacy_terraform(f.read()))
         locs = extract_source_locations(input_path, display_path=file_key)
         source_locations.update(locs)
         return parsed_files, source_locations
@@ -109,7 +121,7 @@ def parse_terraform_directory(input_path):
     for rel_path, full_path in discovered_files:
         try:
             with open(full_path, "r", encoding="utf-8") as f:
-                parsed_files[rel_path] = hcl2.load(f)
+                parsed_files[rel_path] = hcl2.loads(normalize_legacy_terraform(f.read()))
             locs = extract_source_locations(full_path, display_path=rel_path)
             source_locations.update(locs)
         except Exception:

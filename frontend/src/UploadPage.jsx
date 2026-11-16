@@ -340,12 +340,10 @@ function UploadBox({ analysis }) {
 
     if (mode === "folder") {
       if (!folderPath.trim()) {
-        alert("Please enter a valid local directory path containing Terraform (.tf) files.");
+        alert("Please enter a GitHub repository URL.");
         return;
       }
-      const formData = new FormData();
-      formData.append("folder_path", folderPath.trim());
-      const success = await triggerUpload(formData, folderPath.trim());
+      const success = await triggerScan(folderPath.trim(), folderPath.trim());
       if (success) navigate("/visualize");
       return;
     }
@@ -376,7 +374,7 @@ function UploadBox({ analysis }) {
           onClick={() => setMode("folder")}
         >
           <FolderOpen size={16} />
-          Custom Folder Path
+          GitHub Repository
         </button>
 
         <button
@@ -430,26 +428,26 @@ function UploadBox({ analysis }) {
         </>
       )}
 
-      {/* 2. CUSTOM FOLDER PATH MODE */}
+      {/* 2. GITHUB REPOSITORY MODE */}
       {mode === "folder" && (
         <div className="git-area">
           <div className="git-icon">
             <FolderOpen size={27} />
           </div>
 
-          <h3>Specify Terraform Directory</h3>
-          <p>Provide the relative or absolute path to your Terraform project folder.</p>
+          <h3>GitHub Repository</h3>
+          <p>Provide a public GitHub repository URL to scan.</p>
 
           <input
             type="text"
             className="git-input"
-            placeholder="e.g. input/terraform/aws_vpc_msk or C:/projects/my-infra"
+            placeholder="https://github.com/username/repo"
             value={folderPath}
             onChange={(e) => setFolderPath(e.target.value)}
           />
 
           <span className="git-example">
-            The backend pipeline will parse all .tf files found inside this directory.
+            The backend pipeline will clone the repository and parse its .tf files.
           </span>
         </div>
       )}

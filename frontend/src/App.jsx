@@ -89,15 +89,14 @@ export function AnalysisProvider({ children }) {
         throw new Error(errData.detail || errData.message || `Upload failed: ${res.status}`);
       }
       const result = await res.json();
-      if (result.data) {
-        setGraphData(result.data);
-        setSelectedNode(null);
-      }
+      if (!result.upload_path) throw new Error("Upload did not return an upload path.");
+      const success = await triggerScan(result.upload_path, sourceName);
+      if (!success) return false;
       setActiveSource({
         name: result.source_name || sourceName,
-        type: result.source_type === "folder" ? "Terraform Folder" : "Uploaded Files",
+        type: "Uploaded Files",
+        path: result.upload_path,
       });
-      setRemediationData(null);
       return true;
     } catch (err) {
       console.error("Upload error:", err);
@@ -106,7 +105,7 @@ export function AnalysisProvider({ children }) {
     } finally {
       setScanning(false);
     }
-  }, []);
+  }, [triggerScan]);
 
   const fetchRemediation = useCallback(async (force = false) => {
     if (remediationData && !force) return;
